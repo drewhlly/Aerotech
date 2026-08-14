@@ -31,3 +31,19 @@ button,
 input {
   font: inherit;
 }
+
+.input {
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid rgb(226 232 240);
+  background: white;
+  padding: 0.75rem 0.875rem;
+  font-size: 0.875rem;
+  color: rgb(15 23 42);
+  outline: none;
+}
+
+.input:focus {
+  border-color: rgb(59 130 246);
+  box-shadow: 0 0 0 3px rgb(59 130 246 / 0.1);
+}
