@@ -1,124 +1,114 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, LockKeyhole, Mail } from "lucide-react";
-import { Logo } from "@/components/aerotech-ui";
+import { useState } from "react";
+import { ArrowRight, LockKeyhole, Sparkles } from "lucide-react";
+import { Logo } from "@/components/aerotech-portal";
 
 export default function LoginPage() {
-  const router = useRouter();
+  const [role, setRole] = useState<"employer" | "employee">("employer");
 
   return (
-    <main className="min-h-screen bg-[#07111f]">
-      <div className="grid min-h-screen lg:grid-cols-2">
-        <div className="relative hidden overflow-hidden lg:block">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(0,212,255,.2),transparent_35%),radial-gradient(circle_at_80%_70%,rgba(157,78,221,.2),transparent_35%)]" />
-
-          <div className="relative flex h-full flex-col justify-between p-12">
+    <div className="min-h-screen bg-[#F5F8FA]">
+      <div className="mx-auto flex min-h-screen max-w-6xl items-center px-5 py-10">
+        <div className="grid w-full overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl lg:grid-cols-2">
+          <div className="hidden bg-[#102A43] p-10 text-white lg:block">
             <Logo light />
-
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">
-                Employer Workforce OS
-              </p>
-              <h1 className="mt-4 max-w-xl text-5xl font-black leading-tight text-white">
-                Welcome back to your workforce command center.
+            <div className="mt-24">
+              <Sparkles className="text-[#00A896]" size={32} />
+              <h1 className="mt-5 text-4xl font-black leading-tight">
+                One login. Your entire work experience.
               </h1>
-              <p className="mt-5 max-w-lg text-sm leading-7 text-slate-400">
-                Manage your people, recruitment, attendance, training,
-                performance and payroll from one intelligent workspace.
+              <p className="mt-5 leading-7 text-white/60">
+                Aerotech connects employers, applicants and employees in one
+                modern workforce ecosystem.
               </p>
             </div>
-
-            <p className="text-xs text-slate-600">
-              People. Performance. Progress.
-            </p>
           </div>
-        </div>
 
-        <div className="flex items-center justify-center bg-white p-6 sm:p-10">
-          <div className="w-full max-w-md">
-            <Link
-              href="/"
-              className="mb-8 inline-flex items-center gap-2 text-xs font-semibold text-slate-500"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Aerotech
-            </Link>
+          <div className="p-7 sm:p-10">
+            <Logo />
 
-            <div className="lg:hidden">
-              <Logo />
-            </div>
+            <h1 className="mt-10 text-3xl font-black text-[#102A43]">
+              Welcome back
+            </h1>
+            <p className="mt-2 text-sm text-slate-500">
+              Sign in to continue to Aerotech.
+            </p>
 
-            <div className="mt-8">
-              <h2 className="text-3xl font-black text-slate-950">
-                Sign in
-              </h2>
-              <p className="mt-2 text-sm text-slate-500">
-                Access your Aerotech employer workspace.
-              </p>
-            </div>
-
-            <div className="mt-8 space-y-4">
-              <label className="block">
-                <span className="mb-2 block text-xs font-semibold text-slate-700">
-                  Work email
-                </span>
-                <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3">
-                  <Mail className="h-4 w-4 text-slate-400" />
-                  <input
-                    type="email"
-                    placeholder="you@company.com"
-                    className="h-12 w-full bg-transparent text-sm outline-none"
-                  />
-                </div>
-              </label>
-
-              <label className="block">
-                <span className="mb-2 block text-xs font-semibold text-slate-700">
-                  Password
-                </span>
-                <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3">
-                  <LockKeyhole className="h-4 w-4 text-slate-400" />
-                  <input
-                    type="password"
-                    placeholder="••••••••"
-                    className="h-12 w-full bg-transparent text-sm outline-none"
-                  />
-                </div>
-              </label>
-
-              <div className="flex items-center justify-between text-xs">
-                <label className="flex items-center gap-2 text-slate-500">
-                  <input type="checkbox" />
-                  Remember me
-                </label>
-                <button className="font-semibold text-indigo-600">
-                  Forgot password?
+            <div className="mt-7 grid grid-cols-2 rounded-xl bg-slate-100 p-1">
+              {(["employer", "employee"] as const).map((item) => (
+                <button
+                  key={item}
+                  onClick={() => setRole(item)}
+                  className={`rounded-lg py-2.5 text-sm font-bold capitalize ${
+                    role === item
+                      ? "bg-white text-[#102A43] shadow-sm"
+                      : "text-slate-500"
+                  }`}
+                >
+                  {item}
                 </button>
+              ))}
+            </div>
+
+            <form
+              className="mt-7 space-y-4"
+              onSubmit={(e) => e.preventDefault()}
+            >
+              <div>
+                <label className="text-sm font-bold text-slate-700">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  placeholder="you@company.com"
+                  className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3.5 outline-none focus:border-[#00A896]"
+                />
               </div>
 
-              <button
-                onClick={() => router.push("/dashboard/employer")}
-                className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#6366F1] to-[#9D4EDD] text-sm font-bold text-white shadow-lg"
+              <div>
+                <label className="text-sm font-bold text-slate-700">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  placeholder="••••••••"
+                  className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3.5 outline-none focus:border-[#00A896]"
+                />
+              </div>
+
+              <Link
+                href={
+                  role === "employer"
+                    ? "/dashboard/employer"
+                    : "/employee"
+                }
+                className="flex items-center justify-center gap-2 rounded-xl bg-[#102A43] px-5 py-3.5 font-black text-white"
               >
-                Sign in to Command Center
-                <ArrowRight className="h-4 w-4" />
-              </button>
+                Sign in
+                <ArrowRight size={17} />
+              </Link>
+            </form>
+
+            <div className="mt-7 flex items-center gap-2 text-xs text-slate-400">
+              <LockKeyhole size={14} />
+              Your production account will be secured by the Aerotech
+              authentication layer.
             </div>
 
-            <div className="mt-8 border-t border-slate-200 pt-6 text-center text-sm text-slate-500">
-              Don't have an employer account?{" "}
+            <div className="mt-7 text-center text-sm text-slate-500">
+              New employer?{" "}
               <Link
                 href="/auth/signup/employer"
-                className="font-bold text-indigo-600"
+                className="font-bold text-[#007F73]"
               >
-                Create one
+                Create an account
               </Link>
             </div>
           </div>
         </div>
       </div>
-    </main>
+    </div>
   );
 }
