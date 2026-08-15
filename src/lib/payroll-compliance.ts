@@ -1,596 +1,362 @@
 /**
  * Aerotech Payroll Compliance Engine
  *
- * Country-aware payroll deductions and employer contributions.
+ * Country-aware statutory payroll architecture.
  *
- * IMPORTANT:
- * Tax and statutory rules change frequently.
- * Each country configuration therefore has:
- * - country
- * - currency
- * - effectiveFrom
- * - effectiveTo
- * - tax authority
- * - pension/social contribution rules
+ * This layer deliberately separates:
  *
- * Never hard-code statutory deductions directly inside UI components.
+ * 1. Employee compensation
+ * 2. Employee statutory deductions
+ * 3. Employer statutory contributions
+ * 4. Country-specific authorities
+ * 5. Effective dates / rule versions
+ *
+ * DO NOT treat the example rates below as legal advice or as a
+ * production tax table. Production rules must be maintained from
+ * authoritative country sources and versioned by effective date.
  */
 
-export type PayrollCountry =
+export type PayrollJurisdiction =
   | "NG"
+  | "GH"
+  | "KE"
+  | "ZA"
   | "GB"
   | "US"
   | "CA"
-  | "ZA"
-  | "GH"
-  | "KE"
-  | "AE";
-
-export type DeductionType =
-  | "PAYE"
-  | "PENSION"
-  | "SOCIAL_SECURITY"
-  | "MEDICARE"
-  | "NATIONAL_INSURANCE"
-  | "UIF"
-  | "SSNIT"
-  | "NSSF"
-  | "SHIF"
   | "OTHER";
 
-export interface TaxBand {
-  min: number;
-  max?: number;
-  rate: number;
+export type StatutoryComponentType =
+  | "income_tax"
+  | "payee"
+  | "pension"
+  | "social_security"
+  | "health_insurance"
+  | "employment_insurance"
+  | "other";
+
+export interface StatutoryComponent {
+  id: string;
+  country: PayrollJurisdiction;
+  type: StatutoryComponentType;
+  name: string;
+  authority: string;
+  employeeRate?: number;
+  employerRate?: number;
+  employeeFixedAmount?: number;
+  employerFixedAmount?: number;
+  cap?: number;
+  floor?: number;
+  currency?: string;
+  mandatory: boolean;
+  effectiveFrom: string;
+  effectiveTo?: string;
+  sourceReference?: string;
+  notes?: string;
 }
 
-export interface StatutoryContribution {
+export interface PayrollInput {
+  country: PayrollJurisdiction;
+  grossPay: number;
+  taxablePay?: number;
+  pensionablePay?: number;
+  employeeReliefs?: number;
+}
+
+export interface PayrollLine {
+  componentId: string;
   name: string;
-  type: DeductionType;
-
-  /**
-   * Employee contribution rate.
-   */
-  employeeRate: number;
-
-  /**
-   * Employer contribution rate.
-   */
-  employerRate: number;
-
-  /**
-   * What the percentage is calculated against.
-   */
-  basis:
-    | "gross"
-    | "basic"
-    | "pensionable"
-    | "monthly_emoluments"
-    | "taxable_income";
-
-  /**
-   * Optional statutory cap.
-   */
-  annualCap?: number;
-
-  /**
-   * Whether this deduction is mandatory.
-   */
+  type: StatutoryComponentType;
+  employeeAmount: number;
+  employerAmount: number;
+  authority: string;
   mandatory: boolean;
 }
 
-export interface CountryPayrollRule {
-  country: PayrollCountry;
-  countryName: string;
-  currency: string;
-
-  effectiveFrom: string;
-  effectiveTo?: string;
-
-  taxAuthority: string;
-
-  payeeName: string;
-
-  taxBands: TaxBand[];
-
-  contributions: StatutoryContribution[];
-
-  notes: string[];
-}
-
-/**
- * ---------------------------------------------------------
- * NIGERIA
- * ---------------------------------------------------------
- *
- * Current Nigeria PIT bands:
- *
- * First ₦800,000       0%
- * Next ₦2,200,000     15%
- * Next ₦9,000,000     18%
- * Next ₦13,000,000    21%
- * Next ₦25,000,000    23%
- * Above ₦50,000,000   25%
- *
- * Pension:
- * Employee: 8%
- * Employer: 10%
- *
- * Pension basis:
- * Monthly emoluments.
- */
-
-export const NIGERIA_PAYROLL_RULE: CountryPayrollRule = {
-  country: "NG",
-  countryName: "Nigeria",
-  currency: "NGN",
-
-  effectiveFrom: "2026-01-01",
-
-  taxAuthority: "Nigeria Revenue Service",
-
-  payeeName: "State Internal Revenue Service / Nigeria Revenue Service",
-
-  taxBands: [
-    {
-      min: 0,
-      max: 800_000,
-      rate: 0,
-    },
-    {
-      min: 800_000,
-      max: 3_000_000,
-      rate: 0.15,
-    },
-    {
-      min: 3_000_000,
-      max: 12_000_000,
-      rate: 0.18,
-    },
-    {
-      min: 12_000_000,
-      max: 25_000_000,
-      rate: 0.21,
-    },
-    {
-      min: 25_000_000,
-      max: 50_000_000,
-      rate: 0.23,
-    },
-    {
-      min: 50_000_000,
-      rate: 0.25,
-    },
-  ],
-
-  contributions: [
-    {
-      name: "Employee Pension",
-      type: "PENSION",
-      employeeRate: 0.08,
-      employerRate: 0,
-      basis: "monthly_emoluments",
-      mandatory: true,
-    },
-
-    {
-      name: "Employer Pension",
-      type: "PENSION",
-      employeeRate: 0,
-      employerRate: 0.10,
-      basis: "monthly_emoluments",
-      mandatory: true,
-    },
-  ],
-
-  notes: [
-    "PAYE is calculated using progressive personal income tax bands.",
-    "Consolidated Relief Allowance is no longer used under the current regime.",
-    "Eligible rent relief may apply subject to statutory limits and evidence.",
-    "Pension contributions should be tracked separately from PAYE.",
-    "Employer pension contributions are an employer cost and should not reduce employee net pay.",
-  ],
-};
-
-/**
- * ---------------------------------------------------------
- * COUNTRY REGISTRY
- * ---------------------------------------------------------
- *
- * Additional countries can be added here as their statutory
- * rules are implemented and verified.
- *
- * We deliberately do NOT invent statutory rates for countries
- * whose current rules have not yet been configured.
- */
-
-export const PAYROLL_RULES: Record<
-  PayrollCountry,
-  CountryPayrollRule | null
-> = {
-  NG: NIGERIA_PAYROLL_RULE,
-
-  GB: null,
-  US: null,
-  CA: null,
-  ZA: null,
-  GH: null,
-  KE: null,
-  AE: null,
-};
-
-/**
- * ---------------------------------------------------------
- * PAYROLL INPUT
- * ---------------------------------------------------------
- */
-
-export interface PayrollInput {
-  country: PayrollCountry;
-
-  /**
-   * Monthly gross salary.
-   */
+export interface PayrollCalculation {
+  country: PayrollJurisdiction;
   grossPay: number;
-
-  /**
-   * Monthly basic salary.
-   */
-  basicSalary?: number;
-
-  /**
-   * Housing allowance.
-   */
-  housingAllowance?: number;
-
-  /**
-   * Transport allowance.
-   */
-  transportAllowance?: number;
-
-  /**
-   * Other taxable allowances.
-   */
-  taxableAllowances?: number;
-
-  /**
-   * Employee pensionable emoluments.
-   *
-   * If supplied, this overrides automatic calculation.
-   */
-  pensionableEmoluments?: number;
-
-  /**
-   * Annual rent paid where applicable.
-   */
-  annualRent?: number;
-
-  /**
-   * Employee's voluntary pension contribution.
-   */
-  voluntaryPension?: number;
+  taxablePay: number;
+  employeeDeductions: number;
+  employerContributions: number;
+  netPayBeforeOtherDeductions: number;
+  lines: PayrollLine[];
+  warnings: string[];
 }
 
 /**
- * ---------------------------------------------------------
- * PAYROLL RESULT
- * ---------------------------------------------------------
+ * Country configuration registry.
+ *
+ * Only architecture/configuration is supplied here.
+ * Exact statutory rates must be populated and maintained using
+ * authoritative jurisdiction sources before production payroll.
  */
+export const statutoryComponents: StatutoryComponent[] = [
+  {
+    id: "NG-TAX",
+    country: "NG",
+    type: "income_tax",
+    name: "Personal Income Tax / PAYE",
+    authority: "Relevant Nigerian tax authority",
+    mandatory: true,
+    effectiveFrom: "2026-01-01",
+    notes:
+      "Configure current Nigerian PAYE bands, reliefs and filing rules from authoritative sources.",
+  },
 
-export interface PayrollResult {
-  country: PayrollCountry;
+  {
+    id: "NG-PENSION",
+    country: "NG",
+    type: "pension",
+    name: "Contributory Pension",
+    authority: "National Pension Commission / relevant PFA",
+    employeeRate: 8,
+    employerRate: 10,
+    mandatory: true,
+    effectiveFrom: "2026-01-01",
+    notes:
+      "Rates and pensionable earnings rules must be validated against current Nigerian requirements.",
+  },
 
-  grossPay: number;
+  {
+    id: "NG-HEALTH",
+    country: "NG",
+    type: "health_insurance",
+    name: "Health Insurance",
+    authority: "Relevant Nigerian health insurance authority",
+    mandatory: false,
+    effectiveFrom: "2026-01-01",
+    notes:
+      "Configure applicable employee/employer obligations according to employee jurisdiction and scheme.",
+  },
 
-  taxableAnnualIncome: number;
+  {
+    id: "GH-TAX",
+    country: "GH",
+    type: "income_tax",
+    name: "PAYE",
+    authority: "Ghana Revenue Authority",
+    mandatory: true,
+    effectiveFrom: "2026-01-01",
+  },
 
-  annualPAYE: number;
-  monthlyPAYE: number;
+  {
+    id: "GH-PENSION",
+    country: "GH",
+    type: "pension",
+    name: "Social Security and Pension",
+    authority: "SSNIT / relevant pension authorities",
+    mandatory: true,
+    effectiveFrom: "2026-01-01",
+  },
 
-  employeePension: number;
-  employerPension: number;
+  {
+    id: "KE-TAX",
+    country: "KE",
+    type: "income_tax",
+    name: "PAYE",
+    authority: "Kenya Revenue Authority",
+    mandatory: true,
+    effectiveFrom: "2026-01-01",
+  },
 
-  totalEmployeeDeductions: number;
+  {
+    id: "KE-SOCIAL",
+    country: "KE",
+    type: "social_security",
+    name: "Social Security",
+    authority: "Relevant Kenyan statutory authority",
+    mandatory: true,
+    effectiveFrom: "2026-01-01",
+  },
 
-  netPay: number;
+  {
+    id: "ZA-TAX",
+    country: "ZA",
+    type: "income_tax",
+    name: "PAYE",
+    authority: "South African Revenue Service",
+    mandatory: true,
+    effectiveFrom: "2026-01-01",
+  },
 
-  employerStatutoryCost: number;
+  {
+    id: "GB-TAX",
+    country: "GB",
+    type: "income_tax",
+    name: "PAYE Income Tax",
+    authority: "HM Revenue & Customs",
+    mandatory: true,
+    effectiveFrom: "2026-01-01",
+  },
 
-  /**
-   * Useful for payslips and statutory reports.
-   */
-  deductions: {
-    name: string;
-    type: DeductionType;
-    amount: number;
-  }[];
+  {
+    id: "GB-NI",
+    country: "GB",
+    type: "social_security",
+    name: "National Insurance",
+    authority: "HM Revenue & Customs",
+    mandatory: true,
+    effectiveFrom: "2026-01-01",
+  },
 
-  /**
-   * Amounts that must be remitted to government/statutory bodies.
-   */
-  statutoryPayees: {
-    payee: string;
-    type: DeductionType;
-    amount: number;
-  }[];
+  {
+    id: "US-TAX",
+    country: "US",
+    type: "income_tax",
+    name: "Federal Income Tax",
+    authority: "Internal Revenue Service",
+    mandatory: true,
+    effectiveFrom: "2026-01-01",
+  },
+
+  {
+    id: "US-SOCIAL",
+    country: "US",
+    type: "social_security",
+    name: "Social Security / Medicare",
+    authority: "Internal Revenue Service / Social Security Administration",
+    mandatory: true,
+    effectiveFrom: "2026-01-01",
+  },
+
+  {
+    id: "CA-TAX",
+    country: "CA",
+    type: "income_tax",
+    name: "Federal Income Tax",
+    authority: "Canada Revenue Agency",
+    mandatory: true,
+    effectiveFrom: "2026-01-01",
+  },
+];
+
+export function getCountryComponents(
+  country: PayrollJurisdiction
+): StatutoryComponent[] {
+  return statutoryComponents.filter(
+    (component) => component.country === country
+  );
 }
 
-/**
- * ---------------------------------------------------------
- * UTILITIES
- * ---------------------------------------------------------
- */
-
-function roundMoney(value: number): number {
-  return Math.round((value + Number.EPSILON) * 100) / 100;
+export function getMandatoryComponents(
+  country: PayrollJurisdiction
+): StatutoryComponent[] {
+  return getCountryComponents(country).filter(
+    (component) => component.mandatory
+  );
 }
 
-/**
- * Progressive tax calculator.
- */
-export function calculateProgressiveTax(
-  taxableIncome: number,
-  bands: TaxBand[],
-): number {
-  if (taxableIncome <= 0) return 0;
+export function calculateFlatStatutoryComponents(
+  input: PayrollInput
+): PayrollCalculation {
+  const taxablePay = Math.max(
+    0,
+    input.taxablePay ?? input.grossPay - (input.employeeReliefs || 0)
+  );
 
-  let tax = 0;
+  const lines: PayrollLine[] = [];
+  const warnings: string[] = [];
 
-  for (const band of bands) {
-    const lower = band.min;
+  const components = getMandatoryComponents(input.country);
 
-    if (taxableIncome <= lower) {
-      continue;
+  if (components.length === 0) {
+    warnings.push(
+      `No statutory configuration is currently active for ${input.country}.`
+    );
+  }
+
+  for (const component of components) {
+    let employeeAmount = 0;
+    let employerAmount = 0;
+
+    if (component.employeeRate !== undefined) {
+      employeeAmount =
+        taxablePay * (component.employeeRate / 100);
     }
 
-    const upper = band.max ?? taxableIncome;
-
-    const taxableInBand = Math.min(
-      taxableIncome,
-      upper,
-    ) - lower;
-
-    if (taxableInBand > 0) {
-      tax += taxableInBand * band.rate;
+    if (component.employeeFixedAmount !== undefined) {
+      employeeAmount += component.employeeFixedAmount;
     }
 
-    if (band.max !== undefined && taxableIncome <= band.max) {
-      break;
+    if (component.employerRate !== undefined) {
+      const employerBase =
+        input.pensionablePay ??
+        input.taxablePay ??
+        input.grossPay;
+
+      employerAmount =
+        employerBase * (component.employerRate / 100);
+    }
+
+    if (component.employerFixedAmount !== undefined) {
+      employerAmount += component.employerFixedAmount;
+    }
+
+    if (component.cap !== undefined) {
+      employeeAmount = Math.min(employeeAmount, component.cap);
+      employerAmount = Math.min(employerAmount, component.cap);
+    }
+
+    lines.push({
+      componentId: component.id,
+      name: component.name,
+      type: component.type,
+      employeeAmount,
+      employerAmount,
+      authority: component.authority,
+      mandatory: component.mandatory,
+    });
+
+    if (
+      component.type === "income_tax" ||
+      component.type === "payee"
+    ) {
+      warnings.push(
+        `${component.name} requires the jurisdiction's progressive bands, reliefs and current filing rules before production use.`
+      );
     }
   }
 
-  return roundMoney(tax);
-}
-
-/**
- * ---------------------------------------------------------
- * NIGERIA PAYE
- * ---------------------------------------------------------
- *
- * Calculates annual PAYE and converts it to monthly PAYE.
- *
- * Rent relief:
- * 20% of annual rent, capped at ₦500,000.
- */
-
-function calculateNigeriaPAYE(
-  input: PayrollInput,
-): {
-  annualTax: number;
-  taxableAnnualIncome: number;
-} {
-  const annualGross = input.grossPay * 12;
-
-  const rentRelief = Math.min(
-    Math.max((input.annualRent ?? 0) * 0.20, 0),
-    500_000,
+  const employeeDeductions = lines.reduce(
+    (sum, line) => sum + line.employeeAmount,
+    0
   );
 
-  const pensionable =
-    input.pensionableEmoluments ??
-    (
-      (input.basicSalary ?? 0) +
-      (input.housingAllowance ?? 0) +
-      (input.transportAllowance ?? 0)
-    );
-
-  /**
-   * Employee pension is an allowable deduction
-   * when determining taxable income under the applicable
-   * statutory rules.
-   */
-  const annualEmployeePension =
-    pensionable * 0.08 * 12;
-
-  const annualTaxableIncome = Math.max(
-    annualGross -
-      annualEmployeePension -
-      rentRelief,
-    0,
-  );
-
-  const annualTax = calculateProgressiveTax(
-    annualTaxableIncome,
-    NIGERIA_PAYROLL_RULE.taxBands,
+  const employerContributions = lines.reduce(
+    (sum, line) => sum + line.employerAmount,
+    0
   );
 
   return {
-    annualTax,
-    taxableAnnualIncome: roundMoney(
-      annualTaxableIncome,
-    ),
+    country: input.country,
+    grossPay: input.grossPay,
+    taxablePay,
+    employeeDeductions,
+    employerContributions,
+    netPayBeforeOtherDeductions:
+      input.grossPay - employeeDeductions,
+    lines,
+    warnings,
   };
 }
 
-/**
- * ---------------------------------------------------------
- * MAIN CALCULATOR
- * ---------------------------------------------------------
- */
-
-export function calculatePayroll(
-  input: PayrollInput,
-): PayrollResult {
-  const rule = PAYROLL_RULES[input.country];
-
-  if (!rule) {
-    throw new Error(
-      `Payroll compliance rules for ${input.country} have not yet been configured.`,
-    );
-  }
-
-  if (input.grossPay < 0) {
-    throw new Error("Gross pay cannot be negative.");
-  }
-
-  /**
-   * Nigeria implementation.
-   *
-   * Other countries will use their own calculation
-   * engines as they are activated.
-   */
-  if (input.country === "NG") {
-    const pensionableEmoluments =
-      input.pensionableEmoluments ??
-      (
-        (input.basicSalary ?? 0) +
-        (input.housingAllowance ?? 0) +
-        (input.transportAllowance ?? 0)
-      );
-
-    const employeePension =
-      pensionableEmoluments * 0.08;
-
-    const employerPension =
-      pensionableEmoluments * 0.10;
-
-    const paye = calculateNigeriaPAYE(input);
-
-    const voluntaryPension =
-      Math.max(input.voluntaryPension ?? 0, 0);
-
-    const totalEmployeeDeductions =
-      paye.annualTax / 12 +
-      employeePension +
-      voluntaryPension;
-
-    const netPay =
-      input.grossPay -
-      totalEmployeeDeductions;
-
-    return {
-      country: "NG",
-
-      grossPay: roundMoney(input.grossPay),
-
-      taxableAnnualIncome:
-        paye.taxableAnnualIncome,
-
-      annualPAYE:
-        roundMoney(paye.annualTax),
-
-      monthlyPAYE:
-        roundMoney(paye.annualTax / 12),
-
-      employeePension:
-        roundMoney(employeePension),
-
-      employerPension:
-        roundMoney(employerPension),
-
-      totalEmployeeDeductions:
-        roundMoney(totalEmployeeDeductions),
-
-      netPay:
-        roundMoney(netPay),
-
-      employerStatutoryCost:
-        roundMoney(employerPension),
-
-      deductions: [
-        {
-          name: "PAYE",
-          type: "PAYE",
-          amount: roundMoney(
-            paye.annualTax / 12,
-          ),
-        },
-
-        {
-          name: "Employee Pension",
-          type: "PENSION",
-          amount: roundMoney(
-            employeePension,
-          ),
-        },
-
-        ...(voluntaryPension > 0
-          ? [
-              {
-                name: "Voluntary Pension",
-                type: "PENSION" as DeductionType,
-                amount: roundMoney(
-                  voluntaryPension,
-                ),
-              },
-            ]
-          : []),
-      ],
-
-      statutoryPayees: [
-        {
-          payee: rule.payeeName,
-          type: "PAYE",
-          amount: roundMoney(
-            paye.annualTax / 12,
-          ),
-        },
-
-        {
-          payee: "Pension Fund Custodian / PFA",
-          type: "PENSION",
-          amount: roundMoney(
-            employeePension +
-              employerPension,
-          ),
-        },
-      ],
-    };
-  }
-
-  throw new Error(
-    `Calculation engine for ${input.country} is not active yet.`,
-  );
-}
-
-/**
- * ---------------------------------------------------------
- * PAYROLL COMPLIANCE SUMMARY
- * ---------------------------------------------------------
- */
-
-export function getPayrollCompliance(
-  country: PayrollCountry,
+export function validatePayrollConfiguration(
+  country: PayrollJurisdiction
 ) {
-  const rule = PAYROLL_RULES[country];
-
-  if (!rule) {
-    return {
-      configured: false,
-      country,
-      message:
-        "Country payroll rules have not yet been configured.",
-    };
-  }
+  const components = getCountryComponents(country);
 
   return {
-    configured: true,
-    country: rule.country,
-    countryName: rule.countryName,
-    currency: rule.currency,
-    effectiveFrom: rule.effectiveFrom,
-    taxAuthority: rule.taxAuthority,
-    contributions: rule.contributions,
-    notes: rule.notes,
+    country,
+    configured: components.length > 0,
+    componentCount: components.length,
+    mandatoryCount: components.filter((item) => item.mandatory).length,
+    needsProductionValidation: components.some(
+      (item) =>
+        !item.employeeRate &&
+        !item.employerRate &&
+        !item.employeeFixedAmount &&
+        !item.employerFixedAmount
+    ),
   };
 }

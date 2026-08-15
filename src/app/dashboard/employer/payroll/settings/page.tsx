@@ -4,217 +4,172 @@ import Link from "next/link";
 import {
   ArrowLeft,
   CheckCircle2,
-  ChevronDown,
   Globe2,
   Landmark,
   ShieldCheck,
+  WalletCards,
 } from "lucide-react";
 
-const countries = [
-  {
-    code: "NG",
-    name: "Nigeria",
-    currency: "NGN",
-    status: "Active",
-  },
-  {
-    code: "GB",
-    name: "United Kingdom",
-    currency: "GBP",
-    status: "Coming soon",
-  },
-  {
-    code: "US",
-    name: "United States",
-    currency: "USD",
-    status: "Coming soon",
-  },
-  {
-    code: "CA",
-    name: "Canada",
-    currency: "CAD",
-    status: "Coming soon",
-  },
-  {
-    code: "ZA",
-    name: "South Africa",
-    currency: "ZAR",
-    status: "Coming soon",
-  },
-  {
-    code: "GH",
-    name: "Ghana",
-    currency: "GHS",
-    status: "Coming soon",
-  },
-  {
-    code: "KE",
-    name: "Kenya",
-    currency: "KES",
-    status: "Coming soon",
-  },
-  {
-    code: "AE",
-    name: "United Arab Emirates",
-    currency: "AED",
-    status: "Coming soon",
-  },
+import {
+  getCountryComponents,
+  validatePayrollConfiguration,
+  type PayrollJurisdiction,
+} from "@/lib/payroll-compliance";
+
+const countries: Array<{
+  code: PayrollJurisdiction;
+  name: string;
+  currency: string;
+}> = [
+  { code: "NG", name: "Nigeria", currency: "NGN" },
+  { code: "GH", name: "Ghana", currency: "GHS" },
+  { code: "KE", name: "Kenya", currency: "KES" },
+  { code: "ZA", name: "South Africa", currency: "ZAR" },
+  { code: "GB", name: "United Kingdom", currency: "GBP" },
+  { code: "US", name: "United States", currency: "USD" },
+  { code: "CA", name: "Canada", currency: "CAD" },
 ];
 
 export default function PayrollSettingsPage() {
   return (
-    <div className="min-h-screen bg-slate-50">
+    <main className="min-h-screen bg-slate-50 text-slate-900">
       <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex h-16 max-w-[1200px] items-center gap-3 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[1500px] px-6 py-5">
           <Link
             href="/dashboard/employer/payroll"
-            className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500"
           >
             <ArrowLeft className="h-4 w-4" />
+            Payroll
           </Link>
 
-          <div>
-            <h1 className="text-sm font-bold text-slate-950">
-              Payroll settings
-            </h1>
+          <div className="mt-4 flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-950 text-white">
+              <ShieldCheck className="h-5 w-5" />
+            </div>
 
-            <p className="text-[10px] text-slate-400">
-              Country & statutory configuration
-            </p>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">
+                Aerotech Payroll
+              </p>
+              <h1 className="text-2xl font-bold">
+                Global payroll & statutory settings
+              </h1>
+            </div>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-[1200px] px-4 py-8 sm:px-6 lg:px-8">
-        <div>
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-            Compliance configuration
-          </span>
-
-          <h2 className="mt-2 text-3xl font-bold tracking-tight">
-            Payroll rules
-          </h2>
-
-          <p className="mt-2 max-w-2xl text-sm text-slate-500">
-            Aerotech uses country-specific statutory rules for tax,
-            pension and other payroll obligations. Rules are designed to
-            be versioned by effective date.
-          </p>
-        </div>
-
-        <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-slate-100 p-3">
-              <Globe2 className="h-5 w-5 text-slate-700" />
-            </div>
+      <section className="mx-auto max-w-[1500px] px-6 py-7">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="flex items-start gap-4">
+            <Globe2 className="mt-1 h-6 w-6 text-slate-500" />
 
             <div>
-              <h3 className="font-bold">
-                Payroll country
-              </h3>
-
-              <p className="text-xs text-slate-500">
-                Select the jurisdiction governing this payroll.
+              <h2 className="font-bold">Country-aware payroll</h2>
+              <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-500">
+                Aerotech is designed to support payroll across multiple
+                jurisdictions. Tax, payee/PAYE, pension, social-security,
+                health-insurance and employer contribution rules are configured
+                by country and effective date instead of being embedded inside
+                the employee record.
               </p>
             </div>
           </div>
+        </div>
 
-          <button className="mt-5 flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold">
-            <span className="flex items-center gap-3">
-              🇳🇬 Nigeria
-              <span className="text-xs font-normal text-slate-400">
-                NGN
-              </span>
-            </span>
+        <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+          {countries.map((country) => {
+            const config = validatePayrollConfiguration(country.code);
+            const components = getCountryComponents(country.code);
 
-            <ChevronDown className="h-4 w-4 text-slate-400" />
-          </button>
-        </section>
-
-        <section className="mt-6 rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-100 p-5">
-            <h3 className="font-bold">
-              Supported jurisdictions
-            </h3>
-
-            <p className="mt-1 text-xs text-slate-500">
-              Aerotech's payroll engine is designed for multi-country
-              workforce management.
-            </p>
-          </div>
-
-          <div className="divide-y divide-slate-100">
-            {countries.map((country) => (
+            return (
               <div
                 key={country.code}
-                className="flex items-center justify-between p-5"
+                className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
               >
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-xs font-bold text-slate-600">
-                    {country.code}
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
+                      {country.code}
+                    </p>
+                    <h3 className="mt-1 text-lg font-bold">
+                      {country.name}
+                    </h3>
                   </div>
 
-                  <div>
-                    <p className="text-sm font-semibold">
-                      {country.name}
-                    </p>
-
-                    <p className="text-[10px] text-slate-400">
-                      Currency: {country.currency}
-                    </p>
+                  <div className="rounded-xl bg-slate-50 px-3 py-2 text-xs font-bold">
+                    {country.currency}
                   </div>
                 </div>
 
-                {country.status === "Active" ? (
-                  <span className="flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1.5 text-[10px] font-bold text-emerald-700">
-                    <CheckCircle2 className="h-3 w-3" />
-                    Active
-                  </span>
-                ) : (
-                  <span className="rounded-full bg-slate-100 px-3 py-1.5 text-[10px] font-semibold text-slate-500">
-                    Coming soon
-                  </span>
-                )}
+                <div className="mt-5 space-y-3">
+                  <SettingRow
+                    icon={<Landmark className="h-4 w-4" />}
+                    label="Statutory components"
+                    value={String(config.componentCount)}
+                  />
+
+                  <SettingRow
+                    icon={<WalletCards className="h-4 w-4" />}
+                    label="Mandatory components"
+                    value={String(config.mandatoryCount)}
+                  />
+
+                  <SettingRow
+                    icon={<ShieldCheck className="h-4 w-4" />}
+                    label="Configuration"
+                    value={config.configured ? "Configured" : "Pending"}
+                  />
+                </div>
+
+                <div className="mt-5 border-t border-slate-100 pt-4">
+                  <p className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">
+                    Components
+                  </p>
+
+                  <div className="flex flex-wrap gap-2">
+                    {components.map((component) => (
+                      <span
+                        key={component.id}
+                        className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-600"
+                      >
+                        {component.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-5 flex items-center gap-2 text-xs font-semibold text-amber-700">
+                  <CheckCircle2 className="h-4 w-4" />
+                  Validate current statutory rates before production payroll
+                </div>
               </div>
-            ))}
-          </div>
-        </section>
+            );
+          })}
+        </div>
+      </section>
+    </main>
+  );
+}
 
-        <section className="mt-6 grid gap-4 sm:grid-cols-2">
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <Landmark className="h-5 w-5 text-slate-500" />
+function SettingRow({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2.5">
+      <div className="flex items-center gap-2 text-slate-500">
+        {icon}
+        <span className="text-xs font-medium">{label}</span>
+      </div>
 
-            <h3 className="mt-4 font-bold">
-              Tax authority
-            </h3>
-
-            <p className="mt-1 text-xs text-slate-500">
-              Statutory tax calculations and remittance tracking.
-            </p>
-
-            <p className="mt-4 text-sm font-semibold">
-              Nigeria Revenue Service
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <ShieldCheck className="h-5 w-5 text-slate-500" />
-
-            <h3 className="mt-4 font-bold">
-              Pension
-            </h3>
-
-            <p className="mt-1 text-xs text-slate-500">
-              Employee and employer pension contributions are tracked
-              separately.
-            </p>
-
-            <p className="mt-4 text-sm font-semibold">
-              Pension Fund Custodian / PFA
-            </p>
-          </div>
-        </section>
-      </main>
+      <span className="text-xs font-bold text-slate-800">{value}</span>
     </div>
   );
 }
