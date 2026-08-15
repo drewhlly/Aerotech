@@ -1,49 +1,74 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f7f8fa;
-  --foreground: #111827;
-  --muted: #6b7280;
-  --border: #e5e7eb;
-  --card: #ffffff;
-  --primary: #111827;
-  --primary-soft: #f3f4f6;
+  --aero-cyan: #00d4ff;
+  --aero-blue: #6366f1;
+  --aero-purple: #9d4edd;
+  --aero-navy: #07111f;
+  --aero-white: #f8fafc;
 }
 
 * {
   box-sizing: border-box;
 }
 
-html,
-body {
-  margin: 0;
-  padding: 0;
-  min-height: 100%;
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  background: #f6f8fc;
+  color: #0f172a;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
 }
 
 button,
-input {
+a,
+input,
+select,
+textarea {
   font: inherit;
 }
 
-.input {
-  width: 100%;
-  border-radius: 0.75rem;
-  border: 1px solid rgb(226 232 240);
-  background: white;
-  padding: 0.75rem 0.875rem;
-  font-size: 0.875rem;
-  color: rgb(15 23 42);
-  outline: none;
+::selection {
+  background: rgba(99, 102, 241, 0.2);
 }
 
-.input:focus {
-  border-color: rgb(59 130 246);
-  box-shadow: 0 0 0 3px rgb(59 130 246 / 0.1);
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #cbd5e1;
+}
+
+.aerotech-gradient {
+  background:
+    linear-gradient(
+      135deg,
+      var(--aero-cyan) 0%,
+      var(--aero-blue) 50%,
+      var(--aero-purple) 100%
+    );
+}
+
+.aerotech-gradient-text {
+  background: linear-gradient(
+    135deg,
+    var(--aero-cyan),
+    var(--aero-blue),
+    var(--aero-purple)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }

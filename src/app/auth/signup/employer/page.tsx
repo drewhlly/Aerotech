@@ -1,183 +1,173 @@
 "use client";
 
-import { FormEvent, useState } from "react";
-import { Building2, ArrowLeft, ArrowRight } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ArrowLeft, ArrowRight, Building2, Globe2, UserRound } from "lucide-react";
+import { Logo } from "@/components/aerotech-ui";
 
 export default function EmployerSignupPage() {
   const router = useRouter();
 
-  const [form, setForm] = useState({
-    companyName: "",
-    fullName: "",
-    email: "",
-    phone: "",
-    password: "",
-    confirmPassword: "",
-  });
-
-  const [error, setError] = useState("");
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setError("");
-
-    if (form.password !== form.confirmPassword) {
-      setError("Passwords do not match.");
-      return;
-    }
-
-    if (form.password.length < 8) {
-      setError("Password must be at least 8 characters.");
-      return;
-    }
-
-    router.push("/onboarding/employer");
-  }
-
-  function updateField(field: keyof typeof form, value: string) {
-    setForm((current) => ({
-      ...current,
-      [field]: value,
-    }));
-  }
-
   return (
-    <main className="min-h-screen bg-slate-50 px-6 py-10">
-      <div className="mx-auto max-w-2xl">
-        <button
-          onClick={() => router.push("/auth/signup")}
-          className="mb-8 flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-900"
-        >
-          <ArrowLeft size={18} />
-          Back
-        </button>
+    <main className="min-h-screen bg-slate-50">
+      <div className="border-b border-slate-200 bg-[#07111f]">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 lg:px-8">
+          <Link href="/">
+            <Logo light />
+          </Link>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm md:p-10">
-          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-slate-900 text-white">
-            <Building2 size={28} />
+          <Link
+            href="/auth/login"
+            className="text-xs font-semibold text-slate-300 hover:text-white"
+          >
+            Already have an account? Sign in
+          </Link>
+        </div>
+      </div>
+
+      <div className="mx-auto max-w-6xl px-5 py-12 lg:px-8">
+        <div className="grid gap-10 lg:grid-cols-[.8fr_1.2fr]">
+          <div className="rounded-3xl bg-[#07111f] p-8 text-white lg:p-10">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#00D4FF] via-[#6366F1] to-[#9D4EDD]">
+              <Building2 className="h-6 w-6" />
+            </div>
+
+            <h1 className="mt-7 text-3xl font-black">
+              Build your workforce command center.
+            </h1>
+
+            <p className="mt-4 text-sm leading-7 text-slate-400">
+              Set up your company once and connect recruitment, employees,
+              attendance, training, performance and payroll.
+            </p>
+
+            <div className="mt-8 space-y-4">
+              {[
+                "Company workforce management",
+                "Country-aware payroll configuration",
+                "Employer payroll wallet",
+                "AI workforce intelligence",
+                "Employee 360°",
+              ].map((item) => (
+                <div key={item} className="flex items-center gap-3 text-sm">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-400/10">
+                    <span className="text-emerald-400">✓</span>
+                  </div>
+                  {item}
+                </div>
+              ))}
+            </div>
           </div>
 
-          <h1 className="mt-6 text-3xl font-bold text-slate-900">
-            Create your employer account
-          </h1>
-
-          <p className="mt-2 text-slate-600">
-            Set up your Aerotech employer account to start managing your
-            organization and workforce.
-          </p>
-
-          <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
             <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700">
-                Company name
-              </label>
-              <input
-                required
-                value={form.companyName}
-                onChange={(e) => updateField("companyName", e.target.value)}
-                placeholder="Enter your company name"
-                className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-900"
-              />
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-indigo-600">
+                Employer setup
+              </p>
+              <h2 className="mt-2 text-2xl font-black">Create your account</h2>
+              <p className="mt-2 text-sm text-slate-500">
+                This information starts your employer workspace.
+              </p>
             </div>
 
-            <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700">
-                Your full name
-              </label>
-              <input
-                required
-                value={form.fullName}
-                onChange={(e) => updateField("fullName", e.target.value)}
-                placeholder="Enter your full name"
-                className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-900"
-              />
-            </div>
-
-            <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700">
-                Work email
-              </label>
-              <input
-                required
-                type="email"
-                value={form.email}
-                onChange={(e) => updateField("email", e.target.value)}
-                placeholder="you@company.com"
-                className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-900"
-              />
-            </div>
-
-            <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700">
-                Phone number
-              </label>
-              <input
-                required
-                type="tel"
-                value={form.phone}
-                onChange={(e) => updateField("phone", e.target.value)}
-                placeholder="+234 800 000 0000"
-                className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-900"
-              />
-            </div>
-
-            <div className="grid gap-5 md:grid-cols-2">
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  Password
-                </label>
+            <div className="mt-8 grid gap-5 sm:grid-cols-2">
+              <label className="block sm:col-span-2">
+                <span className="mb-2 block text-xs font-semibold text-slate-700">
+                  Company name
+                </span>
                 <input
-                  required
-                  type="password"
-                  value={form.password}
-                  onChange={(e) => updateField("password", e.target.value)}
-                  placeholder="Minimum 8 characters"
-                  className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-900"
+                  placeholder="Your company name"
+                  className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none focus:border-indigo-400"
                 />
-              </div>
+              </label>
 
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  Confirm password
-                </label>
+              <label className="block">
+                <span className="mb-2 block text-xs font-semibold text-slate-700">
+                  First name
+                </span>
+                <div className="flex items-center rounded-xl border border-slate-200 bg-slate-50 px-3">
+                  <UserRound className="h-4 w-4 text-slate-400" />
+                  <input
+                    placeholder="First name"
+                    className="h-12 w-full bg-transparent px-2 text-sm outline-none"
+                  />
+                </div>
+              </label>
+
+              <label className="block">
+                <span className="mb-2 block text-xs font-semibold text-slate-700">
+                  Last name
+                </span>
                 <input
-                  required
-                  type="password"
-                  value={form.confirmPassword}
-                  onChange={(e) =>
-                    updateField("confirmPassword", e.target.value)
-                  }
-                  placeholder="Repeat password"
-                  className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-900"
+                  placeholder="Last name"
+                  className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none focus:border-indigo-400"
                 />
-              </div>
-            </div>
+              </label>
 
-            {error && (
-              <div className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
-                {error}
-              </div>
-            )}
+              <label className="block sm:col-span-2">
+                <span className="mb-2 block text-xs font-semibold text-slate-700">
+                  Work email
+                </span>
+                <input
+                  type="email"
+                  placeholder="admin@company.com"
+                  className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none focus:border-indigo-400"
+                />
+              </label>
+
+              <label className="block">
+                <span className="mb-2 block text-xs font-semibold text-slate-700">
+                  Country
+                </span>
+                <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3">
+                  <Globe2 className="h-4 w-4 text-slate-400" />
+                  <select className="h-12 w-full bg-transparent text-sm outline-none">
+                    <option>Nigeria</option>
+                    <option>Ghana</option>
+                    <option>Kenya</option>
+                    <option>South Africa</option>
+                    <option>United Kingdom</option>
+                    <option>United States</option>
+                  </select>
+                </div>
+              </label>
+
+              <label className="block">
+                <span className="mb-2 block text-xs font-semibold text-slate-700">
+                  Company size
+                </span>
+                <select className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none">
+                  <option>1 - 10</option>
+                  <option>11 - 50</option>
+                  <option>51 - 250</option>
+                  <option>251 - 1,000</option>
+                  <option>1,000+</option>
+                </select>
+              </label>
+            </div>
 
             <button
-              type="submit"
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 py-3.5 font-semibold text-white transition hover:bg-slate-800"
+              onClick={() => router.push("/onboarding/employer")}
+              className="mt-8 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#6366F1] to-[#9D4EDD] text-sm font-bold text-white shadow-lg"
             >
-              Continue
-              <ArrowRight size={18} />
+              Continue company setup
+              <ArrowRight className="h-4 w-4" />
             </button>
-          </form>
 
-          <p className="mt-6 text-center text-sm text-slate-500">
-            Already have an Aerotech account?{" "}
-            <button
-              onClick={() => router.push("/auth/login")}
-              className="font-semibold text-slate-900 hover:underline"
+            <p className="mt-4 text-center text-[11px] leading-5 text-slate-400">
+              By continuing, you agree to the Aerotech platform terms and
+              acknowledge that production payroll requires verified company and
+              payment information.
+            </p>
+
+            <Link
+              href="/"
+              className="mt-6 flex items-center justify-center gap-2 text-xs font-semibold text-slate-500"
             >
-              Sign in
-            </button>
-          </p>
+              <ArrowLeft className="h-3.5 w-3.5" />
+              Back to website
+            </Link>
+          </div>
         </div>
       </div>
     </main>

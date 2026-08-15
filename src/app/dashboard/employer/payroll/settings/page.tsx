@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -7,169 +5,147 @@ import {
   Globe2,
   Landmark,
   ShieldCheck,
-  WalletCards,
+  Wallet,
 } from "lucide-react";
-
 import {
-  getCountryComponents,
-  validatePayrollConfiguration,
-  type PayrollJurisdiction,
-} from "@/lib/payroll-compliance";
-
-const countries: Array<{
-  code: PayrollJurisdiction;
-  name: string;
-  currency: string;
-}> = [
-  { code: "NG", name: "Nigeria", currency: "NGN" },
-  { code: "GH", name: "Ghana", currency: "GHS" },
-  { code: "KE", name: "Kenya", currency: "KES" },
-  { code: "ZA", name: "South Africa", currency: "ZAR" },
-  { code: "GB", name: "United Kingdom", currency: "GBP" },
-  { code: "US", name: "United States", currency: "USD" },
-  { code: "CA", name: "Canada", currency: "CAD" },
-];
+  AIAssistant,
+  DashboardShell,
+  PageHeader,
+} from "@/components/aerotech-ui";
+import { employerOSData, paymentConfig } from "@/lib/aerotech";
 
 export default function PayrollSettingsPage() {
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto max-w-[1500px] px-6 py-5">
-          <Link
-            href="/dashboard/employer/payroll"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Payroll
-          </Link>
+    <>
+      <DashboardShell title="Payroll Settings">
+        <PageHeader
+          eyebrow="PAYROLL CONFIGURATION"
+          title="Payroll Settings"
+          description="Configure country, payroll, statutory deductions, pension and wallet controls."
+          action={
+            <Link
+              href="/dashboard/employer/payroll"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </Link>
+          }
+        />
 
-          <div className="mt-4 flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-950 text-white">
-              <ShieldCheck className="h-5 w-5" />
-            </div>
-
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">
-                Aerotech Payroll
-              </p>
-              <h1 className="text-2xl font-bold">
-                Global payroll & statutory settings
-              </h1>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <section className="mx-auto max-w-[1500px] px-6 py-7">
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex items-start gap-4">
-            <Globe2 className="mt-1 h-6 w-6 text-slate-500" />
-
-            <div>
-              <h2 className="font-bold">Country-aware payroll</h2>
-              <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-500">
-                Aerotech is designed to support payroll across multiple
-                jurisdictions. Tax, payee/PAYE, pension, social-security,
-                health-insurance and employer contribution rules are configured
-                by country and effective date instead of being embedded inside
-                the employee record.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {countries.map((country) => {
-            const config = validatePayrollConfiguration(country.code);
-            const components = getCountryComponents(country.code);
-
-            return (
-              <div
-                key={country.code}
-                className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
-              >
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
-                      {country.code}
-                    </p>
-                    <h3 className="mt-1 text-lg font-bold">
-                      {country.name}
-                    </h3>
-                  </div>
-
-                  <div className="rounded-xl bg-slate-50 px-3 py-2 text-xs font-bold">
-                    {country.currency}
-                  </div>
-                </div>
-
-                <div className="mt-5 space-y-3">
-                  <SettingRow
-                    icon={<Landmark className="h-4 w-4" />}
-                    label="Statutory components"
-                    value={String(config.componentCount)}
-                  />
-
-                  <SettingRow
-                    icon={<WalletCards className="h-4 w-4" />}
-                    label="Mandatory components"
-                    value={String(config.mandatoryCount)}
-                  />
-
-                  <SettingRow
-                    icon={<ShieldCheck className="h-4 w-4" />}
-                    label="Configuration"
-                    value={config.configured ? "Configured" : "Pending"}
-                  />
-                </div>
-
-                <div className="mt-5 border-t border-slate-100 pt-4">
-                  <p className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">
-                    Components
-                  </p>
-
-                  <div className="flex flex-wrap gap-2">
-                    {components.map((component) => (
-                      <span
-                        key={component.id}
-                        className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-600"
-                      >
-                        {component.name}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="mt-5 flex items-center gap-2 text-xs font-semibold text-amber-700">
-                  <CheckCircle2 className="h-4 w-4" />
-                  Validate current statutory rates before production payroll
-                </div>
+        <div className="grid gap-6 lg:grid-cols-2">
+          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex items-center gap-3">
+              <Globe2 className="h-5 w-5 text-indigo-600" />
+              <div>
+                <h2 className="text-sm font-bold">Country configuration</h2>
+                <p className="text-[10px] text-slate-500">
+                  Payroll rules are selected by country.
+                </p>
               </div>
-            );
-          })}
+            </div>
+
+            <div className="mt-5 space-y-4">
+              <Field label="Country" value={employerOSData.company.country} />
+              <Field label="Currency" value="NGN — Nigerian Naira" />
+              <Field label="Payroll frequency" value="Monthly" />
+              <Field label="Tax framework" value="Nigeria payroll configuration" />
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex items-center gap-3">
+              <ShieldCheck className="h-5 w-5 text-emerald-600" />
+              <div>
+                <h2 className="text-sm font-bold">Statutory deductions</h2>
+                <p className="text-[10px] text-slate-500">
+                  Employee and employer obligations.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 space-y-3">
+              {employerOSData.compliance.items.map((item) => (
+                <div
+                  key={item.name}
+                  className="flex items-center justify-between rounded-xl bg-slate-50 p-4"
+                >
+                  <div>
+                    <p className="text-xs font-bold">{item.name}</p>
+                    <p className="mt-1 text-[10px] text-slate-500">
+                      {item.category}
+                    </p>
+                  </div>
+                  <span className="flex items-center gap-1 text-[9px] font-bold text-emerald-600">
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    {item.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex items-center gap-3">
+              <Landmark className="h-5 w-5 text-indigo-600" />
+              <div>
+                <h2 className="text-sm font-bold">Pension</h2>
+                <p className="text-[10px] text-slate-500">
+                  Pension contribution configuration.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 rounded-xl bg-indigo-50 p-5">
+              <p className="text-xs font-bold text-indigo-900">
+                Pension tracking enabled
+              </p>
+              <p className="mt-2 text-[11px] leading-5 text-indigo-700">
+                Aerotech payroll separates employee pension deductions from
+                employer pension contributions so each component can be reported
+                and audited independently.
+              </p>
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex items-center gap-3">
+              <Wallet className="h-5 w-5 text-indigo-600" />
+              <div>
+                <h2 className="text-sm font-bold">Payment configuration</h2>
+                <p className="text-[10px] text-slate-500">
+                  Provider abstraction for production integration.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 space-y-4">
+              <Field label="Mode" value={paymentConfig.mode} />
+              <Field label="Provider" value={paymentConfig.provider} />
+              <Field label="Currency" value={paymentConfig.currency} />
+              <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-[10px] leading-5 text-amber-800">
+                Production API keys, webhook verification and bank payout
+                credentials must be added server-side.
+              </div>
+            </div>
+          </section>
         </div>
-      </section>
-    </main>
+      </DashboardShell>
+
+      <AIAssistant />
+    </>
   );
 }
 
-function SettingRow({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) {
+function Field({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2.5">
-      <div className="flex items-center gap-2 text-slate-500">
-        {icon}
-        <span className="text-xs font-medium">{label}</span>
+    <div>
+      <p className="mb-2 text-[10px] font-bold uppercase tracking-wide text-slate-400">
+        {label}
+      </p>
+      <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-semibold text-slate-700">
+        {value}
       </div>
-
-      <span className="text-xs font-bold text-slate-800">{value}</span>
     </div>
   );
 }

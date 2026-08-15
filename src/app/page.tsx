@@ -1,340 +1,361 @@
-"use client";
+import Link from "next/link";
+import {
+  ArrowRight,
+  Bot,
+  CheckCircle2,
+  CircleDollarSign,
+  Clock3,
+  GraduationCap,
+  ShieldCheck,
+  Sparkles,
+  Users,
+  Wallet,
+} from "lucide-react";
+import { Logo, PublicNav } from "@/components/aerotech-ui";
 
-import { useState } from "react";
-
-const navigation = [
-  { label: "Command Center", icon: "⌂" },
-  { label: "People", icon: "♙" },
-  { label: "Recruitment", icon: "◎" },
-  { label: "Performance", icon: "↗" },
-  { label: "Operations", icon: "⚙" },
-  { label: "Analytics", icon: "▥" },
-  { label: "Automations", icon: "✦" },
-  { label: "Reports", icon: "▤" },
-];
-
-const alerts = [
-  {
-    level: "Critical",
-    title: "2 operational issues require attention",
-    description: "Both issues have remained unresolved beyond their expected resolution time.",
-    time: "12 min ago",
-  },
-  {
-    level: "Warning",
-    title: "Recruitment bottleneck detected",
-    description: "3 open positions have had no candidate movement for more than 7 days.",
-    time: "1 hr ago",
-  },
-  {
-    level: "Trend",
-    title: "Workforce cost is trending upward",
-    description: "Estimated workforce cost increased 8.4% compared with the previous month.",
-    time: "Today",
-  },
-];
-
-const activities = [
-  ["New candidate entered pipeline", "Senior Software Engineer", "8 min ago"],
-  ["Performance review completed", "Operations Department", "34 min ago"],
-  ["Leave request submitted", "Product & Technology", "1 hr ago"],
-  ["Maintenance task escalated", "Operations", "2 hrs ago"],
-];
-
-export default function Home() {
-  const [active, setActive] = useState("Command Center");
-
+export default function HomePage() {
   return (
-    <main className="min-h-screen bg-[#f6f7f9] text-[#111827]">
-      <div className="flex min-h-screen">
-        {/* Sidebar */}
-        <aside className="hidden w-[250px] shrink-0 border-r border-[#e5e7eb] bg-white lg:flex lg:flex-col">
-          <div className="flex h-20 items-center border-b border-[#eef0f2] px-7">
-            <div>
-              <div className="text-xl font-bold tracking-[-0.04em]">AEROTECH</div>
-              <div className="mt-0.5 text-[10px] font-medium uppercase tracking-[0.22em] text-gray-400">
-                Intelligent company OS
-              </div>
-            </div>
-          </div>
+    <main className="min-h-screen bg-[#07111f] text-white">
+      <PublicNav />
 
-          <div className="px-4 py-6">
-            <div className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">
-              Workspace
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(0,212,255,.18),transparent_30%),radial-gradient(circle_at_80%_30%,rgba(157,78,221,.18),transparent_30%)]" />
+
+        <div className="relative mx-auto grid max-w-7xl gap-14 px-5 pb-24 pt-20 lg:grid-cols-[1.1fr_.9fr] lg:px-8 lg:pb-32 lg:pt-28">
+          <div className="flex flex-col justify-center">
+            <div className="mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/5 px-3 py-2 text-xs font-semibold text-cyan-300">
+              <Sparkles className="h-3.5 w-3.5" />
+              Intelligent Workforce Operating System
             </div>
 
-            <nav className="space-y-1">
-              {navigation.map((item) => (
-                <button
-                  key={item.label}
-                  onClick={() => setActive(item.label)}
-                  className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition ${
-                    active === item.label
-                      ? "bg-[#111827] text-white"
-                      : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-                  }`}
-                >
-                  <span className="flex h-7 w-7 items-center justify-center rounded-lg text-sm">
-                    {item.icon}
-                  </span>
-                  {item.label}
-                </button>
-              ))}
-            </nav>
-          </div>
+            <h1 className="max-w-4xl text-5xl font-black tracking-tight sm:text-6xl lg:text-7xl">
+              Your entire workforce.
+              <span className="block bg-gradient-to-r from-[#00D4FF] via-[#6366F1] to-[#9D4EDD] bg-clip-text text-transparent">
+                One intelligent platform.
+              </span>
+            </h1>
 
-          <div className="mt-auto border-t border-[#eef0f2] p-4">
-            <button className="flex w-full items-center gap-3 rounded-xl p-3 text-left hover:bg-gray-50">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-900 text-xs font-semibold text-white">
-                AC
-              </div>
-              <div className="min-w-0">
-                <div className="truncate text-sm font-semibold">Admin Console</div>
-                <div className="truncate text-xs text-gray-400">Aerotech Workspace</div>
-              </div>
-              <span className="ml-auto text-gray-400">•••</span>
-            </button>
-          </div>
-        </aside>
+            <p className="mt-7 max-w-2xl text-base leading-8 text-slate-400 sm:text-lg">
+              Aerotech brings recruitment, onboarding, employees, attendance,
+              training, performance, payroll, compliance and workforce AI into
+              one connected employer experience.
+            </p>
 
-        {/* Main */}
-        <section className="min-w-0 flex-1">
-          {/* Header */}
-          <header className="flex h-20 items-center justify-between border-b border-[#e5e7eb] bg-white px-5 sm:px-8">
-            <div>
-              <div className="text-sm text-gray-400">Friday, August 14, 2026</div>
-              <h1 className="text-xl font-semibold tracking-[-0.02em]">
-                Good afternoon, Alex.
-              </h1>
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+              <Link
+                href="/auth/signup/employer"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#00D4FF] via-[#6366F1] to-[#9D4EDD] px-6 py-3.5 text-sm font-bold shadow-2xl shadow-indigo-500/20"
+              >
+                Start as an employer
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+
+              <Link
+                href="/auth/login"
+                className="inline-flex items-center justify-center rounded-xl border border-white/15 px-6 py-3.5 text-sm font-bold text-white hover:bg-white/5"
+              >
+                Sign in
+              </Link>
             </div>
 
-            <div className="flex items-center gap-2">
-              <button className="hidden rounded-xl border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 sm:block">
-                Search
-              </button>
-              <button className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50">
-                +
-              </button>
-              <button className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50">
-                ◔
-              </button>
-            </div>
-          </header>
-
-          <div className="mx-auto max-w-[1500px] p-5 sm:p-8">
-            {/* Hero */}
-            <div className="mb-7 rounded-2xl bg-[#111827] p-6 text-white shadow-sm sm:p-8">
-              <div className="flex flex-col justify-between gap-8 lg:flex-row lg:items-end">
-                <div className="max-w-2xl">
-                  <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-medium text-gray-200">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                    Aerotech Intelligence is active
-                  </div>
-
-                  <h2 className="text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">
-                    Your company,
-                    <br />
-                    intelligently managed.
-                  </h2>
-
-                  <p className="mt-4 max-w-xl text-sm leading-6 text-gray-400 sm:text-base">
-                    Aerotech continuously analyzes your workforce, recruitment,
-                    performance and operations to help you make better decisions.
-                  </p>
-                </div>
-
-                <button className="rounded-xl bg-white px-5 py-3 text-sm font-semibold text-gray-900 transition hover:bg-gray-100">
-                  Ask Aerotech AI →
-                </button>
-              </div>
-            </div>
-
-            {/* Stats */}
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="mt-8 flex flex-wrap gap-x-6 gap-y-3 text-xs text-slate-500">
               {[
-                ["248", "Total People", "+8.2%", "vs last month"],
-                ["18", "Open Positions", "6", "in final stage"],
-                ["87%", "Performance", "+4.6%", "vs last quarter"],
-                ["92", "Health Score", "+7", "vs last month"],
-              ].map(([value, label, change, detail]) => (
-                <div
-                  key={label}
-                  className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"
-                >
-                  <div className="flex items-start justify-between">
-                    <span className="text-sm text-gray-500">{label}</span>
-                    <span className="text-xs text-gray-400">↗</span>
-                  </div>
-                  <div className="mt-5 text-3xl font-semibold tracking-[-0.04em]">
-                    {value}
-                  </div>
-                  <div className="mt-2 flex items-center gap-2 text-xs">
-                    <span className="font-semibold text-emerald-600">{change}</span>
-                    <span className="text-gray-400">{detail}</span>
-                  </div>
+                "Employee 360°",
+                "Payroll & Wallet",
+                "Attendance",
+                "Training",
+                "AI Workforce Insights",
+              ].map((item) => (
+                <div key={item} className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                  {item}
                 </div>
               ))}
             </div>
+          </div>
 
-            {/* Content */}
-            <div className="mt-6 grid gap-6 xl:grid-cols-[1.35fr_0.65fr]">
-              {/* Intelligence */}
-              <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
-                <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-gray-900 text-xs text-white">
-                        ✦
-                      </span>
-                      <h3 className="font-semibold">Aerotech Intelligence</h3>
+          <div className="relative">
+            <div className="absolute inset-0 rounded-[2rem] bg-gradient-to-br from-cyan-400/20 via-indigo-500/10 to-purple-500/20 blur-3xl" />
+
+            <div className="relative rounded-[2rem] border border-white/10 bg-white/[0.06] p-3 shadow-2xl backdrop-blur-xl">
+              <div className="rounded-[1.5rem] bg-[#f8fafc] p-4 text-slate-900 shadow-inner">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-4">
+                  <div className="flex items-center gap-2">
+                    <Logo compact />
+                    <div>
+                      <p className="text-xs font-bold">Employer Command Center</p>
+                      <p className="text-[9px] text-slate-400">August 2026</p>
                     </div>
-                    <p className="mt-1 text-sm text-gray-400">
-                      What needs your attention
-                    </p>
                   </div>
-                  <button className="text-sm font-medium text-gray-500 hover:text-gray-900">
-                    View all
-                  </button>
-                </div>
-
-                <div className="divide-y divide-gray-100">
-                  {alerts.map((alert) => (
-                    <div
-                      key={alert.title}
-                      className="flex gap-4 px-6 py-5 transition hover:bg-gray-50"
-                    >
-                      <div
-                        className={`mt-1 h-2.5 w-2.5 shrink-0 rounded-full ${
-                          alert.level === "Critical"
-                            ? "bg-red-500"
-                            : alert.level === "Warning"
-                              ? "bg-amber-500"
-                              : "bg-blue-500"
-                        }`}
-                      />
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-col justify-between gap-1 sm:flex-row">
-                          <h4 className="text-sm font-semibold">{alert.title}</h4>
-                          <span className="text-xs text-gray-400">{alert.time}</span>
-                        </div>
-                        <p className="mt-1 max-w-2xl text-sm leading-6 text-gray-500">
-                          {alert.description}
-                        </p>
-                        <button className="mt-3 text-xs font-semibold text-gray-900">
-                          Review recommendation →
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Company health */}
-              <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-semibold">Company Health</h3>
-                    <p className="mt-1 text-sm text-gray-400">
-                      Aerotech assessment
-                    </p>
+                  <div className="rounded-lg bg-emerald-50 px-2 py-1 text-[9px] font-bold text-emerald-600">
+                    SYSTEM READY
                   </div>
-                  <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-                    Healthy
-                  </span>
                 </div>
 
-                <div className="mt-8 flex items-end gap-3">
-                  <span className="text-6xl font-semibold tracking-[-0.06em]">92</span>
-                  <span className="mb-2 text-sm text-gray-400">/ 100</span>
-                </div>
-
-                <div className="mt-5 h-2 overflow-hidden rounded-full bg-gray-100">
-                  <div className="h-full w-[92%] rounded-full bg-gray-900" />
-                </div>
-
-                <div className="mt-6 space-y-4">
-                  {[
-                    ["People", "94"],
-                    ["Recruitment", "86"],
-                    ["Performance", "91"],
-                    ["Operations", "97"],
-                  ].map(([name, score]) => (
-                    <div key={name}>
-                      <div className="mb-1.5 flex justify-between text-xs">
-                        <span className="text-gray-500">{name}</span>
-                        <span className="font-semibold">{score}</span>
-                      </div>
-                      <div className="h-1.5 rounded-full bg-gray-100">
-                        <div
-                          className="h-full rounded-full bg-gray-800"
-                          style={{ width: `${score}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Bottom */}
-            <div className="mt-6 grid gap-6 xl:grid-cols-2">
-              <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
-                <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5">
-                  <div>
-                    <h3 className="font-semibold">Workforce Overview</h3>
-                    <p className="mt-1 text-sm text-gray-400">
-                      Current organizational snapshot
-                    </p>
-                  </div>
-                  <button className="text-sm font-medium text-gray-500">Details →</button>
-                </div>
-
-                <div className="grid grid-cols-2 divide-x divide-gray-100 sm:grid-cols-4">
+                <div className="grid grid-cols-2 gap-3 py-4">
                   {[
                     ["248", "Employees"],
-                    ["12", "Departments"],
-                    ["9", "On Leave"],
-                    ["4", "New Hires"],
+                    ["96%", "Attendance"],
+                    ["78%", "Training"],
+                    ["94%", "Payroll ready"],
                   ].map(([value, label]) => (
-                    <div key={label} className="p-5">
-                      <div className="text-2xl font-semibold">{value}</div>
-                      <div className="mt-1 text-xs text-gray-400">{label}</div>
+                    <div
+                      key={label}
+                      className="rounded-xl border border-slate-200 bg-white p-4"
+                    >
+                      <p className="text-xl font-bold">{value}</p>
+                      <p className="mt-1 text-[10px] text-slate-500">{label}</p>
                     </div>
                   ))}
                 </div>
-              </div>
 
-              <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
-                <div className="border-b border-gray-100 px-6 py-5">
-                  <h3 className="font-semibold">Recent Activity</h3>
-                  <p className="mt-1 text-sm text-gray-400">
-                    Latest company events
+                <div className="rounded-xl bg-[#07111f] p-5 text-white">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-[10px] text-slate-500">Payroll Wallet</p>
+                      <p className="mt-1 text-xl font-bold">₦18.5m</p>
+                    </div>
+                    <Wallet className="h-5 w-5 text-cyan-300" />
+                  </div>
+                  <div className="mt-5 h-2 rounded-full bg-white/10">
+                    <div className="h-full w-full rounded-full bg-gradient-to-r from-cyan-400 via-indigo-500 to-purple-500" />
+                  </div>
+                  <p className="mt-2 text-[9px] text-slate-500">
+                    Payroll funding coverage: 100%
                   </p>
                 </div>
 
-                <div className="divide-y divide-gray-100">
-                  {activities.map(([title, department, time]) => (
-                    <div key={title} className="flex items-center gap-4 px-6 py-4">
-                      <div className="h-2 w-2 rounded-full bg-gray-300" />
-                      <div className="min-w-0 flex-1">
-                        <div className="truncate text-sm font-medium">{title}</div>
-                        <div className="mt-0.5 text-xs text-gray-400">{department}</div>
-                      </div>
-                      <span className="text-xs text-gray-400">{time}</span>
-                    </div>
-                  ))}
+                <div className="mt-3 grid grid-cols-3 gap-2">
+                  <div className="rounded-xl bg-cyan-50 p-3 text-center text-[9px] font-semibold text-cyan-700">
+                    AI Insights
+                  </div>
+                  <div className="rounded-xl bg-indigo-50 p-3 text-center text-[9px] font-semibold text-indigo-700">
+                    Compliance
+                  </div>
+                  <div className="rounded-xl bg-purple-50 p-3 text-center text-[9px] font-semibold text-purple-700">
+                    Training
+                  </div>
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
 
-            {/* Footer */}
-            <div className="mt-8 flex flex-col justify-between gap-2 border-t border-gray-200 pt-5 text-xs text-gray-400 sm:flex-row">
-              <span>Aerotech Intelligence Platform · v0.1</span>
-              <span>Built for companies that want to operate smarter.</span>
+      <section id="platform" className="bg-white py-24 text-slate-900">
+        <div className="mx-auto max-w-7xl px-5 lg:px-8">
+          <div className="max-w-2xl">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-600">
+              One operating system
+            </p>
+            <h2 className="mt-3 text-3xl font-black sm:text-4xl">
+              Everything employers need to run their workforce.
+            </h2>
+          </div>
+
+          <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+            {[
+              [Users, "Employee 360°", "One complete employee record from hire to exit."],
+              [Clock3, "Attendance", "Capture attendance through web, mobile, QR, GPS and integrations."],
+              [GraduationCap, "Training", "Manage instructor-led, e-learning, compliance and certifications."],
+              [CircleDollarSign, "Payroll", "Manage compensation, deductions, contributions and payslips."],
+              [Wallet, "Payroll Wallet", "Fund and monitor payroll before every payroll run."],
+              [ShieldCheck, "Compliance", "Track country-aware statutory obligations and audit trails."],
+              [Bot, "Aerotech AI", "Ask workforce questions and surface actionable insights."],
+              [Sparkles, "Automation", "Connect workflows from recruitment through payroll."],
+            ].map(([Icon, title, description]) => (
+              <div
+                key={title as string}
+                className="rounded-2xl border border-slate-200 bg-slate-50 p-6 transition hover:-translate-y-1 hover:shadow-xl"
+              >
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-100 via-indigo-100 to-purple-100">
+                  {Icon && <Icon className="h-5 w-5 text-indigo-600" />}
+                </div>
+                <h3 className="mt-5 font-bold">{title as string}</h3>
+                <p className="mt-2 text-sm leading-6 text-slate-500">
+                  {description as string}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="workforce" className="border-t border-white/10 bg-[#07111f] py-24">
+        <div className="mx-auto max-w-7xl px-5 lg:px-8">
+          <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">
+                Employee 360°
+              </p>
+              <h2 className="mt-3 text-3xl font-black sm:text-4xl">
+                Every employee has a complete digital workforce profile.
+              </h2>
+              <p className="mt-5 text-sm leading-7 text-slate-400">
+                Recruitment, onboarding, employment information, compensation,
+                attendance, leave, training, performance, documents and timeline
+                all connect to the employee record.
+              </p>
+
+              <Link
+                href="/auth/signup/employer"
+                className="mt-7 inline-flex items-center gap-2 text-sm font-bold text-cyan-300"
+              >
+                Build your workforce
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+
+            <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
+              <div className="grid gap-3 sm:grid-cols-2">
+                {[
+                  ["Attendance", "96%", "This month"],
+                  ["Leave", "14", "Days remaining"],
+                  ["Performance", "4.2 / 5", "Current rating"],
+                  ["Training", "78%", "Completed"],
+                ].map(([label, value, helper]) => (
+                  <div
+                    key={label}
+                    className="rounded-2xl border border-white/10 bg-white/[0.04] p-5"
+                  >
+                    <p className="text-xs text-slate-500">{label}</p>
+                    <p className="mt-2 text-2xl font-bold">{value}</p>
+                    <p className="mt-1 text-[10px] text-slate-500">{helper}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
+
+      <section id="payroll" className="bg-white py-24 text-slate-900">
+        <div className="mx-auto max-w-7xl px-5 lg:px-8">
+          <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
+            <div className="rounded-3xl bg-[#07111f] p-7 text-white shadow-2xl">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-slate-500">Employer Payroll Wallet</p>
+                  <p className="mt-2 text-4xl font-black">₦18.5m</p>
+                </div>
+                <Wallet className="h-8 w-8 text-cyan-300" />
+              </div>
+
+              <div className="mt-8 space-y-3">
+                {[
+                  ["Payroll required", "₦12.75m"],
+                  ["PAYE", "₦1.43m"],
+                  ["Pension", "₦760k"],
+                  ["Employer contributions", "₦1.05m"],
+                  ["Employee net pay", "₦12.95m"],
+                ].map(([label, value]) => (
+                  <div
+                    key={label}
+                    className="flex items-center justify-between border-b border-white/10 pb-3 text-sm"
+                  >
+                    <span className="text-slate-400">{label}</span>
+                    <span className="font-bold">{value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-600">
+                Payroll control
+              </p>
+              <h2 className="mt-3 text-3xl font-black sm:text-4xl">
+                Fund once. Control payroll from one place.
+              </h2>
+              <p className="mt-5 text-sm leading-7 text-slate-500">
+                The Aerotech wallet is designed to become the funding layer
+                between an employer and payroll processing. Employers can see
+                their balance, required payroll funding, transaction history and
+                payroll readiness before approval.
+              </p>
+
+              <div className="mt-7 grid gap-3 sm:grid-cols-2">
+                {[
+                  "Wallet balance",
+                  "Funding transactions",
+                  "Payroll readiness",
+                  "Approval controls",
+                  "PAYE tracking",
+                  "Pension tracking",
+                ].map((item) => (
+                  <div key={item} className="flex items-center gap-2 text-sm">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="ai" className="bg-slate-50 py-24 text-slate-900">
+        <div className="mx-auto max-w-5xl px-5 text-center lg:px-8">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#00D4FF] via-[#6366F1] to-[#9D4EDD] text-white shadow-xl">
+            <Bot className="h-7 w-7" />
+          </div>
+
+          <h2 className="mt-6 text-3xl font-black sm:text-4xl">
+            Meet Aerotech AI.
+          </h2>
+
+          <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-slate-500">
+            A workforce intelligence layer designed to help HR teams understand
+            people, payroll, attendance, training, recruitment and compliance.
+          </p>
+
+          <div className="mt-10 grid gap-3 sm:grid-cols-3">
+            {[
+              "Ask workforce questions",
+              "Detect payroll anomalies",
+              "Recommend training",
+              "Summarize performance",
+              "Identify attendance patterns",
+              "Generate HR reports",
+            ].map((item) => (
+              <div
+                key={item}
+                className="rounded-xl border border-slate-200 bg-white p-4 text-sm font-semibold shadow-sm"
+              >
+                {item}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="pricing" className="bg-white py-24 text-slate-900">
+        <div className="mx-auto max-w-5xl px-5 text-center lg:px-8">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-600">
+            Start building
+          </p>
+          <h2 className="mt-3 text-3xl font-black sm:text-4xl">
+            Ready to run your workforce differently?
+          </h2>
+
+          <Link
+            href="/auth/signup/employer"
+            className="mt-8 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#6366F1] to-[#9D4EDD] px-7 py-3.5 text-sm font-bold text-white shadow-xl"
+          >
+            Create employer account
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+      </section>
+
+      <footer className="border-t border-white/10 bg-[#07111f] py-10">
+        <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 sm:flex-row sm:items-center sm:justify-between lg:px-8">
+          <Logo light />
+          <p className="text-xs text-slate-500">
+            © 2026 Aerotech. People. Performance. Progress.
+          </p>
+        </div>
+      </footer>
     </main>
   );
 }

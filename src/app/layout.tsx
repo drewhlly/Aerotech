@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Aerotech",
-  description: "AI-powered company and workforce operating platform",
+  title: "Aerotech — People. Performance. Progress.",
+  description:
+    "Aerotech is an intelligent workforce operating system for recruitment, employees, attendance, training, performance, payroll and compliance.",
 };
 
 export default function RootLayout({
