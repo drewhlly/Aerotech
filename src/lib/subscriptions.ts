@@ -1,4 +1,4 @@
-export type EmployerPlan = "bronze" | "silver" | "gold";
+export type EmployerPlan = "basic" | "professional" | "business" | "enterprise";
 export type AccountType = "employer" | "employee";
 export type Currency = "NGN" | "USD";
 
@@ -37,9 +37,9 @@ export const EMPLOYER_PLANS: Record<
   EmployerPlan,
   SubscriptionPlan
 > = {
-  bronze: {
-    id: "employer_bronze",
-    name: "Bronze",
+  basic: {
+    id: "employer_basic",
+    name: "Basic",
     accountType: "employer",
     monthly: true,
     price: "₦500,000",
@@ -61,9 +61,9 @@ export const EMPLOYER_PLANS: Record<
     ],
   },
 
-  silver: {
-    id: "employer_silver",
-    name: "Silver",
+  professional: {
+    id: "employer_professional",
+    name: "Professional",
     accountType: "employer",
     monthly: true,
     price: "₦1,000,000",
@@ -75,7 +75,7 @@ export const EMPLOYER_PLANS: Record<
       USD: 700,
     },
     features: [
-      "Everything in Bronze",
+      "Everything in Basic",
       "Advanced candidate matching",
       "Advanced AI recruitment assistance",
       "Advanced recruitment analytics",
@@ -85,9 +85,9 @@ export const EMPLOYER_PLANS: Record<
     ],
   },
 
-  gold: {
-    id: "employer_gold",
-    name: "Gold",
+  business: {
+    id: "employer_business",
+    name: "Business",
     accountType: "employer",
     monthly: true,
     price: "₦2,000,000",
@@ -99,7 +99,7 @@ export const EMPLOYER_PLANS: Record<
       USD: 1400,
     },
     features: [
-      "Everything in Silver",
+      "Everything in Professional",
       "Unlimited recruitment workflows",
       "Advanced AI automation",
       "AI candidate screening",
@@ -109,6 +109,25 @@ export const EMPLOYER_PLANS: Record<
       "Priority enterprise support",
     ],
   },
+  enterprise: {
+    id: "employer_enterprise",
+    name: "Enterprise",
+    accountType: "employer",
+    monthly: true,
+    price: "Contact sales",
+    period: "custom pricing",
+    description: "Tailored workforce automation, implementation and support for large organisations.",
+    prices: { NGN: 0, USD: 0 },
+    features: [
+      "Everything in Business",
+      "Custom integrations and workflows",
+      "Dedicated implementation support",
+      "Organisation-specific automation",
+      "Advanced reporting and controls",
+      "Enterprise account management",
+    ],
+  },
+
 };
 
 export const EMPLOYEE_PLAN: SubscriptionPlan = {
