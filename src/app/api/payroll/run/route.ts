@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import { currentEmployer, db } from "@/lib/employer-session";
-import { nigeriaPayroll } from "@/lib/nigeria-payroll";
+import { calculatePayrollForCountry, payrollJurisdiction } from "@/lib/country-payroll";
 export const runtime="nodejs";
 export async function POST(request: Request) {
  const employerId=await currentEmployer();
@@ -13,12 +13,17 @@ export async function POST(request: Request) {
  const pool=db();const client=await pool.connect();
  try {
   await client.query("BEGIN");
+  const employer=await client.query("SELECT country FROM employer_accounts WHERE id=$1",[employerId]);
+  const country=String(employer.rows[0]?.country||"").trim();
+  const countryCode: Record<string,string>={nigeria:"NG",ng:"NG",ghana:"GH",gh:"GH",kenya:"KE",ke:"KE","united states":"US",us:"US",usa:"US","united kingdom":"GB",uk:"GB",gb:"GB"};
+  const jurisdiction=countryCode[country.toLowerCase()]||country.toUpperCase();
+  if(!payrollJurisdiction(jurisdiction).ready){await client.query("ROLLBACK");return NextResponse.json({error:`Payroll cannot run for ${country}: verified local statutory rules must be configured first.`},{status:422});}
   const employees=await client.query("SELECT * FROM payroll_employees WHERE employer_id=$1 AND active=TRUE",[employerId]);
   if(!employees.rows.length){await client.query("ROLLBACK");return NextResponse.json({error:"No active employees on payroll"},{status:422});}
   const sanctions=await client.query("SELECT employee_id,COALESCE(SUM(amount_ngn),0) AS amount FROM payroll_sanctions WHERE employer_id=$1 AND payroll_month=$2 AND status='approved' GROUP BY employee_id",[employerId,month+"-01"]);
   const sanctionMap=new Map<string,number>(sanctions.rows.map((s:{employee_id:string;amount:string})=>[s.employee_id,Number(s.amount)]));
   const items=employees.rows.map(e=>{
-   const result=nigeriaPayroll({
+   const result=calculatePayrollForCountry(jurisdiction,{
     monthlyGross:Number(e.monthly_gross_ngn),basic:Number(e.basic_salary_ngn??0),housing:Number(e.housing_allowance_ngn??0),transport:Number(e.transport_allowance_ngn??0),
     annualRentRelief:Number(e.annual_rent_relief_ngn??0),pensionEnabled:e.pension_enabled!==false,nhfEnabled:e.nhf_enabled===true,
     taxExempt:e.tax_exempt===true,sanctions:sanctionMap.get(e.id)||0,otherDeductions:Number(e.other_deductions_ngn||0)
