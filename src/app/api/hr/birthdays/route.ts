@@ -2,15 +2,12 @@ import {NextResponse} from "next/server";
 import {currentEmployer,db} from "@/lib/employer-session";
 export const runtime="nodejs";
 export async function GET(){
- const employer=await currentEmployer();if(!employer)return NextResponse.json({error:"Employer sign-in required"},{status:401});
- const pool=db();try{
- const r=await pool.query(`SELECT id,first_name,last_name,department,
- TO_CHAR(date_of_birth,'MM-DD') AS birthday,
- ((MAKE_DATE(EXTRACT(YEAR FROM (NOW() AT TIME ZONE 'Africa/Lagos'))::int,
- EXTRACT(MONTH FROM date_of_birth)::int,
- LEAST(EXTRACT(DAY FROM date_of_birth)::int,EXTRACT(DAY FROM (DATE_TRUNC('month',MAKE_DATE(EXTRACT(YEAR FROM (NOW() AT TIME ZONE 'Africa/Lagos'))::int,EXTRACT(MONTH FROM date_of_birth)::int,1))+INTERVAL '1 month - 1 day'))::int))
- - (NOW() AT TIME ZONE 'Africa/Lagos')::date + 366) % 366) AS approx_days
- FROM workforce_employees WHERE employer_id=$1 AND date_of_birth IS NOT NULL AND employment_status <> 'terminated' ORDER BY EXTRACT(MONTH FROM date_of_birth),EXTRACT(DAY FROM date_of_birth)`,[employer]);
- return NextResponse.json({birthdays:r.rows});
+ const employer=await currentEmployer();
+ if(!employer)return NextResponse.json({error:"Employer sign-in required"},{status:401});
+ const pool=db();
+ try{
+ const birthdays=await pool.query("SELECT id,first_name,last_name,department,TO_CHAR(date_of_birth,'MM-DD') AS birthday FROM workforce_employees WHERE employer_id=$1 AND date_of_birth IS NOT NULL AND employment_status <> 'terminated' ORDER BY EXTRACT(MONTH FROM date_of_birth),EXTRACT(DAY FROM date_of_birth)",[employer]);
+ const alerts=await pool.query("SELECT w.first_name,w.last_name,l.notified_at FROM birthday_notification_log l JOIN workforce_employees w ON w.id=l.employee_id AND w.employer_id=l.employer_id WHERE l.employer_id=$1 AND (l.notified_at AT TIME ZONE 'Africa/Lagos')::date=(NOW() AT TIME ZONE 'Africa/Lagos')::date ORDER BY w.first_name",[employer]);
+ return NextResponse.json({birthdays:birthdays.rows,hrAlerts:alerts.rows});
  }catch{return NextResponse.json({error:"Birthdays unavailable"},{status:503});}finally{await pool.end();}
 }
