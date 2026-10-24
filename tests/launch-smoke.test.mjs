@@ -26,3 +26,16 @@ test("unknown job IDs do not display another vacancy", () => {
   assert.match(details, /if \(!job\) notFound\(\)/);
   assert.doesNotMatch(details, /\?\? jobs\[0\]/);
 });
+
+test("jobs require a registered applicant session", () => {
+  const gate = read("src/app/jobs/layout.tsx");
+  assert.match(gate, /currentApplicant/);
+  assert.match(gate, /redirect\("\/careers"\)/);
+});
+
+test("applicant registration is free and submits to backend", () => {
+  const signup = read("src/app/auth/signup/employee/page.tsx");
+  assert.match(signup, /\/api\/auth\/signup\/applicant/);
+  assert.match(signup, /Create free account/);
+  assert.ok(existsSync(new URL("../src/app/api/auth/signup/applicant/route.ts", import.meta.url)));
+});
