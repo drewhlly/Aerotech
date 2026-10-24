@@ -118,6 +118,7 @@ const navigation = [
     title: "PEOPLE",
     items: [
       { label: "Employees", href: "/dashboard/employer/employees", icon: Users },
+      { label: "Birthdays", href: "/dashboard/employer/hr/birthdays", icon: CalendarCheck2 },
       { label: "Departments & Managers", href: "/dashboard/employer/hr/departments", icon: Building2 },
       { label: "Recruitment", href: "/dashboard/employer/recruitment", icon: BriefcaseBusiness },
       { label: "Onboarding", href: "/dashboard/employer/onboarding", icon: UserRound },
