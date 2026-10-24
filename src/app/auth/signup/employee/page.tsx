@@ -1,54 +1,30 @@
 "use client";
-
 import Link from "next/link";
-import { ArrowRight, FileText, UploadCloud } from "lucide-react";
+import { useState, type FormEvent } from "react";
 import { Logo } from "@/components/aerotech-portal";
-
-export default function EmployeeSignupPage() {
-  return (
-    <div className="min-h-screen bg-[#F5F8FA]">
-      <div className="mx-auto max-w-4xl px-5 py-8">
-        <Logo />
-
-        <div className="mt-10 rounded-3xl border border-slate-200 bg-white p-7 shadow-sm sm:p-10">
-          <div className="text-sm font-black uppercase tracking-widest text-[#00A896]">
-            Applicant account
-          </div>
-          <h1 className="mt-3 text-3xl font-black text-[#102A43]">
-            Apply and manage your career from one place.
-          </h1>
-          <p className="mt-3 text-slate-500">
-            Create your Aerotech applicant profile, upload your CV and track
-            your applications.
-          </p>
-
-          <div className="mt-8 grid gap-4 sm:grid-cols-2">
-            <input placeholder="First name" className="rounded-xl border border-slate-200 px-4 py-3.5" />
-            <input placeholder="Last name" className="rounded-xl border border-slate-200 px-4 py-3.5" />
-            <input placeholder="Email" type="email" className="rounded-xl border border-slate-200 px-4 py-3.5" />
-            <input placeholder="Phone" className="rounded-xl border border-slate-200 px-4 py-3.5" />
-            <input placeholder="Password" type="password" className="rounded-xl border border-slate-200 px-4 py-3.5 sm:col-span-2" />
-          </div>
-
-          <div className="mt-6 rounded-2xl border border-dashed border-slate-300 p-6 text-center">
-            <UploadCloud className="mx-auto text-slate-400" size={28} />
-            <div className="mt-3 font-bold text-[#102A43]">
-              Upload CV / Resume
-            </div>
-            <div className="mt-1 text-sm text-slate-400">
-              PDF, DOC or DOCX
-            </div>
-          </div>
-
-          <Link
-            href="/applicant"
-            className="mt-7 flex items-center justify-center gap-2 rounded-xl bg-[#102A43] px-5 py-4 font-black text-white"
-          >
-            Create applicant account
-            <ArrowRight size={18} />
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
+export default function ApplicantSignup() {
+ const [form,setForm]=useState({firstName:"",lastName:"",email:"",phone:"",password:""});
+ const [error,setError]=useState("");
+ const [busy,setBusy]=useState(false);
+ async function submit(event:FormEvent<HTMLFormElement>) {
+  event.preventDefault();setError("");setBusy(true);
+  try {
+   const response=await fetch("/api/auth/signup/applicant",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(form)});
+   const data=await response.json().catch(()=>({}));
+   if(!response.ok){setError(data.error||"Registration failed.");return;}
+   window.location.assign("/jobs");
+  }catch{setError("Unable to connect right now.");}finally{setBusy(false);}
+ }
+ return <main className="min-h-screen bg-[#F5F8FA] px-5 py-8">
+  <div className="mx-auto max-w-xl"><Logo/><div className="mt-12 rounded-3xl bg-white p-8 shadow-sm">
+   <h1 className="text-3xl font-black text-[#102A43]">Create your free account</h1>
+   <p className="mt-3 text-slate-600">Register at no cost to discover jobs and apply on Aerotech.</p>
+   <form onSubmit={submit} className="mt-7 space-y-4">
+    {([{name:"firstName",label:"First name",type:"text"},{name:"lastName",label:"Last name",type:"text"},{name:"email",label:"Email",type:"email"},{name:"phone",label:"Phone",type:"tel"},{name:"password",label:"Password (12+ characters)",type:"password"}] as const).map(field=><label key={field.name} className="block text-sm font-semibold text-slate-700">{field.label}<input type={field.type} required minLength={field.name==="password"?12:undefined} value={form[field.name]} onChange={e=>setForm(v=>({...v,[field.name]:e.target.value}))} className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3.5"/></label>)}
+    {error&&<p role="alert" className="text-sm text-red-700">{error}</p>}
+    <button type="submit" disabled={busy} className="w-full rounded-xl bg-[#102A43] p-4 font-bold text-white disabled:opacity-50">{busy?"Creating account...":"Create free account"}</button>
+   </form>
+   <Link href="/auth/login" className="mt-5 block text-center text-sm font-bold text-[#007F73]">Already registered? Sign in</Link>
+  </div></div>
+ </main>;
 }
