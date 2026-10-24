@@ -7,6 +7,23 @@ import { Logo } from "@/components/aerotech-portal";
 
 export default function LoginPage() {
   const [role, setRole] = useState<"employer" | "employee">("employer");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  async function signIn(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+    if (role !== "employer") { setError("Employee login is not available yet."); return; }
+    setBusy(true);
+    try {
+      const response = await fetch("/api/auth/login/employer", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, password }) });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) { setError(data.error || "Unable to sign in."); return; }
+      window.location.assign("/dashboard/employer");
+    } catch { setError("Unable to connect. Please try again."); }
+    finally { setBusy(false); }
+  }
 
   return (
     <div className="min-h-screen bg-[#F5F8FA]">
@@ -54,7 +71,7 @@ export default function LoginPage() {
 
             <form
               className="mt-7 space-y-4"
-              onSubmit={(e) => e.preventDefault()}
+              onSubmit={signIn}
             >
               <div>
                 <label className="text-sm font-bold text-slate-700">
@@ -62,6 +79,9 @@ export default function LoginPage() {
                 </label>
                 <input
                   type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@company.com"
                   className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3.5 outline-none focus:border-[#00A896]"
                 />
@@ -73,22 +93,18 @@ export default function LoginPage() {
                 </label>
                 <input
                   type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3.5 outline-none focus:border-[#00A896]"
                 />
               </div>
 
-              <Link
-                href={
-                  role === "employer"
-                    ? "/dashboard/employer"
-                    : "/employee"
-                }
-                className="flex items-center justify-center gap-2 rounded-xl bg-[#102A43] px-5 py-3.5 font-black text-white"
-              >
-                Sign in
-                <ArrowRight size={17} />
-              </Link>
+              {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
+              <button type="submit" disabled={busy} className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#102A43] px-5 py-3.5 font-black text-white disabled:opacity-60">
+                {busy ? "Signing in..." : "Sign in"} <ArrowRight size={17} />
+              </button>
             </form>
 
             <div className="mt-7 flex items-center gap-2 text-xs text-slate-400">
