@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import { currentEmployer, db } from "@/lib/employer-session";
+import { nigeriaPayroll } from "@/lib/nigeria-payroll";
 export const runtime="nodejs";
 export async function POST(request: Request) {
  const employerId=await currentEmployer();
@@ -8,24 +9,28 @@ export async function POST(request: Request) {
  let month:string;
  try {const b=await request.json();month=String(b.month);} catch{return NextResponse.json({error:"Month required"},{status:400});}
  if(!/^\d{4}-(0[1-9]|1[0-2])$/.test(month))return NextResponse.json({error:"Use YYYY-MM"},{status:400});
+ if(month<"2026-01")return NextResponse.json({error:"These calculation rules apply to payroll from January 2026"},{status:400});
  const pool=db();const client=await pool.connect();
  try {
   await client.query("BEGIN");
-  const employees=await client.query("SELECT id,monthly_gross_ngn,employee_pension_rate,other_deductions_ngn FROM payroll_employees WHERE employer_id=$1 AND active=TRUE",[employerId]);
+  const employees=await client.query("SELECT * FROM payroll_employees WHERE employer_id=$1 AND active=TRUE",[employerId]);
   if(!employees.rows.length){await client.query("ROLLBACK");return NextResponse.json({error:"No active employees on payroll"},{status:422});}
-  const items=employees.rows.map((e:{id:string;monthly_gross_ngn:string;employee_pension_rate:string;other_deductions_ngn:string})=>{
-   const gross=Math.round(Number(e.monthly_gross_ngn)*100);
-   const pension=Math.round(gross*Number(e.employee_pension_rate));
-   const other=Math.round(Number(e.other_deductions_ngn)*100);
-   if(!Number.isSafeInteger(gross)||!Number.isSafeInteger(pension)||!Number.isSafeInteger(other)||gross<0||pension<0||other<0||pension+other>gross)throw Error("Invalid employee compensation");
-   return {id:e.id,gross,pension,other,net:gross-pension-other};
+  const sanctions=await client.query("SELECT employee_id,COALESCE(SUM(amount_ngn),0) AS amount FROM payroll_sanctions WHERE employer_id=$1 AND payroll_month=$2 AND status='approved' GROUP BY employee_id",[employerId,month+"-01"]);
+  const sanctionMap=new Map<string,number>(sanctions.rows.map((s:{employee_id:string;amount:string})=>[s.employee_id,Number(s.amount)]));
+  const items=employees.rows.map(e=>{
+   const result=nigeriaPayroll({
+    monthlyGross:Number(e.monthly_gross_ngn),basic:Number(e.basic_salary_ngn??0),housing:Number(e.housing_allowance_ngn??0),transport:Number(e.transport_allowance_ngn??0),
+    annualRentRelief:Number(e.annual_rent_relief_ngn??0),pensionEnabled:e.pension_enabled!==false,nhfEnabled:e.nhf_enabled===true,
+    taxExempt:e.tax_exempt===true,sanctions:sanctionMap.get(e.id)||0,otherDeductions:Number(e.other_deductions_ngn||0)
+   });
+   return {id:e.id,...result};
   });
-  const totals=items.reduce((a,e)=>({gross:a.gross+e.gross,deductions:a.deductions+e.pension+e.other,net:a.net+e.net}),{gross:0,deductions:0,net:0});
+  const sums=items.reduce((a,e)=>({gross:a.gross+e.gross,deductions:a.deductions+e.deductions,net:a.net+e.net,paye:a.paye+e.paye,employerPension:a.employerPension+e.employerPension}),{gross:0,deductions:0,net:0,paye:0,employerPension:0});
   const runId=randomUUID();
-  await client.query("INSERT INTO payroll_runs(id,employer_id,payroll_month,status,gross_total,deduction_total,net_total) VALUES($1,$2,$3,'awaiting_hr',$4,$5,$6)",[runId,employerId,month+"-01",totals.gross/100,totals.deductions/100,totals.net/100]);
-  for(const e of items)await client.query("INSERT INTO payroll_run_items(id,run_id,employee_id,gross,pension,other_deductions,net) VALUES($1,$2,$3,$4,$5,$6,$7)",[randomUUID(),runId,e.id,e.gross/100,e.pension/100,e.other/100,e.net/100]);
+  await client.query("INSERT INTO payroll_runs(id,employer_id,payroll_month,status,gross_total,deduction_total,net_total) VALUES($1,$2,$3,'awaiting_hr',$4,$5,$6)",[runId,employerId,month+"-01",sums.gross.toFixed(2),sums.deductions.toFixed(2),sums.net.toFixed(2)]);
+  for(const e of items)await client.query("INSERT INTO payroll_run_items(id,run_id,employee_id,gross,pension,other_deductions,net,paye,nhf,sanctions,employer_pension) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)",[randomUUID(),runId,e.id,e.gross,e.employeePension,e.otherDeductions,e.net,e.paye,e.nhf,e.sanctions,e.employerPension]);
   await client.query("COMMIT");
-  return NextResponse.json({runId,status:"awaiting_hr",...Object.fromEntries(Object.entries(totals).map(([k,v])=>[k,v/100]))},{status:201});
- }catch(e){await client.query("ROLLBACK");return NextResponse.json({error:"Unable to prepare payroll; check employee data and duplicate months."},{status:409});}
+  return NextResponse.json({runId,status:"awaiting_hr",...sums},{status:201});
+ }catch(e){await client.query("ROLLBACK");return NextResponse.json({error:e instanceof Error?e.message:"Payroll preparation failed"},{status:409});}
  finally{client.release();await pool.end();}
 }
