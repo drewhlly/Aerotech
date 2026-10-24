@@ -2,7 +2,7 @@
 // Verify benefits, eligibility and relief evidence before final authorization.
 export type PayrollInput = {
  monthlyGross:number; basic:number; housing:number; transport:number;
- annualRentRelief:number; pensionEnabled:boolean; nhfEnabled:boolean;
+ annualRentRelief:number; // annual rent actually paid; claim limited to 20% or NGN 500,000 pensionEnabled:boolean; nhfEnabled:boolean;
  taxExempt:boolean; sanctions:number; otherDeductions:number;
 };
 const money=(v:number)=>Math.round(v*100)/100;
@@ -15,7 +15,7 @@ export function nigeriaPayroll(input:PayrollInput) {
  const employeePension=money(pensionEnabled?pensionBase*.08:0);
  const employerPension=money(pensionEnabled?pensionBase*.10:0);
  const nhf=money(nhfEnabled?basic*.025:0);
- const annualTaxable=Math.max(0,monthlyGross*12-employeePension*12-nhf*12-Math.min(annualRentRelief,500000));
+ const annualTaxable=Math.max(0,monthlyGross*12-employeePension*12-nhf*12-Math.min(annualRentRelief*0.20,500000));
  const bands:[[number,number],...[number,number][]]=[[800000,0],[2200000,.15],[9000000,.18],[13000000,.21],[25000000,.23],[Infinity,.25]];
  let remaining=annualTaxable,annualTax=0;
  for(const [size,rate] of bands){const slice=Math.min(remaining,size);annualTax+=slice*rate;remaining-=slice;if(remaining<=0)break;}
