@@ -22,16 +22,17 @@ function CheckoutContent() {
   const accountType = searchParams.get("type") || "employer";
   const [country, setCountry] = useState("UNKNOWN");
   useEffect(() => setCountry(detectCountry()), []);
-  const selectedPlan = searchParams.get("plan") || "silver";
+  const selectedPlan = searchParams.get("plan") || "professional";
 
   const plan = useMemo(() => {
     return (
       EMPLOYER_PLANS[selectedPlan as EmployerPlan] ||
-      EMPLOYER_PLANS.silver
+      EMPLOYER_PLANS.professional
     );
   }, [accountType, selectedPlan]);
 
   const price = regionalPrice(plan, country);
+  const formattedPrice = selectedPlan === "enterprise" ? "Contact sales" : displayRegionalPrice(price);
   const isEmployee = accountType === "employee";
   if (isEmployee) {
     return <main className="mx-auto max-w-xl px-5 py-20 text-center"><h1 className="text-2xl font-bold">Employee access is free</h1><p className="mt-4">Only employers pay for subscriptions. Applicants can search for jobs without a payment.</p><Link href="/jobs" className="mt-6 inline-block underline">Browse jobs</Link></main>;
@@ -156,7 +157,7 @@ function CheckoutContent() {
 
             <div className="mt-5 border-b border-slate-200 pb-5">
               <span className="text-3xl font-bold text-slate-900">
-                {displayRegionalPrice(price)}
+                {formattedPrice}
               </span>
 
               <span className="ml-2 text-sm text-slate-500">
@@ -190,7 +191,7 @@ function CheckoutContent() {
               <div className="flex items-center justify-between text-sm">
                 <span className="text-slate-500">Subtotal</span>
                 <span className="font-semibold text-slate-900">
-                  {displayRegionalPrice(price)}
+                  {formattedPrice}
                 </span>
               </div>
 
@@ -200,7 +201,7 @@ function CheckoutContent() {
                 </span>
 
                 <span className="text-lg font-bold text-slate-900">
-                  {displayRegionalPrice(price)}
+                  {formattedPrice}
                 </span>
               </div>
             </div>
