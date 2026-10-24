@@ -3,7 +3,6 @@ import { randomUUID, scrypt as callbackScrypt, randomBytes } from "node:crypto";
 import { promisify } from "node:util";
 import { Pool } from "pg";
 import { startEmployerSession } from "@/lib/employer-session";
-import { startEmployerSession } from "@/lib/employer-session";
 
 export const runtime = "nodejs";
 const scrypt = promisify(callbackScrypt);
@@ -51,7 +50,6 @@ export async function POST(request: Request) {
         (body.phone as string).trim(), (body.country as string).trim(), passwordHash,
       ]
     );
-    await startEmployerSession(pool, result.rows[0].id);
     await startEmployerSession(pool, result.rows[0].id);
     return NextResponse.json({ employerId: result.rows[0].id }, { status: 201 });
   } catch (error: unknown) {
