@@ -6,7 +6,7 @@ export type SubscriptionPlan = {
   id: string;
   name: string;
   accountType: AccountType;
-  monthly: boolean;
+  monthly: boolean; // false means billed annually for paid employer plans
 
   // Default display values used by the current pricing UI.
   // NGN is the default currency for now.
@@ -41,9 +41,9 @@ export const EMPLOYER_PLANS: Record<
     id: "employer_basic",
     name: "Basic",
     accountType: "employer",
-    monthly: true,
+    monthly: false,
     price: "₦500,000",
-    period: "/ month",
+    period: "/ year",
     description:
       "Essential recruitment tools for growing businesses.",
     prices: {
@@ -65,9 +65,9 @@ export const EMPLOYER_PLANS: Record<
     id: "employer_professional",
     name: "Professional",
     accountType: "employer",
-    monthly: true,
+    monthly: false,
     price: "₦1,000,000",
-    period: "/ month",
+    period: "/ year",
     description:
       "Advanced recruitment capabilities for growing teams.",
     prices: {
@@ -89,9 +89,9 @@ export const EMPLOYER_PLANS: Record<
     id: "employer_business",
     name: "Business",
     accountType: "employer",
-    monthly: true,
+    monthly: false,
     price: "₦2,000,000",
-    period: "/ month",
+    period: "/ year",
     description:
       "Enterprise recruitment intelligence and automation.",
     prices: {
@@ -113,9 +113,9 @@ export const EMPLOYER_PLANS: Record<
     id: "employer_enterprise",
     name: "Enterprise",
     accountType: "employer",
-    monthly: true,
+    monthly: false,
     price: "Contact sales",
-    period: "custom pricing",
+    period: "custom annual pricing",
     description: "Tailored workforce automation, implementation and support for large organisations.",
     prices: { NGN: 0, USD: 0 },
     features: [
