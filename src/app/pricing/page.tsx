@@ -2,23 +2,16 @@
 
 import Link from "next/link";
 import { Check, Crown, Sparkles, ShieldCheck } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { detectCountry, displayRegionalPrice, regionalPrice } from "@/lib/regional-pricing";
 import {
   EMPLOYER_PLANS,
-  type Currency,
   type EmployerPlan,
 } from "@/lib/subscriptions";
 
 export default function PricingPage() {
-  const [currency, setCurrency] = useState<Currency>("NGN");
-
-  const formatPrice = (amount: number) => {
-    if (currency === "NGN") {
-      return `₦${amount.toLocaleString("en-NG")}`;
-    }
-
-    return `$${amount.toLocaleString("en-US")}`;
-  };
+  const [country, setCountry] = useState("UNKNOWN");
+  useEffect(() => setCountry(detectCountry()), []);
 
   const planIcon = (plan: EmployerPlan) => {
     if (plan === "gold") return <Crown size={22} />;
@@ -44,34 +37,7 @@ export default function PricingPage() {
           </p>
         </div>
 
-        {/* Currency switcher */}
-        <div className="mt-8 flex justify-center">
-          <div className="inline-flex rounded-xl border border-slate-200 bg-white p-1 shadow-sm">
-            <button
-              type="button"
-              onClick={() => setCurrency("NGN")}
-              className={`rounded-lg px-5 py-2 text-sm font-semibold transition ${
-                currency === "NGN"
-                  ? "bg-slate-950 text-white"
-                  : "text-slate-600 hover:bg-slate-100"
-              }`}
-            >
-              NGN ₦
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setCurrency("USD")}
-              className={`rounded-lg px-5 py-2 text-sm font-semibold transition ${
-                currency === "USD"
-                  ? "bg-slate-950 text-white"
-                  : "text-slate-600 hover:bg-slate-100"
-              }`}
-            >
-              USD $
-            </button>
-          </div>
-        </div>
+        <p className="mt-8 text-center text-sm text-slate-600">Prices are based on your region. {country === "UNKNOWN" ? "Your region could not be detected." : `Detected region: ${country}`}</p>
 
         {/* Employer plans */}
         <section className="mt-12">
@@ -116,7 +82,7 @@ export default function PricingPage() {
 
                   <div className="mt-6">
                     <div className="text-3xl font-bold text-slate-950">
-                      {formatPrice(plan.prices[currency])}
+                      {displayRegionalPrice(regionalPrice(plan, country))}
                     </div>
 
                     <p className="mt-1 text-sm text-slate-500">
@@ -142,7 +108,7 @@ export default function PricingPage() {
                   </ul>
 
                   <Link
-                    href={`/pricing/checkout?type=employer&plan=${planId}&currency=${currency}`}
+                    href={`/pricing/checkout?type=employer&plan=${planId}`}
                     className="mt-8 block rounded-xl bg-slate-950 px-5 py-3.5 text-center text-sm font-semibold text-white transition hover:bg-slate-800"
                   >
                     Choose {plan.name}
