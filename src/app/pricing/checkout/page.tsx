@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { detectCountry, regionalPrice, displayRegionalPrice } from "@/lib/regional-pricing";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -13,15 +14,14 @@ import { Suspense } from "react";
 import {
   EMPLOYER_PLANS,
   EmployerPlan,
-  type Currency,
 } from "@/lib/subscriptions";
 
 function CheckoutContent() {
   const searchParams = useSearchParams();
 
   const accountType = searchParams.get("type") || "employer";
-  const currency: Currency = searchParams.get("currency") === "USD" ? "USD" : "NGN";
-  const displayAmount = (n: number) => currency === "NGN" ? `₦${n.toLocaleString("en-NG")}` : `${n.toLocaleString("en-US")}`;
+  const [country, setCountry] = useState("UNKNOWN");
+  useEffect(() => setCountry(detectCountry()), []);
   const selectedPlan = searchParams.get("plan") || "silver";
 
   const plan = useMemo(() => {
@@ -31,6 +31,7 @@ function CheckoutContent() {
     );
   }, [accountType, selectedPlan]);
 
+  const price = regionalPrice(plan, country);
   const isEmployee = accountType === "employee";
   if (isEmployee) {
     return <main className="mx-auto max-w-xl px-5 py-20 text-center"><h1 className="text-2xl font-bold">Employee access is free</h1><p className="mt-4">Only employers pay for subscriptions. Applicants can search for jobs without a payment.</p><Link href="/jobs" className="mt-6 inline-block underline">Browse jobs</Link></main>;
@@ -131,6 +132,7 @@ function CheckoutContent() {
 
             <button
               type="button"
+              disabled
               className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-6 py-4 font-semibold text-white transition hover:bg-slate-800"
             >
               <CreditCard size={18} />
@@ -154,7 +156,7 @@ function CheckoutContent() {
 
             <div className="mt-5 border-b border-slate-200 pb-5">
               <span className="text-3xl font-bold text-slate-900">
-                {displayAmount(plan.prices[currency])}
+                {displayRegionalPrice(price)}
               </span>
 
               <span className="ml-2 text-sm text-slate-500">
@@ -188,7 +190,7 @@ function CheckoutContent() {
               <div className="flex items-center justify-between text-sm">
                 <span className="text-slate-500">Subtotal</span>
                 <span className="font-semibold text-slate-900">
-                  {displayAmount(plan.prices[currency])}
+                  {displayRegionalPrice(price)}
                 </span>
               </div>
 
@@ -198,7 +200,7 @@ function CheckoutContent() {
                 </span>
 
                 <span className="text-lg font-bold text-slate-900">
-                  {displayAmount(plan.prices[currency])}
+                  {displayRegionalPrice(price)}
                 </span>
               </div>
             </div>
