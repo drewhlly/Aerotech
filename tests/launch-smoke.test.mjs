@@ -20,3 +20,9 @@ test("home page introduces the essential workforce modules", () => {
     assert.ok(home.includes(`"${module}"`), `Missing module: ${module}`);
   }
 });
+
+test("unknown job IDs do not display another vacancy", () => {
+  const details = read("src/app/jobs/[id]/page.tsx");
+  assert.match(details, /if \(!job\) notFound\(\)/);
+  assert.doesNotMatch(details, /\?\? jobs\[0\]/);
+});
