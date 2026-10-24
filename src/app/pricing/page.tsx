@@ -14,8 +14,8 @@ export default function PricingPage() {
   useEffect(() => setCountry(detectCountry()), []);
 
   const planIcon = (plan: EmployerPlan) => {
-    if (plan === "gold") return <Crown size={22} />;
-    if (plan === "silver") return <Sparkles size={22} />;
+    if (plan === "enterprise") return <Crown size={22} />;
+    if (plan === "professional") return <Sparkles size={22} />;
     return <ShieldCheck size={22} />;
   };
 
@@ -51,7 +51,7 @@ export default function PricingPage() {
             </p>
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-3">
+          <div className="grid gap-6 lg:grid-cols-4">
             {Object.entries(EMPLOYER_PLANS).map(([key, plan]) => {
               const planId = key as EmployerPlan;
 
@@ -59,14 +59,14 @@ export default function PricingPage() {
                 <div
                   key={plan.id}
                   className={`relative flex flex-col rounded-2xl border bg-white p-7 shadow-sm ${
-                    planId === "gold"
+                    planId === "professional"
                       ? "border-slate-950 ring-2 ring-slate-950"
                       : "border-slate-200"
                   }`}
                 >
-                  {planId === "gold" && (
+                  {planId === "professional" && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-slate-950 px-4 py-1 text-xs font-bold text-white">
-                      MOST POWERFUL
+                      MOST POPULAR
                     </div>
                   )}
 
@@ -82,7 +82,7 @@ export default function PricingPage() {
 
                   <div className="mt-6">
                     <div className="text-3xl font-bold text-slate-950">
-                      {displayRegionalPrice(regionalPrice(plan, country))}
+                      {planId === "enterprise" ? "Contact sales" : displayRegionalPrice(regionalPrice(plan, country))}
                     </div>
 
                     <p className="mt-1 text-sm text-slate-500">
@@ -108,10 +108,10 @@ export default function PricingPage() {
                   </ul>
 
                   <Link
-                    href={`/pricing/checkout?type=employer&plan=${planId}`}
+                    href={planId === "enterprise" ? "/auth/signup/employer" : `/pricing/checkout?type=employer&plan=${planId}`}
                     className="mt-8 block rounded-xl bg-slate-950 px-5 py-3.5 text-center text-sm font-semibold text-white transition hover:bg-slate-800"
                   >
-                    Choose {plan.name}
+                    {planId === "enterprise" ? "Contact us" : `Choose ${plan.name}`}
                   </Link>
                 </div>
               );
