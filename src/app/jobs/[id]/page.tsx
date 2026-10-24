@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { notFound, useParams } from "next/navigation";
 import { ArrowLeft, ArrowRight, Building2, CheckCircle2, MapPin } from "lucide-react";
 import { PublicNav, jobs } from "@/components/aerotech-portal";
 
 export default function JobDetailsPage() {
   const params = useParams();
-  const job = jobs.find((item) => item.id === params.id) ?? jobs[0];
+  const job = jobs.find((item) => item.id === params.id);
+  if (!job) notFound();
 
   return (
     <>
