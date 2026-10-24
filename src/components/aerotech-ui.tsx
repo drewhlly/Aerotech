@@ -239,7 +239,7 @@ export function DashboardShell({
                   <ShieldCheck className="h-5 w-5 text-white" />
                 </div>
                 <div>
-                  <p className="text-xs font-semibold">Enterprise Plan</p>
+                  <p className="text-xs font-semibold">Company workspace</p>
                   <p className="text-[10px] text-slate-500">Workforce OS</p>
                 </div>
               </div>
@@ -303,11 +303,11 @@ export function DashboardShell({
 
               <div className="flex items-center gap-2">
                 <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-500 text-xs font-bold text-white">
-                  OD
+                  A
                 </div>
                 <div className="hidden sm:block">
-                  <p className="text-xs font-semibold">Olakunle Daniels</p>
-                  <p className="text-[10px] text-slate-500">HR Manager</p>
+                  <p className="text-xs font-semibold">Employer account</p>
+                  <p className="text-[10px] text-slate-500">Signed-in organisation</p>
                 </div>
                 <ChevronDown className="hidden h-4 w-4 text-slate-400 sm:block" />
               </div>
