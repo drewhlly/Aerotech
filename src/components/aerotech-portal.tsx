@@ -114,7 +114,7 @@ export function PublicNav() {
         <Logo />
 
         <nav className="hidden items-center gap-7 lg:flex">
-          <Link href="/jobs" className="text-sm font-medium text-slate-600 hover:text-[#102A43]">
+          <Link href="/auth/signup/applicant" className="text-sm font-medium text-slate-600 hover:text-[#102A43]">Applicant signup</Link><Link href="/jobs" className="text-sm font-medium text-slate-600 hover:text-[#102A43]">
             Find Jobs
           </Link>
           <Link href="/#solutions" className="text-sm font-medium text-slate-600 hover:text-[#102A43]">
@@ -161,7 +161,7 @@ export function PublicNav() {
       {open && (
         <div className="border-t border-slate-200 bg-white px-5 py-5 lg:hidden">
           <div className="grid gap-3">
-            <Link href="/jobs" className="rounded-lg p-3 hover:bg-slate-50">
+            <Link href="/auth/signup/applicant" className="rounded-lg p-3 hover:bg-slate-50">Applicant signup</Link><Link href="/pricing" className="rounded-lg p-3 hover:bg-slate-50">Pricing</Link><Link href="/jobs" className="rounded-lg p-3 hover:bg-slate-50">
               Find Jobs
             </Link>
             <Link href="/#solutions" className="rounded-lg p-3 hover:bg-slate-50">
