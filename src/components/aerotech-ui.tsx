@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Activity,
   ClipboardList,
@@ -37,6 +38,8 @@ import {
   Users,
   Wallet,
   X,
+  ArrowLeft,
+  LogOut,
 } from "lucide-react";
 import { AEROTECH, employerOSData, formatMoney, getAiResponse } from "@/lib/aerotech";
 
@@ -179,10 +182,17 @@ export function DashboardShell({
   title?: string;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [signingOut, setSigningOut] = useState(false);
+  async function signOut() {
+    setSigningOut(true);
+    try { const r = await fetch("/api/auth/logout", {method:"POST"}); if(!r.ok) throw new Error(); window.location.assign("/auth/login?role=employer"); }
+    catch { setSigningOut(false); window.alert("Unable to sign out. Please try again."); }
+  }
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#f6f8fc] text-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-[#E8F5FF] via-[#F6F9FF] to-[#F0EEFF] text-slate-900">
       <aside
         className={`fixed inset-y-0 left-0 z-50 w-[270px] transform border-r border-white/10 bg-[#07111f] text-white transition-transform lg:translate-x-0 ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
@@ -317,7 +327,7 @@ export function DashboardShell({
           </div>
         </header>
 
-        <div className="p-4 sm:p-6 lg:p-8">{children}</div>
+        <div className="p-4 sm:p-6 lg:p-8"><div className="mb-5 flex flex-wrap justify-between gap-2"><button type="button" onClick={() => { if(window.history.length > 1) router.back(); else router.push("/dashboard/employer"); }} className="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-blue-50"><ArrowLeft className="h-4 w-4"/> Back</button><button type="button" disabled={signingOut} onClick={signOut} className="inline-flex items-center gap-2 rounded-xl bg-[#07111f] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"><LogOut className="h-4 w-4"/>{signingOut ? "Signing out..." : "Log out"}</button></div>{children}</div>
       </main>
     </div>
   );
