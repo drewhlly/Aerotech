@@ -1,0 +1,1 @@
+import ProfileWorkspace from "@/components/employee-profile-workspace";export default function Page(){return <ProfileWorkspace mode="employee"/>;}
