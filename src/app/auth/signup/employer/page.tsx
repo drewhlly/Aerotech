@@ -53,6 +53,7 @@ export default function EmployerSignupPage() {
         setError(data.error || "We couldn't create your account. Please try again.");
         return;
       }
+      window.localStorage.setItem("aerotech_employer_country", values.country.trim());
       window.location.assign("/onboarding/employer");
     } catch {
       setError("Unable to connect to Aerotech right now. Please try again.");
