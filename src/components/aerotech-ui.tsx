@@ -5,6 +5,11 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
   Activity,
+  ClipboardList,
+  Package,
+  Scale,
+  Target,
+  ListChecks,
   BarChart3,
   Bell,
   Bot,
@@ -116,6 +121,8 @@ const navigation = [
       { label: "Recruitment", href: "/dashboard/employer/recruitment", icon: BriefcaseBusiness },
       { label: "Onboarding", href: "/dashboard/employer/onboarding", icon: UserRound },
       { label: "Documents", href: "/dashboard/employer/documents", icon: FileText },
+      { label: "Employee Assets", href: "/dashboard/employer/hr/assets", icon: Package },
+      { label: "Employee Requests", href: "/dashboard/employer/requests", icon: ClipboardList },
     ],
   },
   {
@@ -126,6 +133,9 @@ const navigation = [
       { label: "Shifts", href: "/dashboard/employer/attendance/shifts", icon: ClipboardCheck },
       { label: "Training", href: "/dashboard/employer/training", icon: GraduationCap },
       { label: "Performance", href: "/dashboard/employer/performance", icon: Activity },
+      { label: "Goals & OKRs", href: "/dashboard/employer/hr/goals", icon: Target },
+      { label: "Pulse Surveys", href: "/dashboard/employer/hr/surveys", icon: ListChecks },
+      { label: "Attendance Register", href: "/dashboard/employer/hr/attendance", icon: CalendarCheck2 },
     ],
   },
   {
@@ -148,6 +158,8 @@ const navigation = [
     title: "SETTINGS",
     items: [
       { label: "Payroll Settings", href: "/dashboard/employer/payroll/settings", icon: Settings },
+      { label: "HR Tasks", href: "/dashboard/employer/hr/tasks", icon: ClipboardCheck },
+      { label: "Disciplinary Cases", href: "/dashboard/employer/hr/disciplinary", icon: Scale },
     ],
   },
 ];
@@ -186,7 +198,7 @@ export function DashboardShell({
                     const active =
                       pathname === item.href ||
                       (item.href !== "/dashboard/employer" &&
-                        pathname.startsWith(item.href));
+                        pathname.startsWith(item.href + "/"));
 
                     const Icon = item.icon;
 
