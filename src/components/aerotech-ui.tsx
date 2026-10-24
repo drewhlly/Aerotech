@@ -112,6 +112,7 @@ const navigation = [
     items: [
       { label: "Dashboard", href: "/dashboard/employer", icon: LayoutDashboard },
       { label: "AI Assistant", href: "/dashboard/employer/ai", icon: Bot },
+      { label: "Aerotech Meet", href: "/meet", icon: MessageCircle },
     ],
   },
   {
