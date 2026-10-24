@@ -1,5 +1,5 @@
-import {DashboardShell,PageHeader} from "@/components/aerotech-ui";
 "use client";
+import {DashboardShell,PageHeader} from "@/components/aerotech-ui";
 import {useEffect,useState,type FormEvent} from "react";
 
 type Employee={id:string;first_name:string;last_name:string};
