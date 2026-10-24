@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { currentEmployer } from "@/lib/employer-session";
+import { currentEmployer, db } from "@/lib/employer-session";
 export const runtime = "nodejs";
 export async function POST(request: Request) {
   const employerId = await currentEmployer();
@@ -11,6 +11,15 @@ export async function POST(request: Request) {
   const key = process.env.OPENAI_API_KEY;
   if (!key) return NextResponse.json({ error: "Aerotech AI is not configured yet. Please contact the administrator." }, { status: 503 });
   try {
+    const pool=db();
+    let workforceContext="Workforce counts unavailable.";
+    try {
+      const [staff,requests]=await Promise.all([
+        pool.query("SELECT COUNT(*)::int AS total FROM workforce_employees WHERE employer_id=$1",[employerId]),
+        pool.query("SELECT COUNT(*)::int AS pending FROM employee_requests WHERE employer_id=$1 AND status=$2",[employerId,"pending"])
+      ]);
+      workforceContext=`Verified company totals: employees=${staff.rows[0].total}; pending HR requests=${requests.rows[0].pending}. No individual employee details were provided.`;
+    } finally {await pool.end();}
     const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
@@ -18,7 +27,7 @@ export async function POST(request: Request) {
         model: process.env.OPENAI_MODEL || "gpt-4.1-mini",
         store: false,
         max_output_tokens: 650,
-        instructions: "You are Aerotech's HR and workforce assistant. Help employers with recruitment, payroll concepts, compliance, training, and workforce policy. You do NOT have access to this employer's company records, employee details, live payroll, or attendance, so never invent figures or claim to have checked them. For tax or legal topics, explain rules may vary by jurisdiction and require professional verification. Never claim to have paid staff or approved a payroll. Be concise and practical.",
+        instructions: "You are Aerotech's HR and workforce assistant. Help employers with recruitment, payroll concepts, compliance, training, and workforce policy. You only have access to the following two aggregate company metrics for the authenticated tenant. Do not claim to have accessed individual employee records, payroll, or live attendance. For tax or legal topics, explain rules may vary by jurisdiction and require professional verification. Never claim to have paid staff or approved a payroll. Be concise and practical. " + workforceContext,",
         input: question.trim(),
       }),
       signal: AbortSignal.timeout(20000),
