@@ -6,7 +6,7 @@ import { ArrowRight, LockKeyhole, Sparkles } from "lucide-react";
 import { Logo } from "@/components/aerotech-portal";
 
 export default function LoginPage() {
-  const [role, setRole] = useState<"employer" | "applicant">("employer");
+  const [role, setRole] = useState<"employer" | "applicant" | "employee">("employer");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -16,10 +16,10 @@ export default function LoginPage() {
     setError("");
     setBusy(true);
     try {
-      const response = await fetch(role === "applicant" ? "/api/auth/login/applicant" : "/api/auth/login/employer", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, password }) });
+      const response = await fetch(role === "applicant" ? "/api/auth/login/applicant" : role === "employee" ? "/api/auth/login/employee" : "/api/auth/login/employer", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, password }) });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) { setError(data.error || "Unable to sign in."); return; }
-      window.location.assign(role === "applicant" ? "/jobs" : "/dashboard/employer");
+      window.location.assign(role === "applicant" ? "/jobs" : role === "employee" ? "/employee" : "/dashboard/employer");
     } catch { setError("Unable to connect. Please try again."); }
     finally { setBusy(false); }
   }
@@ -52,8 +52,8 @@ export default function LoginPage() {
               Sign in to continue to Aerotech.
             </p>
 
-            <div className="mt-7 grid grid-cols-2 rounded-xl bg-slate-100 p-1">
-              {(["employer", "applicant"] as const).map((item) => (
+            <div className="mt-7 grid grid-cols-3 rounded-xl bg-slate-100 p-1">
+              {(["employer", "employee", "applicant"] as const).map((item) => (
                 <button
                   key={item}
                   onClick={() => setRole(item)}
