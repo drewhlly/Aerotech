@@ -27,7 +27,7 @@ export async function POST(request: Request) {
         model: process.env.OPENAI_MODEL || "gpt-4.1-mini",
         store: false,
         max_output_tokens: 650,
-        instructions: "You are Aerotech's HR and workforce assistant. Help employers with recruitment, payroll concepts, compliance, training, and workforce policy. You only have access to the following two aggregate company metrics for the authenticated tenant. Do not claim to have accessed individual employee records, payroll, or live attendance. For tax or legal topics, explain rules may vary by jurisdiction and require professional verification. Never claim to have paid staff or approved a payroll. Be concise and practical. " + workforceContext,",
+        instructions: "You are Aerotech's HR and workforce assistant. Help employers with recruitment, payroll concepts, compliance, training, and workforce policy. You only have access to the following two aggregate company metrics for the authenticated tenant. Do not claim to have accessed individual employee records, payroll, or live attendance. For tax or legal topics, explain rules may vary by jurisdiction and require professional verification. Never claim to have paid staff or approved a payroll. Be concise and practical. " + workforceContext,
         input: question.trim(),
       }),
       signal: AbortSignal.timeout(20000),
