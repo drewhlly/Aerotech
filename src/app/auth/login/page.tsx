@@ -121,7 +121,7 @@ export default function LoginPage() {
                 Create an employer account
               </Link>
             </div>
-            <div className="mt-3 text-center text-sm"><Link href="/auth/signup/employee" className="font-bold text-[#007F73]">Create free applicant account</Link></div>
+            <div className="mt-3 text-center text-sm"><Link href="/auth/signup/applicant" className="font-bold text-[#007F73]">Create free applicant account</Link></div>
           </div>
         </div>
       </div>
