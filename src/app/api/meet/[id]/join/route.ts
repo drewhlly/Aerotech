@@ -22,7 +22,7 @@ export async function GET(_request:Request,context:{params:Promise<{id:string}>}
   const room="aerotech-"+employerId.replaceAll("-","")+"-"+id.replaceAll("-","");
   const now=Math.floor(Date.now()/1000);
   const header=encode({alg:"HS256",typ:"JWT"});
-  const payload=encode({aud:"jitsi",iss:appId,sub:domain,room,iat:now,nbf:now-5,exp:now+3600,context:{user:{name:employee?employee.first_name+" "+employee.last_name:"Employer host",email:employee?.email||undefined,moderator:!employee}}});
+  const payload=encode({aud:appId,iss:appId,sub:process.env.JITSI_JWT_SUB||"meet.jitsi",room,iat:now,nbf:now-5,exp:now+3600,context:{user:{name:employee?employee.first_name+" "+employee.last_name:"Employer host",email:employee?.email||undefined,moderator:!employee}}});
   const body=header+"."+payload;
   const signature=createHmac("sha256",secret).update(body).digest("base64url");
   return NextResponse.json({domain,room,token:body+"."+signature,title:access.rows[0].title});
