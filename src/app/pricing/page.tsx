@@ -121,8 +121,8 @@ export default function PricingPage() {
 
         <section className="mx-auto mt-16 max-w-3xl rounded-2xl border border-slate-200 bg-white p-8 text-center">
           <h2 className="text-2xl font-bold text-slate-950">Employees and applicants join free</h2>
-          <p className="mt-3 text-slate-600">Only companies pay for Aerotech subscriptions. Employees are invited by their employers, and applicants can explore job opportunities at no cost.</p>
-          <Link href="/jobs" className="mt-6 inline-block rounded-xl bg-slate-950 px-6 py-3.5 font-semibold text-white">Find jobs</Link>
+          <p className="mt-3 text-slate-600">Only companies pay for Aerotech subscriptions. Employees are invited by their employers, and applicants can create free accounts to view job opportunities.</p>
+          <Link href="/careers" className="mt-6 inline-block rounded-xl bg-slate-950 px-6 py-3.5 font-semibold text-white">Find jobs</Link>
         </section>
 
         <div className="mt-16 text-center text-sm text-slate-500">
