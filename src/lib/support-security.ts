@@ -1,4 +1,4 @@
-import {createHmac,createCipheriv,createDecipheriv,randomBytes,timingSafeEqual} from "node:crypto";
+import {createHmac,createCipheriv,createDecipheriv,randomBytes,timingSafeEqual,scryptSync} from "node:crypto";
 function decodeBase32(value:string){
  const input=value.toUpperCase().replace(/=+$/,"");if(!/^[A-Z2-7]{32,128}$/.test(input))throw Error("Invalid authenticator secret");
  let bits=0,buffer=0;const out:number[]=[];
@@ -11,8 +11,15 @@ export function validTotpStep(secret:string,code:string,lastStep:number,now=Date
  const step=Math.floor(now/30000);for(const candidate of [step,step-1,step+1]){if(candidate>lastStep&&timingSafeEqual(Buffer.from(totp(secret,candidate)),Buffer.from(code)))return candidate;}return null;
 }
 function encryptionKey(){const value=process.env.SUPPORT_MFA_ENCRYPTION_KEY;if(!value||!/^[a-f0-9]{64}$/i.test(value))throw Error("Support authentication is not configured");return Buffer.from(value,"hex");}
-export function encryptTotp(secret:string){decodeBase32(secret);const iv=randomBytes(12);const cipher=createCipheriv("aes-256-gcm",encryptionKey(),iv);const data=Buffer.concat([cipher.update(secret.toUpperCase()),cipher.final()]);return [iv,cipher.getAuthTag(),data].map(x=>x.toString("base64url")).join(".");}
-export function decryptTotp(value:string){const [iv,tag,data]=value.split(".").map(x=>Buffer.from(x,"base64url"));const cipher=createDecipheriv("aes-256-gcm",encryptionKey(),iv);cipher.setAuthTag(tag);return Buffer.concat([cipher.update(data),cipher.final()]).toString();}
+export function encryptTotp(secret:string,key?:Buffer){decodeBase32(secret);const iv=randomBytes(12);const cipher=createCipheriv("aes-256-gcm",key||encryptionKey(),iv);const data=Buffer.concat([cipher.update(secret.toUpperCase()),cipher.final()]);return [iv,cipher.getAuthTag(),data].map(x=>x.toString("base64url")).join(".");}
+export function decryptTotp(value:string,key?:Buffer){const [iv,tag,data]=value.split(".").map(x=>Buffer.from(x,"base64url"));const cipher=createDecipheriv("aes-256-gcm",key||encryptionKey(),iv);cipher.setAuthTag(tag);return Buffer.concat([cipher.update(data),cipher.final()]).toString();}
 export const SUPPORT_SCOPES=["workforce","recruitment","meetings","payroll"] as const;
 export type SupportScope=typeof SUPPORT_SCOPES[number];
 export function validateGrant(scopes:unknown,minutes:unknown){return Array.isArray(scopes)&&scopes.length>0&&scopes.length<=4&&new Set(scopes).size===scopes.length&&scopes.every(s=>SUPPORT_SCOPES.includes(s))&&[15,30,60].includes(Number(minutes));}
+
+// New enrollments protect the authenticator secret with a domain-separated key
+// derived from the staff password. No shared server key or plaintext secret is stored.
+function passwordMfaKey(password:string,salt:string){return scryptSync(password,"aerotech-support-mfa:"+salt,32);}
+export function encryptStaffTotp(secret:string,password:string,salt:string){return "pw."+encryptTotp(secret,passwordMfaKey(password,salt));}
+export function decryptStaffTotp(value:string,password:string,salt:string){return value.startsWith("pw.")?decryptTotp(value.slice(3),passwordMfaKey(password,salt)):decryptTotp(value);}
+export function generateTotpSecret(){const bytes=randomBytes(20);let bits=0,buffer=0,result="";for(const byte of bytes){buffer=(buffer<<8)|byte;bits+=8;while(bits>=5){bits-=5;result+="ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"[(buffer>>>bits)&31];}}return result;}

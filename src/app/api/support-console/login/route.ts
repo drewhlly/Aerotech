@@ -4,7 +4,7 @@ import {randomUUID,randomBytes,scrypt as rawScrypt,timingSafeEqual,createHash} f
 import {promisify} from "node:util";
 import {db,sessionDigest} from "@/lib/employer-session";
 import {SUPPORT_COOKIE,sameOrigin} from "@/lib/support-session";
-import {decryptTotp,validTotpStep} from "@/lib/support-security";
+import {decryptStaffTotp,validTotpStep} from "@/lib/support-security";
 const scrypt=promisify(rawScrypt);export const runtime="nodejs";
 export async function POST(request:Request){
  if(!sameOrigin(request))return NextResponse.json({error:"Request origin not allowed"},{status:403});
@@ -21,7 +21,7 @@ export async function POST(request:Request){
    const [algorithm,salt,hex]=String(agent.password_hash).split(":");
    if(algorithm==="scrypt"&&salt&&/^[a-f0-9]{128}$/i.test(hex)){
     const actual=await scrypt(b.password,salt,64) as Buffer;
-    if(timingSafeEqual(actual,Buffer.from(hex,"hex")))step=validTotpStep(decryptTotp(agent.totp_encrypted),b.code,Number(agent.last_totp_step));
+    if(timingSafeEqual(actual,Buffer.from(hex,"hex")))step=validTotpStep(decryptStaffTotp(agent.totp_encrypted,b.password,salt),b.code,Number(agent.last_totp_step));
    }
   }
   if(step===null){await client.query("INSERT INTO support_auth_events(id,email_hash,agent_id,outcome) VALUES($1,$2,$3,'failure')",[randomUUID(),hash,agent?.id||null]);if(agent)await client.query("UPDATE support_agents SET failed_attempts=failed_attempts+1,locked_until=CASE WHEN failed_attempts>=4 THEN NOW()+INTERVAL '15 minutes' ELSE locked_until END WHERE id=$1",[agent.id]);await client.query("COMMIT");return NextResponse.json({error:"Unable to sign in. Check your credentials and a fresh authenticator code."},{status:401});}
