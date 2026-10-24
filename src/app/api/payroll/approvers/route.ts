@@ -1,10 +1,10 @@
 import {NextResponse} from "next/server";
 import {currentEmployer,db} from "@/lib/employer-session";
 export const runtime="nodejs";
-const stages=["hr","finance","management","ceo"];
+const stages=["hr","finance","ceo"];
 export async function GET(){
  const employer=await currentEmployer();if(!employer)return NextResponse.json({error:"Employer sign-in required"},{status:401});
- const pool=db();try{const r=await pool.query("SELECT a.stage,a.employee_id,e.first_name,e.last_name FROM payroll_stage_approvers a JOIN workforce_employees e ON e.id=a.employee_id AND e.employer_id=a.employer_id WHERE a.employer_id=$1 ORDER BY array_position(ARRAY['hr','finance','management','ceo']::text[],a.stage)",[employer]);return NextResponse.json({approvers:r.rows});}catch{return NextResponse.json({error:"Approvers unavailable"},{status:503});}finally{await pool.end();}
+ const pool=db();try{const r=await pool.query("SELECT a.stage,a.employee_id,e.first_name,e.last_name FROM payroll_stage_approvers a JOIN workforce_employees e ON e.id=a.employee_id AND e.employer_id=a.employer_id WHERE a.employer_id=$1 ORDER BY array_position(ARRAY['hr','finance','ceo']::text[],a.stage)",[employer]);return NextResponse.json({approvers:r.rows});}catch{return NextResponse.json({error:"Approvers unavailable"},{status:503});}finally{await pool.end();}
 }
 export async function POST(request:Request){
  const employer=await currentEmployer();if(!employer)return NextResponse.json({error:"Employer sign-in required"},{status:401});
