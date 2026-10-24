@@ -187,141 +187,18 @@ export function PublicNav() {
   );
 }
 
-export function PortalShell({
-  children,
-  role = "employee",
-}: {
-  children: React.ReactNode;
-  role?: "employee" | "applicant" | "employer";
-}) {
-  const router = useRouter();
-  const [signingOut, setSigningOut] = useState(false);
-  async function signOut() {
-    if (signingOut) return;
-    setSigningOut(true);
-    try {
-      const response = await fetch(role === "employer" ? "/api/auth/logout" : role === "employee" ? "/api/auth/logout/employee" : "/api/auth/logout/applicant", {method:"POST"});
-      if (!response.ok) throw new Error("Sign out failed");
-      window.location.assign("/auth/login?role=" + role);
-    } catch { setSigningOut(false); window.alert("Unable to sign out. Please try again."); }
-  }
-  const employeeLinks = [
-    ["/employee", "Dashboard", LayoutDashboard],
-    ["/employee/attendance", "Attendance", Clock3],
-    ["/employee/leave", "Leave", CalendarDays],
-    ["/employee/training", "Training", GraduationCap],
-    ["/employee/payslips", "Payslips", Banknote],
-    ["/employee/documents", "Documents", FileText],
-  ] as const;
-
-  const applicantLinks = [
-    ["/applicant", "Overview", LayoutDashboard],
-    ["/jobs", "Find Jobs", Search],
-    ["/applicant/applications", "Applications", BriefcaseBusiness],
-    ["/applicant/interviews", "Interviews", CalendarDays],
-    ["/applicant/assessments", "Assessments", ClipboardCheck],
-  ] as const;
-
-  const employerLinks = [
-    ["/dashboard/employer", "Command Center", LayoutDashboard],
-    ["/dashboard/employer/employees", "Workforce", Users],
-    ["/dashboard/employer/recruitment", "Recruitment", BriefcaseBusiness],
-    ["/dashboard/employer/attendance", "Attendance", Clock3],
-    ["/dashboard/employer/training", "Training & L&D", GraduationCap],
-    ["/dashboard/employer/payroll", "Payroll", Banknote],
-    ["/dashboard/employer/payroll/wallet", "Payroll Wallet", Wallet],
-    ["/dashboard/employer/ai", "AI Assistant", Sparkles],
-  ] as const;
-
-  const links =
-    role === "employer"
-      ? employerLinks
-      : role === "applicant"
-        ? applicantLinks
-        : employeeLinks;
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-[#E8F5FF] via-[#F3F7FF] to-[#EEF0FF]">
-      <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-blue-100 bg-white/95 shadow-xl shadow-blue-900/5 lg:block">
-        <div className="border-b border-slate-200 p-5">
-          <Logo />
-        </div>
-
-        <div className="p-4">
-          <div className="mb-3 px-3 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-            {role === "employer"
-              ? "Employer OS"
-              : role === "applicant"
-                ? "Applicant Portal"
-                : "Employee Portal"}
-          </div>
-
-          <nav className="space-y-1">
-            {links.map(([href, label, Icon]) => (
-              <Link
-                key={href}
-                href={href}
-                className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-100 hover:text-[#102A43]"
-              >
-                <Icon size={18} />
-                {label}
-              </Link>
-            ))}
-          </nav>
-
-          <div className="my-5 border-t border-slate-200" />
-
-          <Link
-            href="/dashboard/employer/ai"
-            className="flex items-center gap-3 rounded-xl bg-[#E6F7F5] px-3 py-3 text-sm font-bold text-[#007F73]"
-          >
-            <Sparkles size={18} />
-            Ask Aerotech AI
-          </Link>
-        </div>
-
-        <div className="absolute bottom-0 left-0 right-0 border-t border-slate-200 p-4">
-          <button type="button" disabled={signingOut} onClick={signOut} className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-slate-600 hover:bg-blue-50 disabled:opacity-50"><LogOut size={18}/>{signingOut ? "Signing out..." : "Log out"}</button>
-        </div>
-      </aside>
-
-      <div className="lg:pl-64">
-        <header className="sticky top-0 z-40 flex min-h-16 items-center justify-between gap-2 border-b border-blue-100 bg-white/90 px-4 py-3 backdrop-blur">
-          <div>
-            <div className="text-xs font-semibold uppercase tracking-widest text-slate-400">
-              Aerotech
-            </div>
-            <div className="font-bold text-[#102A43]">
-              {role === "employer"
-                ? "Employer Operating System"
-                : role === "applicant"
-                  ? "Applicant Portal"
-                  : "Employee Experience"}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <Link
-              href="/dashboard/employer/ai"
-              className="hidden items-center gap-2 rounded-xl bg-[#E6F7F5] px-3 py-2 text-sm font-bold text-[#007F73] sm:flex"
-            >
-              <Sparkles size={16} />
-              AI
-            </Link>
-            <button className="rounded-xl border border-slate-200 p-2 text-slate-500">
-              <Bell size={18} />
-            </button>
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#102A43] text-white">
-              <User size={17} />
-            </div>
-          </div>
-        </header>
-
-        <main className="mx-auto max-w-7xl p-5 lg:p-8"><div className="mb-5 flex flex-wrap items-center justify-between gap-2"><button type="button" onClick={() => { if (window.history.length > 1) router.back(); else router.push(role === "employee" ? "/employee" : role === "applicant" ? "/applicant" : "/dashboard/employer"); }} className="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-white px-4 py-2 text-sm font-semibold text-[#102A43] shadow-sm hover:bg-blue-50"><ArrowLeft size={16}/> Back</button><button type="button" disabled={signingOut} onClick={signOut} className="inline-flex items-center gap-2 rounded-xl bg-[#102A43] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1A4971] disabled:opacity-50"><LogOut size={16}/>{signingOut ? "Signing out..." : "Log out"}</button></div>{children}</main>
-      </div>
-    </div>
-  );
+export function PortalShell({children,role="employee"}:{children:React.ReactNode;role?:"employee"|"applicant"|"employer"}){
+ const router=useRouter();const [open,setOpen]=useState(false),[busy,setBusy]=useState(false);
+ const links=role==="employee"?[["/employee","Dashboard",LayoutDashboard],["/employee/profile","My profile",User],["/employee/attendance","Attendance",Clock3],["/employee/payroll/statements","Payslips",Banknote],["/employee/surveys","Pulse surveys",ClipboardCheck],["/employee/birthdays","Birthdays",CalendarDays],["/employee/notifications","Notifications",Bell],["/employee/documents","Documents",FileText],["/meet","Aerotech Meet",MessageSquare]] as const:role==="applicant"?[["/applicant","Overview",LayoutDashboard],["/jobs","Find jobs",Search],["/applicant/applications","Applications",BriefcaseBusiness]] as const:[["/dashboard/employer","Dashboard",LayoutDashboard]] as const;
+ async function signOut(){setBusy(true);try{const r=await fetch(role==="employee"?"/api/auth/logout/employee":role==="applicant"?"/api/auth/logout/applicant":"/api/auth/logout",{method:"POST"});if(!r.ok)throw Error("Unable to sign out");window.location.assign("/auth/login?role="+role);}catch{setBusy(false);window.alert("Unable to sign out. Please try again.");}}
+ return <div className="min-h-screen bg-gradient-to-br from-[#eaf5ff] via-[#f7f9ff] to-[#f2efff] text-slate-900">
+ <aside className={`fixed inset-y-0 left-0 z-50 w-[270px] transform bg-[#07111f] text-white transition-transform lg:translate-x-0 ${open?"translate-x-0":"-translate-x-full"}`}>
+ <div className="flex h-full flex-col"><div className="border-b border-white/10 px-6 py-6"><div className="text-xl font-black tracking-[.2em] text-white">AEROTECH</div><p className="mt-1 text-xs tracking-wide text-slate-400">People. Performance. Progress.</p></div><nav className="flex-1 space-y-1 overflow-y-auto px-3 py-6"><p className="px-3 pb-3 text-[11px] font-bold tracking-widest text-slate-500">{role.toUpperCase()} WORKSPACE</p>{links.map(([href,label,Icon])=><Link key={href} href={href} onClick={()=>setOpen(false)} className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-slate-300 hover:bg-white/10 hover:text-white"><Icon size={18} className="text-cyan-400"/>{label}</Link>)}</nav><div className="border-t border-white/10 p-4"><button disabled={busy} onClick={signOut} className="flex w-full items-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-white hover:bg-white/10"><LogOut size={17}/>Log out</button></div></div></aside>
+ {open&&<button aria-label="Close navigation" onClick={()=>setOpen(false)} className="fixed inset-0 z-40 bg-slate-950/60 lg:hidden"/>}
+ <div className="lg:pl-[270px]"><header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200 bg-white/95 px-5 backdrop-blur"><div className="flex items-center gap-3"><button aria-label="Open navigation" onClick={()=>setOpen(true)} className="rounded-xl border p-2 lg:hidden"><Menu size={20}/></button><span className="text-sm font-bold text-[#102a43]">Aerotech / {role==="employee"?"Employee workspace":role==="applicant"?"Applicant portal":"Employer workspace"}</span></div><div className="flex items-center gap-3"><Link href={role==="employee"?"/employee/notifications":"/dashboard/employer"} aria-label="Notifications" className="rounded-xl p-2 text-slate-500"><Bell size={20}/></Link><Link href={role==="employee"?"/employee/profile":"/applicant"} aria-label="My profile" className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 to-purple-600 text-white"><User size={18}/></Link></div></header>
+ <main className="mx-auto max-w-7xl px-4 py-6 sm:px-8"><div className="mb-6 flex items-center justify-between"><button onClick={()=>{if(window.history.length>1)router.back();else router.push(role==="employee"?"/employee":"/applicant");}} className="inline-flex items-center gap-2 rounded-xl border bg-white px-4 py-2 text-sm font-semibold"><ArrowLeft size={16}/>Back</button><button disabled={busy} onClick={signOut} className="inline-flex items-center gap-2 rounded-xl bg-[#07111f] px-4 py-2 text-sm font-semibold text-white"><LogOut size={16}/>Log out</button></div>{children}</main></div></div>;
 }
+
 
 export function StatCard({
   title,
