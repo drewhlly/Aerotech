@@ -116,13 +116,13 @@ export const EMPLOYEE_PLAN: SubscriptionPlan = {
   name: "Employee Access",
   accountType: "employee",
   monthly: false,
-  price: "₦50,000",
-  period: "one-time payment",
+  price: "Free",
+  period: "employer-sponsored",
   description:
-    "Complete access to Aerotech's employee career and job discovery tools.",
+    "Free access for employees sponsored by their employer.",
   prices: {
-    NGN: 50000,
-    USD: 50,
+    NGN: 0,
+    USD: 0,
   },
   features: [
     "Employee profile",
