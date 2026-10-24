@@ -39,3 +39,14 @@ test("applicant registration is free and submits to backend", () => {
   assert.match(signup, /Create free account/);
   assert.ok(existsSync(new URL("../src/app/api/auth/signup/applicant/route.ts", import.meta.url)));
 });
+
+test("Aerotech AI screens use the real API rather than canned replies", () => {
+  for (const path of ["src/app/dashboard/employer/ai/page.tsx", "src/components/aerotech-ui.tsx"]) {
+    const source=read(path);
+    assert.match(source, /fetch\("\/api\/ai\/ask"/);
+  }
+  const route=read("src/app/api/ai/ask/route.ts");
+  assert.match(route, /OPENAI_API_KEY/);
+  assert.match(route, /currentEmployer/);
+  assert.match(route, /api\.openai\.com\/v1\/responses/);
+});
