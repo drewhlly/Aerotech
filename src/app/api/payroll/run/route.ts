@@ -3,11 +3,7 @@ import { randomUUID } from "node:crypto";
 import { currentEmployer, db } from "@/lib/employer-session";
 import { calculatePayrollForCountry, payrollJurisdiction } from "@/lib/country-payroll";
 export const runtime="nodejs";
-export async function POST(request: Request) {
- const employerId=await currentEmployer();
- if(!employerId)return NextResponse.json({error:"Sign in required"},{status:401});
- let month:string;
- try {const b=await request.json();month=String(b.month);} catch{return NextResponse.json({error:"Month required"},{status:400});}
+export async function preparePayroll(employerId:string,month:string) {
  if(!/^\d{4}-(0[1-9]|1[0-2])$/.test(month))return NextResponse.json({error:"Use YYYY-MM"},{status:400});
  if(month<"2026-01")return NextResponse.json({error:"These calculation rules apply to payroll from January 2026"},{status:400});
  const pool=db();const client=await pool.connect();
@@ -38,4 +34,10 @@ export async function POST(request: Request) {
   return NextResponse.json({runId,status:"awaiting_hr",...sums},{status:201});
  }catch(e){await client.query("ROLLBACK");return NextResponse.json({error:e instanceof Error?e.message:"Payroll preparation failed"},{status:409});}
  finally{client.release();await pool.end();}
+}
+
+export async function POST(request: Request){
+ const employerId=await currentEmployer();if(!employerId)return NextResponse.json({error:"Sign in required"},{status:401});
+ let month:string;try{const b=await request.json();month=String(b.month);}catch{return NextResponse.json({error:"Month required"},{status:400});}
+ return preparePayroll(employerId,month);
 }
