@@ -5,7 +5,7 @@ const client = new pg.Client({ connectionString: process.env.DATABASE_URL });
 await client.connect();
 try {
   await client.query("BEGIN");
-  for (const file of ["001_employer_accounts.sql", "002_employer_sessions.sql", "003_applicant_accounts.sql", "004_recruitment_payroll.sql", "005_payroll_approvals.sql", "006_nigeria_payroll.sql", "007_workforce_employees.sql"]) {
+  for (const file of ["001_employer_accounts.sql", "002_employer_sessions.sql", "003_applicant_accounts.sql", "004_recruitment_payroll.sql", "005_payroll_approvals.sql", "006_nigeria_payroll.sql", "007_workforce_employees.sql", "008_hr_workflows.sql"]) {
     await client.query(readFileSync(new URL(`../database/${file}`, import.meta.url), "utf8"));
     process.stdout.write(`Applied ${file}\n`);
   }
