@@ -16,7 +16,7 @@ export async function POST(request:Request){
  if(typeof b.surveyId!=="string"||!Number.isInteger(b.rating)||Number(b.rating)<1||Number(b.rating)>5||typeof b.feedback!=="string"||b.feedback.length>1000)return NextResponse.json({error:"Provide a rating from 1 to 5 and optional feedback (up to 1000 characters)"},{status:400});
  const pool=db();try{
  const s=await pool.query("SELECT id FROM hr_surveys WHERE id=$1 AND employer_id=$2 AND active=true AND (closes_at IS NULL OR closes_at>NOW())",[b.surveyId,e.employer_id]);if(!s.rowCount)return NextResponse.json({error:"Survey is closed or unavailable"},{status:404});
- await pool.query("INSERT INTO hr_survey_responses(id,survey_id,employee_id,rating,feedback) VALUES($1,$2,$3,$4,$5)",[randomUUID(),b.surveyId,e.id,b.rating,b.feedback.trim()]);
+ await pool.query("INSERT INTO hr_survey_responses(id,survey_id,employee_id,rating,comment) VALUES($1,$2,$3,$4,$5)",[randomUUID(),b.surveyId,e.id,b.rating,b.feedback.trim()]);
  return NextResponse.json({success:true},{status:201});
  }catch(err){if(typeof err==="object"&&err!==null&&"code" in err&&err.code==="23505")return NextResponse.json({error:"You have already responded"},{status:409});return NextResponse.json({error:"Unable to save response; database migration may be pending"},{status:503})}finally{await pool.end()}
 }
