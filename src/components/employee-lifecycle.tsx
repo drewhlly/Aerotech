@@ -1,0 +1,19 @@
+"use client";
+import {useEffect,useState,type FormEvent} from "react";
+import {DashboardShell,PageHeader} from "@/components/aerotech-ui";
+type Employee={id:string;first_name:string;last_name:string};
+const defs={
+ onboarding:{title:"Onboarding",fields:[["title","Task"],["due_date","Due date"]]},
+ training:{title:"Training",fields:[["title","Course or training"]]},
+ reviews:{title:"Performance reviews",fields:[["summary","Review summary"],["rating","Rating (1 to 5)"]]},
+ documents:{title:"Employee documents",fields:[["title","Document title"],["external_url","Secure document URL"]]},
+ notifications:{title:"Employee notifications",fields:[["title","Notification title"],["body","Message"]]}
+} as const;
+export default function Lifecycle({module}:{module:keyof typeof defs}){
+ const def=defs[module], [employees,setEmployees]=useState<Employee[]>([]),[records,setRecords]=useState<Record<string,unknown>[]>([]);
+ const [v,setV]=useState<Record<string,string>>({}),[message,setMessage]=useState(""),[busy,setBusy]=useState(false);
+ async function load(){const [a,b]=await Promise.all([fetch("/api/employees"),fetch("/api/hr/lifecycle/"+module)]);const x=await a.json(),y=await b.json();if(!a.ok||!b.ok)throw Error(x.error||y.error||"Unable to load");setEmployees(x.employees||[]);setRecords(y.records||[]);}
+ useEffect(()=>{void load().catch(e=>setMessage(e.message));},[module]);
+ async function submit(e:FormEvent){e.preventDefault();setBusy(true);setMessage("");try{const body:Record<string,unknown>={...v};if(v.rating)body.rating=Number(v.rating);const r=await fetch("/api/hr/lifecycle/"+module,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});const d=await r.json();if(!r.ok)throw Error(d.error||"Save failed");setV({});setMessage("Record saved.");await load();}catch(e){setMessage(e instanceof Error?e.message:"Save failed");}finally{setBusy(false);}}
+ return <DashboardShell title={def.title}><PageHeader eyebrow="PEOPLE OPERATIONS" title={def.title} description="Secure company-specific employee records."/><div className="grid gap-6 xl:grid-cols-2"><form className="space-y-4 rounded-2xl border bg-white p-6" onSubmit={submit}><h2 className="font-bold">Create record</h2><label className="block text-sm">Employee<select required value={v.employeeId||""} onChange={e=>setV(x=>({...x,employeeId:e.target.value}))} className="mt-2 block w-full rounded-lg border p-3"><option value="">Select employee</option>{employees.map(x=><option key={x.id} value={x.id}>{x.first_name} {x.last_name}</option>)}</select></label>{def.fields.map(([key,label])=><label key={key} className="block text-sm">{label}<input className="mt-2 block w-full rounded-lg border p-3" required={key!=="due_date"&&key!=="external_url"&&key!=="rating"} type={key==="due_date"?"date":key==="rating"?"number":"text"} min={key==="rating"?1:undefined} max={key==="rating"?5:undefined} value={v[key]||""} onChange={e=>setV(x=>({...x,[key]:e.target.value}))}/></label>)}<button disabled={busy} className="rounded-xl bg-slate-900 px-5 py-3 text-white">Save</button>{message&&<p role="status" className="text-sm">{message}</p>}</form><section className="rounded-2xl border bg-white p-6"><h2 className="font-bold">Records</h2>{records.length?records.map(r=><div key={String(r.id)} className="border-b py-3 text-sm"><strong>{String(r.title||r.summary||"Record")}</strong><p className="text-slate-500">{String(r.status||r.body||"")}</p></div>):<p className="mt-3 text-slate-500">No records yet.</p>}</section></div></DashboardShell>;
+}
