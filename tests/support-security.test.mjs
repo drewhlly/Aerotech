@@ -1,0 +1,9 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {totp,validTotpStep,encryptTotp,decryptTotp,validateGrant} from '../src/lib/support-security.ts';
+const secret='GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ';
+test('TOTP matches RFC 6238 SHA1 test vectors',()=>{for(const [time,code] of [[59,'94287082'],[1111111109,'07081804'],[1111111111,'14050471'],[1234567890,'89005924'],[2000000000,'69279037'],[20000000000,'65353130']])assert.equal(totp(secret,Math.floor(time/30),8),code);});
+test('used authenticator codes cannot be replayed',()=>{const now=1234567890000,step=Math.floor(now/30000);const code=totp(secret,step);assert.equal(validTotpStep(secret,code,step-1,now),step);assert.equal(validTotpStep(secret,code,step,now),null);});
+test('authenticator window is bounded and malformed codes fail',()=>{const now=1234567890000,step=Math.floor(now/30000);assert.equal(validTotpStep(secret,totp(secret,step-2),-1,now),null);assert.equal(validTotpStep(secret,'abc123',-1,now),null);});
+test('MFA secrets are encrypted and authenticated at rest',()=>{process.env.SUPPORT_MFA_ENCRYPTION_KEY='37'.repeat(32);const encrypted=encryptTotp(secret);assert.equal(decryptTotp(encrypted),secret);assert.ok(!encrypted.includes(secret));const pieces=encrypted.split('.');pieces[1]=Buffer.alloc(16).toString('base64url');assert.throws(()=>decryptTotp(pieces.join('.')));delete process.env.SUPPORT_MFA_ENCRYPTION_KEY;assert.throws(()=>encryptTotp(secret));});
+test('consent is limited to explicit supported scopes and at most one hour',()=>{assert.ok(validateGrant(['workforce'],15));assert.ok(validateGrant(['workforce','meetings'],60));for(const [scope,time] of [[[],30],[['bank'],30],[['workforce','workforce'],30],[['payroll'],120],[['payroll'],0]])assert.equal(validateGrant(scope,time),false);});
