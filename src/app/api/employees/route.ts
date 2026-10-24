@@ -6,7 +6,7 @@ export async function GET(){
  const employerId=await currentEmployer();
  if(!employerId)return NextResponse.json({error:"Sign in required"},{status:401});
  const pool=db();try{
-  const r=await pool.query("SELECT id,employee_number,first_name,last_name,email,phone,job_title,department,location,employment_status,hire_date FROM workforce_employees WHERE employer_id=$1 ORDER BY created_at DESC",[employerId]);
+  const r=await pool.query("SELECT id,employee_number,first_name,last_name,email,phone,job_title,department,location,employment_status,hire_date,manager_employee_id,department_id FROM workforce_employees WHERE employer_id=$1 ORDER BY created_at DESC",[employerId]);
   return NextResponse.json({employees:r.rows});
  }catch{return NextResponse.json({error:"Employee database unavailable"},{status:503});}finally{await pool.end();}
 }
