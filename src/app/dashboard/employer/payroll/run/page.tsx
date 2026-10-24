@@ -1,215 +1,41 @@
 "use client";
 
 import Link from "next/link";
-import {
-  ArrowLeft,
-  ArrowRight,
-  CheckCircle2,
-  CircleAlert,
-  Landmark,
-  ShieldCheck,
-  WalletCards,
-} from "lucide-react";
+import {useState} from "react";
 
-import { employerOSData, formatMoney as formatCurrency } from "@/lib/employer-os";
-
-// Use the same summary as the payroll overview; do not invent employee breakdowns.
-const payroll = employerOSData.payroll;
-const gross = payroll.gross;
-const paye = payroll.employeeTax;
-const employeePension = payroll.pension;
-const employerContributions = payroll.employerContributions;
-const netPay = payroll.net;
-
-export default function PayrollRunPage() {
-  return (
-    <main className="min-h-screen bg-[#f7f8fa] text-slate-900">
-      <header className="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-5 sm:px-8">
-        <Link
-          href="/dashboard/employer/payroll"
-          className="flex items-center gap-2 text-sm font-semibold"
-        >
-          <ArrowLeft size={16} />
-          Payroll
-        </Link>
-
-        <div className="text-xs font-medium text-slate-500">
-          Payroll run · {payroll.currentPeriod}
-        </div>
-      </header>
-
-      <div className="mx-auto max-w-[1100px] space-y-6 p-5 sm:p-8">
-        <div>
-          <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
-            Payroll processing
-          </div>
-
-          <h1 className="mt-2 text-2xl font-bold tracking-tight">
-            Review payroll before approval
-          </h1>
-
-          <p className="mt-1 text-sm text-slate-500">
-            Review salary, deductions, PAYE and pension before
-            payroll is submitted.
-          </p>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          <Box
-            title="Employees"
-            value={`${employerOSData.company.employees}`}
-            icon={<WalletCards size={16} />}
-          />
-
-          <Box
-            title="Gross"
-            value={formatCurrency(gross)}
-            icon={<WalletCards size={16} />}
-          />
-
-          <Box
-            title="PAYE"
-            value={formatCurrency(paye)}
-            icon={<Landmark size={16} />}
-          />
-
-          <Box
-            title="Pension"
-            value={formatCurrency(employeePension)}
-            icon={<ShieldCheck size={16} />}
-          />
-
-          <Box
-            title="Net pay"
-            value={formatCurrency(netPay)}
-            icon={<CheckCircle2 size={16} />}
-          />
-        </div>
-
-        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-200 p-5">
-            <h2 className="font-semibold">
-              Statutory payroll review
-            </h2>
-
-            <p className="mt-1 text-xs text-slate-500">
-              Nigeria payroll configuration
-            </p>
-          </div>
-
-          <div className="divide-y divide-slate-100">
-            <ReviewRow
-              title="PAYE deductions"
-              value={formatCurrency(paye)}
-              status="Ready"
-            />
-
-            <ReviewRow
-              title="Employee pension"
-              value={formatCurrency(employeePension)}
-              status="Ready"
-            />
-
-            <ReviewRow
-              title="Employer contributions"
-              value={formatCurrency(employerContributions)}
-              status="Ready"
-            />
-
-            <ReviewRow
-              title="Employee bank/payment details"
-              value={`${employerOSData.company.employees} employees`}
-              status="Ready"
-            />
-          </div>
-        </div>
-
-        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
-          <div className="flex gap-3">
-            <CircleAlert
-              size={18}
-              className="mt-0.5 text-amber-600"
-            />
-
-            <div>
-              <div className="text-sm font-semibold text-amber-900">
-                Final statutory verification required
-              </div>
-
-              <p className="mt-1 text-xs leading-5 text-amber-800">
-                Aerotech should verify the applicable current
-                statutory rules, thresholds, contribution rates,
-                filing deadlines and employee eligibility before
-                approving a production payroll.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-col justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center">
-          <div>
-            <div className="text-sm font-semibold">
-              Payroll ready for approval
-            </div>
-
-            <div className="mt-1 text-xs text-slate-500">
-              This action should create an immutable payroll
-              snapshot in production.
-            </div>
-          </div>
-
-          <button className="flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 py-3 text-xs font-bold text-white">
-            Approve payroll
-            <ArrowRight size={15} />
-          </button>
-        </div>
-      </div>
-    </main>
-  );
-}
-
-function Box({
-  title,
-  value,
-  icon,
-}: {
-  title: string;
-  value: string;
-  icon: React.ReactNode;
-}) {
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="flex items-center gap-2 text-[11px] text-slate-500">
-        {icon}
-        {title}
-      </div>
-
-      <div className="mt-2 text-lg font-bold">{value}</div>
-    </div>
-  );
-}
-
-function ReviewRow({
-  title,
-  value,
-  status,
-}: {
-  title: string;
-  value: string;
-  status: string;
-}) {
-  return (
-    <div className="flex items-center justify-between gap-4 p-5">
-      <div>
-        <div className="text-sm font-medium">{title}</div>
-        <div className="mt-1 text-xs text-slate-400">
-          {value}
-        </div>
-      </div>
-
-      <span className="rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-semibold text-emerald-700">
-        {status}
-      </span>
-    </div>
-  );
+type PayrollResult = {runId:string;status:string;gross:number;deductions:number;net:number;paye:number;employerPension:number};
+const money=(value:number)=>new Intl.NumberFormat("en-NG",{style:"currency",currency:"NGN"}).format(value);
+export default function PayrollRunPage(){
+ const [month,setMonth]=useState(new Date().toISOString().slice(0,7));
+ const [result,setResult]=useState<PayrollResult|null>(null);
+ const [error,setError]=useState("");
+ const [busy,setBusy]=useState(false);
+ async function prepare(){
+  setBusy(true);setError("");setResult(null);
+  try{
+   const response=await fetch("/api/payroll/run",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({month})});
+   const body=await response.json();
+   if(!response.ok)throw new Error(body.error||"Unable to prepare payroll");
+   setResult(body as PayrollResult);
+  }catch(e){setError(e instanceof Error?e.message:"Payroll request failed");}
+  finally{setBusy(false);}
+ }
+ return <main className="min-h-screen bg-slate-50 p-6 text-slate-900">
+  <div className="mx-auto max-w-3xl space-y-6">
+   <Link href="/dashboard/employer/payroll" className="text-sm underline">Back to payroll</Link>
+   <header><h1 className="text-2xl font-bold">Prepare payroll</h1><p className="mt-2 text-sm text-slate-600">Calculate a payroll draft from your company's active payroll employees and approved deductions. No funds will be transferred.</p></header>
+   <section className="rounded-xl border bg-white p-6">
+    <label htmlFor="payroll-month" className="block text-sm font-semibold">Payroll month</label>
+    <input id="payroll-month" type="month" min="2026-01" required value={month} onChange={e=>setMonth(e.target.value)} className="mt-2 block rounded-lg border p-3"/>
+    <button type="button" onClick={prepare} disabled={busy||!/^\d{4}-(0[1-9]|1[0-2])$/.test(month)} className="mt-5 rounded-lg bg-slate-900 px-5 py-3 text-sm font-semibold text-white disabled:opacity-50">{busy?"Preparing...":"Prepare payroll draft"}</button>
+    {error&&<p role="alert" className="mt-4 text-sm text-red-700">{error}</p>}
+   </section>
+   {result&&<section aria-live="polite" className="rounded-xl border bg-white p-6">
+    <h2 className="text-lg font-bold">Payroll draft created</h2>
+    <p className="mt-2 text-sm text-slate-600">Reference: {result.runId}</p>
+    <dl className="mt-4 space-y-3 text-sm">{([["Gross pay",result.gross],["Deductions",result.deductions],["PAYE",result.paye],["Employer pension",result.employerPension],["Net pay",result.net]] as const).map(([label,value])=><div key={label} className="flex justify-between border-b pb-2"><dt>{label}</dt><dd className="font-semibold">{money(value)}</dd></div>)}</dl>
+    <p className="mt-5 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">Status: {result.status}. Final approval and salary transfers remain disabled until separately authenticated HR, Finance, Management and CEO approvals are configured and tested. This is not a payment confirmation.</p>
+   </section>}
+  </div>
+ </main>;
 }
