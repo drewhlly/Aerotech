@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
-import { ArrowRight, LockKeyhole, Sparkles } from "lucide-react";
+import { ArrowRight, LockKeyhole, Sparkles, Eye, EyeOff } from "lucide-react";
 import { Logo } from "@/components/aerotech-portal";
 
 function LoginForm() {
@@ -11,6 +11,7 @@ function LoginForm() {
   const [role, setRole] = useState<"employer" | "applicant" | "employee">(requestedRole === "applicant" ? "applicant" : requestedRole === "employee" ? "employee" : "employer");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   async function signIn(event: React.FormEvent<HTMLFormElement>) {
@@ -92,14 +93,19 @@ function LoginForm() {
                 <label className="text-sm font-bold text-slate-700">
                   Password
                 </label>
-                <input
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3.5 outline-none focus:border-[#00A896]"
-                />
+                <div className="relative mt-2">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full rounded-xl border border-slate-200 py-3.5 pl-4 pr-14 outline-none focus:border-[#00A896]"
+                  />
+                  <button type="button" onClick={() => setShowPassword((current) => !current)} aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword} className="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-slate-500 hover:text-[#102A43] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00A896]">
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
               </div>
 
               {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
