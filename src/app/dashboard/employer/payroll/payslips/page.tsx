@@ -1,97 +1,11 @@
 "use client";
-
+import {useEffect,useState} from "react";
 import Link from "next/link";
-import { ArrowLeft, Download, FileText } from "lucide-react";
-
-import {
-  PAYROLL_EMPLOYEES,
-  calculateDeductions,
-  calculateGrossPay,
-  calculateNetPay,
-  formatPayrollAmount,
-} from "@/lib/payroll";
-
-export default function PayslipsPage() {
-  const employees = PAYROLL_EMPLOYEES.filter(
-    (employee) => employee.currency === "NGN"
-  );
-
-  return (
-    <main className="min-h-screen bg-slate-50">
-      <div className="mx-auto max-w-6xl px-6 py-8">
-        <Link
-          href="/dashboard/employer/payroll"
-          className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600"
-        >
-          <ArrowLeft size={16} />
-          Back to Payroll
-        </Link>
-
-        <div className="mt-6">
-          <h1 className="text-3xl font-bold text-slate-900">Payslips</h1>
-          <p className="mt-2 text-sm text-slate-500">
-            View and manage employee payslips for August 2026.
-          </p>
-        </div>
-
-        <div className="mt-8 space-y-4">
-          {employees.map((employee) => (
-            <div
-              key={employee.id}
-              className="flex flex-col gap-5 rounded-2xl border border-slate-200 bg-white p-6 md:flex-row md:items-center md:justify-between"
-            >
-              <div className="flex items-center gap-4">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100">
-                  <FileText size={20} className="text-slate-600" />
-                </div>
-
-                <div>
-                  <p className="font-semibold text-slate-900">
-                    {employee.name}
-                  </p>
-                  <p className="mt-1 text-xs text-slate-500">
-                    {employee.employeeId} · August 2026
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-6 text-right">
-                <div>
-                  <p className="text-xs text-slate-400">Gross</p>
-                  <p className="text-sm font-semibold text-slate-900">
-                    {formatPayrollAmount(
-                      calculateGrossPay(employee),
-                      "NGN"
-                    )}
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-xs text-slate-400">Deductions</p>
-                  <p className="text-sm font-semibold text-slate-900">
-                    {formatPayrollAmount(
-                      calculateDeductions(employee),
-                      "NGN"
-                    )}
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-xs text-slate-400">Net Pay</p>
-                  <p className="text-sm font-bold text-slate-900">
-                    {formatPayrollAmount(calculateNetPay(employee), "NGN")}
-                  </p>
-                </div>
-              </div>
-
-              <button className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700">
-                <Download size={16} />
-                Payslip
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
-    </main>
-  );
+import {DashboardShell,PageHeader} from "@/components/aerotech-ui";
+type Row={run_id:string;payroll_month:string;status:string;payroll_employee_id:string;full_name:string;gross:string;pension:string;paye:string;nhf:string;sanctions:string;other_deductions:string;net:string};
+const money=(value:string)=>new Intl.NumberFormat("en-NG",{style:"currency",currency:"NGN"}).format(Number(value||0));
+export default function PayslipsPage(){
+ const [rows,setRows]=useState<Row[]>([]),[error,setError]=useState(""),[month,setMonth]=useState("");
+ useEffect(()=>{let alive=true;fetch("/api/payroll/payslips"+(month?"?month="+month:"")).then(async r=>{const d=await r.json();if(!r.ok)throw Error(d.error||"Unable to load");if(alive)setRows(d.payslips||[]);}).catch(e=>{if(alive)setError(e.message)});return()=>{alive=false}},[month]);
+ return <DashboardShell title="Payslips"><PageHeader eyebrow="COMPENSATION / PAYROLL" title="Payroll statements" description="Statements are generated from saved payroll runs. Only approved payroll should be treated as final."/><div className="mb-5 flex items-center gap-4"><Link href="/dashboard/employer/payroll" className="text-sm font-semibold text-indigo-600">← Payroll</Link><label className="text-sm">Pay period <input type="month" value={month} onChange={e=>setMonth(e.target.value)} className="ml-2 rounded-lg border px-3 py-2"/></label></div>{error&&<p role="alert" className="mb-4 text-red-700">{error}</p>}<div className="space-y-4">{rows.length===0?<p className="rounded-xl border bg-white p-6 text-slate-500">No saved payroll records available.</p>:rows.map((r,i)=><article key={r.run_id+"-"+r.payroll_employee_id+"-"+i} className="rounded-2xl border bg-white p-6"><div className="flex flex-wrap items-center justify-between gap-4"><div><h2 className="font-bold">{r.full_name}</h2><p className="mt-1 text-xs text-slate-500">{String(r.payroll_month).slice(0,7)} · {r.status==="approved"?"Approved payslip":"Payroll preview — "+r.status.replaceAll("_"," ")}</p></div><strong className="text-lg text-slate-900">{money(r.net)}</strong></div><div className="mt-5 grid gap-3 text-sm sm:grid-cols-3"><p>Gross: <strong>{money(r.gross)}</strong></p><p>PAYE: <strong>{money(r.paye)}</strong></p><p>Pension: <strong>{money(r.pension)}</strong></p><p>NHF: <strong>{money(r.nhf)}</strong></p><p>Sanctions: <strong>{money(r.sanctions)}</strong></p><p>Other deductions: <strong>{money(r.other_deductions)}</strong></p></div></article>)}</div></DashboardShell>;
 }
