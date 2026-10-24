@@ -1,0 +1,7 @@
+import {NextResponse} from "next/server";
+import {currentEmployee} from "@/lib/employee-auth";
+import {db} from "@/lib/employer-session";
+import {sanitizeProfile} from "@/lib/employee-profile-fields";
+export const runtime="nodejs";
+export async function GET(){const employee=await currentEmployee();if(!employee)return NextResponse.json({error:"Employee sign-in required"},{status:401});const pool=db();try{const r=await pool.query("SELECT details FROM employee_private_profiles WHERE employee_id=$1 AND employer_id=$2",[employee.id,employee.employer_id]);return NextResponse.json({employee,details:r.rows[0]?.details||{}});}catch{return NextResponse.json({error:"Profile unavailable"},{status:503});}finally{await pool.end();}}
+export async function PATCH(request:Request){const employee=await currentEmployee();if(!employee)return NextResponse.json({error:"Employee sign-in required"},{status:401});let details;try{details=sanitizeProfile(await request.json());}catch{return NextResponse.json({error:"Invalid profile fields"},{status:400});}const pool=db();try{await pool.query("INSERT INTO employee_private_profiles(employee_id,employer_id,details) VALUES($1,$2,$3::jsonb) ON CONFLICT(employee_id) DO UPDATE SET details=employee_private_profiles.details || EXCLUDED.details,updated_at=NOW() WHERE employee_private_profiles.employer_id=EXCLUDED.employer_id",[employee.id,employee.employer_id,JSON.stringify(details)]);return NextResponse.json({ok:true});}catch{return NextResponse.json({error:"Unable to save profile"},{status:503});}finally{await pool.end();}}
