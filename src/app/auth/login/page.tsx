@@ -6,7 +6,7 @@ import { ArrowRight, LockKeyhole, Sparkles } from "lucide-react";
 import { Logo } from "@/components/aerotech-portal";
 
 export default function LoginPage() {
-  const [role, setRole] = useState<"employer" | "employee">("employer");
+  const [role, setRole] = useState<"employer" | "applicant">("employer");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -14,13 +14,12 @@ export default function LoginPage() {
   async function signIn(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
-    if (role !== "employer") { setError("Employee login is not available yet."); return; }
     setBusy(true);
     try {
-      const response = await fetch("/api/auth/login/employer", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, password }) });
+      const response = await fetch(role === "applicant" ? "/api/auth/login/applicant" : "/api/auth/login/employer", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, password }) });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) { setError(data.error || "Unable to sign in."); return; }
-      window.location.assign("/dashboard/employer");
+      window.location.assign(role === "applicant" ? "/jobs" : "/dashboard/employer");
     } catch { setError("Unable to connect. Please try again."); }
     finally { setBusy(false); }
   }
@@ -54,7 +53,7 @@ export default function LoginPage() {
             </p>
 
             <div className="mt-7 grid grid-cols-2 rounded-xl bg-slate-100 p-1">
-              {(["employer", "employee"] as const).map((item) => (
+              {(["employer", "applicant"] as const).map((item) => (
                 <button
                   key={item}
                   onClick={() => setRole(item)}
@@ -114,14 +113,15 @@ export default function LoginPage() {
             </div>
 
             <div className="mt-7 text-center text-sm text-slate-500">
-              New employer?{" "}
+              Need an account?{" "}
               <Link
                 href="/auth/signup/employer"
                 className="font-bold text-[#007F73]"
               >
-                Create an account
+                Create an employer account
               </Link>
             </div>
+            <div className="mt-3 text-center text-sm"><Link href="/auth/signup/employee" className="font-bold text-[#007F73]">Create free applicant account</Link></div>
           </div>
         </div>
       </div>
