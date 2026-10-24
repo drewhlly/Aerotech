@@ -16,7 +16,7 @@ import {
   DashboardShell,
   PageHeader,
 } from "@/components/aerotech-ui";
-import { employerOSData, getAiResponse } from "@/lib/aerotech";
+import { employerOSData } from "@/lib/aerotech";
 
 export default function AIPage() {
   const [prompt, setPrompt] = useState("");
@@ -33,10 +33,16 @@ export default function AIPage() {
     [Sparkles, "HR Reporting", "Turn workforce questions into management summaries."],
   ];
 
-  function ask() {
-    if (!prompt.trim()) return;
-    setAnswer(getAiResponse(prompt));
-    setPrompt("");
+  const [busy, setBusy] = useState(false);
+  async function ask() {
+    if (!prompt.trim() || busy) return;
+    setBusy(true);
+    try {
+      const response = await fetch("/api/ai/ask", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question: prompt }) });
+      const data = await response.json();
+      setAnswer(response.ok ? data.answer : data.error || "AI unavailable.");
+      if (response.ok) setPrompt("");
+    } catch { setAnswer("Unable to reach Aerotech AI."); } finally { setBusy(false); }
   }
 
   return (
@@ -81,9 +87,10 @@ export default function AIPage() {
               />
               <button
                 onClick={ask}
+                disabled={busy}
                 className="h-12 rounded-xl bg-gradient-to-r from-[#6366F1] to-[#9D4EDD] px-6 text-sm font-bold text-white"
               >
-                Ask AI
+                {busy ? "Thinking..." : "Ask AI"}
               </button>
             </div>
 
