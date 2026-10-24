@@ -10,15 +10,21 @@ Diagnostics use fixed SQL projections scoped to the ticket's employer ID. Only c
 
 For an existing production database, apply only `021_support_console.sql` with `node scripts/migrate-support.mjs` before serving the new routes. The production deployment build command is `node scripts/migrate-support.mjs && npm run build`. This runs transactionally with an advisory lock and avoids replaying older non-idempotent payroll migrations. Fresh isolated databases can use `npm run db:migrate` to create the complete schema. This feature has no dependency on the separate Paystack subscription PR/migration 020. When merging both, retain both migrations in the runner.
 
-Before enrolling staff, set a cryptographically random 32-byte hex `SUPPORT_MFA_ENCRYPTION_KEY` as a production server Secret. Retain it in the operator's secure secret manager: rotating without re-encrypting existing authenticator secrets prevents staff sign-in. Never put it in source, chat or public-prefixed variables.
+## Owner-approved self-enrollment
 
-Provision only identities explicitly approved by Aerotech's owner. On a trusted operator machine with Node 24, set DATABASE_URL and SUPPORT_MFA_ENCRYPTION_KEY through a secure local environment. Create a temporary JSON file readable by its owner only (`chmod 600`) containing email, displayName, a unique staff password of at least 16 characters, and a unique base32 totpSecret already entered into that staff member's authenticator. Then run:
+An explicitly approved owner can enroll at `/support-console/enroll` without sharing passwords or authenticator secrets in chat. Set `SUPPORT_INITIAL_AGENT_EMAIL` to the owner-approved existing Aerotech login email, and run `node scripts/enable-support-enrollment.mjs` once from an authorised production deployment. The script applies migration 022 and snapshots the existing employer (or applicant) account ID. It does not grant company diagnostic access. If no matching existing account is found, no approval is created. Do not enable an arbitrary public email or grant staff status on account signup.
+
+The user proves their existing account password, chooses a different staff password of at least 16 characters, adds the displayed key to their authenticator, then confirms a six-digit code and the new staff password. Pending enrollment expires in 10 minutes and allows five confirmation attempts. Both begin and confirm are same-origin only, and beginning enrollment is rate-limited. The approval is consumed atomically on confirmation; replay and later registration cannot claim a consumed approval. No staff role exists until authenticator confirmation succeeds. Enrollment starts a 15-minute staff session.
+
+New authenticator secrets are AES-256-GCM encrypted using a domain-separated scrypt key derived from the staff password and its random salt; no shared server encryption key is required. Password recovery/rotation must re-enroll the authenticator with a deployment operator. Legacy operator-provisioned records that used SUPPORT_MFA_ENCRYPTION_KEY still require that existing server secret until re-enrolled.
+
+For additional staff, a trusted deployment operator can provision an identity explicitly approved by Aerotech's owner. Create a temporary JSON file readable by its owner only (`chmod 600`) containing email, displayName, a unique staff password of at least 16 characters, and a unique base32 totpSecret already entered into that staff member's authenticator. With DATABASE_URL set securely, run:
 
 ```sh
 node scripts/provision-support-agent.mjs /private/support-agent.json
 ```
 
-The script refuses duplicate emails and never prints credentials. Delete the temporary credential file after secure delivery/enrollment. There is deliberately no default staff account, password or bypass. To disable a compromised agent, an authorised database operator sets support_agents.disabled=true and removes its support_sessions. Disabling is checked for existing sessions as well as login. Staff credential/MFA recovery requires the deployment operator; there is no public recovery shortcut.
+The script refuses duplicate emails and never prints credentials. Delete the temporary credential file after secure delivery/enrollment. There is no default staff account or public recovery bypass. To disable a compromised agent, an authorised database operator sets support_agents.disabled=true and removes its support_sessions. Disabled status is checked for existing sessions too.
 
 ## Verification
 
