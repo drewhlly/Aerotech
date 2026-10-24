@@ -1,0 +1,23 @@
+import {NextResponse} from "next/server";
+import {randomUUID} from "node:crypto";
+import {currentEmployer,db} from "@/lib/employer-session";
+export const runtime="nodejs";
+/** Prepare payment instructions. Never sends funds. Actual transfer initiation requires
+ * verified merchant onboarding, business-owned keys, and an independently approved payout release. */
+export async function POST(request:Request){
+ const employer=await currentEmployer();if(!employer)return NextResponse.json({error:"Employer login required"},{status:401});
+ let runId:unknown;try{({runId}=await request.json());}catch{return NextResponse.json({error:"Invalid JSON"},{status:400});}
+ if(typeof runId!=="string"||! /^[0-9a-f-]{36}$/i.test(runId))return NextResponse.json({error:"Valid payroll run required"},{status:400});
+ const pool=db(),client=await pool.connect();try{
+ await client.query("BEGIN");
+ const run=await client.query("SELECT id,status FROM payroll_runs WHERE id=$1 AND employer_id=$2 FOR UPDATE",[runId,employer]);
+ if(run.rows[0]?.status!=="approved"){await client.query("ROLLBACK");return NextResponse.json({error:"Four-stage approval required before preparing transfers"},{status:409});}
+ const reviews=await client.query("SELECT stage FROM payroll_stage_reviews WHERE employer_id=$1 AND run_id=$2 AND decision='approved'",[employer,runId]);
+ if(new Set(reviews.rows.map(x=>x.stage)).size!==4){await client.query("ROLLBACK");return NextResponse.json({error:"Four distinct completed approval stages required"},{status:409});}
+ const items=await client.query(`SELECT p.id AS employee_id,i.net,r.recipient_code FROM payroll_run_items i JOIN payroll_employees p ON p.id=i.employee_id AND p.employer_id=$2 LEFT JOIN payroll_transfer_recipients r ON r.employer_id=$2 AND r.payroll_employee_id=p.id WHERE i.run_id=$1`,[runId,employer]);
+ if(!items.rowCount||items.rows.some(i=>!i.recipient_code||!Number.isSafeInteger(Math.round(Number(i.net)*100))||Number(i.net)<=0)){await client.query("ROLLBACK");return NextResponse.json({error:"Every employee needs a verified transfer recipient and positive net pay"},{status:422});}
+ for(const item of items.rows){const reference="aero-"+runId.replaceAll("-","").slice(0,20)+"-"+item.employee_id.replaceAll("-","").slice(0,20);
+ await client.query("INSERT INTO payroll_transfer_intents(id,employer_id,payroll_run_id,payroll_employee_id,amount_kobo,recipient_code,reference) VALUES($1,$2,$3,$4,$5,$6,$7) ON CONFLICT(payroll_run_id,payroll_employee_id) DO NOTHING",[randomUUID(),employer,runId,item.employee_id,Math.round(Number(item.net)*100),item.recipient_code,reference]);}
+ await client.query("COMMIT");return NextResponse.json({prepared:items.rowCount,paymentExecution:"not_initiated",message:"Payment instructions prepared and saved; no bank transfers have been sent."},{status:201});
+ }catch{await client.query("ROLLBACK").catch(()=>{});return NextResponse.json({error:"Unable to prepare payment instructions"},{status:503});}finally{client.release();await pool.end();}
+}
