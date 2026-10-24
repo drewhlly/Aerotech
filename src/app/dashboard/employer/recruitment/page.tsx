@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import CandidateImport from "@/components/candidate-import";
 import {
   ArrowRight,
   BriefcaseBusiness,
