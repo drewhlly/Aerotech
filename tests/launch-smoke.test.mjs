@@ -54,8 +54,20 @@ test("Aerotech AI screens use the real API rather than canned replies", () => {
 test("employee directory and profile use matching IDs and source", () => {
  const directory=read("src/app/dashboard/employer/employees/page.tsx");
  const profile=read("src/app/dashboard/employer/employees/[id]/page.tsx");
- assert.match(directory, /employerOSData\.workforce/);
- assert.match(profile, /employerOSData\.workforce\.find/);
- assert.match(profile, /item\.id === id/);
- assert.doesNotMatch(profile, /getEmployee\(/);
+ const directoryApi=read("src/app/api/employees/route.ts");
+ const profileApi=read("src/app/api/employees/[id]/route.ts");
+ assert.match(directory, /fetch\("\/api\/employees"\)/);
+ assert.match(directory, /setEmployees\(d\.employees\)/);
+ assert.ok(directory.includes('href={`/dashboard/employer/employees/${e.id}`}'));
+ assert.match(profile, /const id=params\.id/);
+ assert.ok(profile.includes('fetch(`/api/employees/${encodeURIComponent(id)}`)'));
+ assert.match(profile, /setEmployee\(d\.employee\)/);
+ assert.match(directoryApi, /FROM workforce_employees WHERE employer_id=\$1/);
+ assert.match(directoryApi, /employees:r\.rows/);
+ assert.match(profileApi, /FROM workforce_employees WHERE id=\$1 AND employer_id=\$2/);
+ assert.match(profileApi, /\[id,employerId\]/);
+ assert.match(profileApi, /employee:r\.rows\[0\]/);
+ for (const source of [directory, profile]) {
+  assert.doesNotMatch(source, /employerOSData\.workforce|getEmployee\(/);
+ }
 });
