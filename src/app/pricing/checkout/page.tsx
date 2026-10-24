@@ -161,7 +161,7 @@ function CheckoutContent() {
               </span>
 
               <span className="ml-2 text-sm text-slate-500">
-                {isEmployee ? "one-time payment" : "/ month"}
+                {selectedPlan === "enterprise" ? "custom annual pricing" : "/ year"}
               </span>
             </div>
 
