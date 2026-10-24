@@ -1,70 +1,17 @@
-import {
-  Banknote,
-  CalendarDays,
-  Clock3,
-  FileText,
-  GraduationCap,
-  Sparkles,
-} from "lucide-react";
-import { AIBox, PortalShell, StatCard } from "@/components/aerotech-portal";
-
-export default function EmployeeDashboard() {
-  return (
-    <PortalShell role="employee">
-      <div>
-        <div className="text-sm text-slate-400">Employee 360</div>
-        <h1 className="mt-1 text-3xl font-black text-[#102A43]">
-          Welcome back, Alex
-        </h1>
-        <p className="mt-2 text-slate-500">
-          Here is everything happening across your work life.
-        </p>
-      </div>
-
-      <div className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard title="Attendance" value="96%" detail="This month" icon={Clock3} />
-        <StatCard title="Leave balance" value="8 days" detail="Remaining" icon={CalendarDays} />
-        <StatCard title="Training" value="72%" detail="Learning progress" icon={GraduationCap} />
-        <StatCard title="Latest pay" value="₦420k" detail="Net pay" icon={Banknote} />
-      </div>
-
-      <div className="mt-7 grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
-        <div className="rounded-2xl border border-slate-200 bg-white p-6">
-          <h2 className="font-black text-[#102A43]">My workday</h2>
-
-          <div className="mt-5 grid gap-4 sm:grid-cols-3">
-            {[
-              ["Clock in", "08:02 AM", "Completed"],
-              ["Break", "12:30 PM", "Completed"],
-              ["Clock out", "05:00 PM", "Pending"],
-            ].map(([a, b, c]) => (
-              <div key={a} className="rounded-xl bg-slate-50 p-4">
-                <div className="text-xs text-slate-400">{a}</div>
-                <div className="mt-2 text-xl font-black text-[#102A43]">{b}</div>
-                <div className="mt-1 text-xs font-semibold text-[#007F73]">{c}</div>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-7 border-t border-slate-200 pt-6">
-            <h2 className="font-black text-[#102A43]">Recent activity</h2>
-            <div className="mt-4 space-y-3">
-              {[
-                "Completed Workplace Safety training",
-                "Payslip generated for July",
-                "Leave request approved",
-              ].map((item) => (
-                <div key={item} className="flex items-center gap-3 text-sm text-slate-600">
-                  <div className="h-2 w-2 rounded-full bg-[#00A896]" />
-                  {item}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <AIBox />
-      </div>
-    </PortalShell>
-  );
+"use client";
+import {useEffect,useState,type FormEvent} from "react";
+import {PortalShell} from "@/components/aerotech-portal";
+type RequestRow={id:string;request_type:string;start_date:string;end_date:string;status:string;details:string;first_name?:string;last_name?:string};
+type Shift={id:string;work_date:string;starts_at:string;ends_at:string};
+export default function EmployeeDashboard(){
+ const [data,setData]=useState<{employee:{firstName:string;department:string};requests:RequestRow[];shifts:Shift[]}|null>(null);
+ const [pending,setPending]=useState<RequestRow[]>([]),[message,setMessage]=useState(""),[busy,setBusy]=useState(false);
+ const [form,setForm]=useState({startDate:"",endDate:"",details:""});
+ async function reload(){const [r,m]=await Promise.all([fetch("/api/employee/workspace"),fetch("/api/employee/manager/leave")]);const d=await r.json();if(!r.ok)throw Error(d.error||"Unable to load your workspace");setData(d);if(m.ok)setPending((await m.json()).requests||[]);}
+ useEffect(()=>{reload().catch(e=>setMessage(e.message));},[]);
+ async function requestLeave(e:FormEvent){e.preventDefault();setBusy(true);setMessage("");try{const r=await fetch("/api/employee/workspace",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...form,type:"leave"})});const d=await r.json();if(!r.ok)throw Error(d.error||"Request failed");setForm({startDate:"",endDate:"",details:""});setMessage("Leave request submitted to your line manager.");await reload();}catch(e){setMessage(e instanceof Error?e.message:"Request failed");}finally{setBusy(false);}}
+ async function review(id:string,decision:"approved"|"rejected"){setBusy(true);setMessage("");try{const r=await fetch("/api/employee/manager/leave",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({requestId:id,decision,note:decision==="approved"?"Approved by line manager":"Declined by line manager"})});const d=await r.json();if(!r.ok)throw Error(d.error||"Review failed");setMessage("Leave "+decision+".");await reload();}catch(e){setMessage(e instanceof Error?e.message:"Review failed");}finally{setBusy(false);}}
+ return <PortalShell role="employee"><section><p className="text-sm text-slate-500">Employee self-service</p><h1 className="mt-1 text-3xl font-black text-[#102A43]">Welcome{data?", "+data.employee.firstName:""}</h1><p className="mt-2 text-slate-500">{data?.employee.department||"Your workspace"} · Shifts, leave requests and manager approvals</p></section>{message&&<p role="status" className="mt-5 rounded-xl border bg-white p-4 text-sm">{message}</p>}
+ <div className="mt-7 grid gap-6 lg:grid-cols-2"><section className="rounded-2xl border bg-white p-6"><h2 className="font-bold">Request leave</h2><form onSubmit={requestLeave} className="mt-4 space-y-4"><label className="block text-sm">Start date<input type="date" required className="mt-1 block w-full rounded-lg border p-3" value={form.startDate} onChange={e=>setForm(v=>({...v,startDate:e.target.value}))}/></label><label className="block text-sm">End date<input type="date" required className="mt-1 block w-full rounded-lg border p-3" value={form.endDate} onChange={e=>setForm(v=>({...v,endDate:e.target.value}))}/></label><label className="block text-sm">Reason<textarea required maxLength={2000} className="mt-1 block w-full rounded-lg border p-3" value={form.details} onChange={e=>setForm(v=>({...v,details:e.target.value}))}/></label><button disabled={busy} className="rounded-lg bg-[#102A43] px-5 py-3 font-semibold text-white">Submit leave request</button></form></section><section className="rounded-2xl border bg-white p-6"><h2 className="font-bold">My upcoming shifts</h2>{data?.shifts.length?data.shifts.map(s=><div key={s.id} className="border-b py-3 text-sm">{String(s.work_date).slice(0,10)} · {String(s.starts_at).slice(0,5)}–{String(s.ends_at).slice(0,5)}</div>):<p className="mt-4 text-sm text-slate-500">No shifts scheduled.</p>}</section></div>
+ <section className="mt-6 rounded-2xl border bg-white p-6"><h2 className="font-bold">My requests</h2>{data?.requests.length?data.requests.map(r=><div key={r.id} className="border-b py-3 text-sm"><strong>{r.request_type}</strong> · {r.status} · {String(r.start_date||"").slice(0,10)} to {String(r.end_date||"").slice(0,10)}<p className="text-slate-500">{r.details}</p></div>):<p className="mt-3 text-sm text-slate-500">No requests yet.</p>}</section>{pending.length>0&&<section className="mt-6 rounded-2xl border bg-white p-6"><h2 className="font-bold">Line manager approvals</h2>{pending.map(r=><div key={r.id} className="border-b py-4 text-sm"><p className="font-semibold">{r.first_name} {r.last_name} · {String(r.start_date).slice(0,10)}–{String(r.end_date).slice(0,10)}</p><p className="mt-1">{r.details}</p><div className="mt-3 flex gap-2"><button disabled={busy} onClick={()=>review(r.id,"approved")} className="rounded-lg bg-[#102A43] px-4 py-2 text-white">Approve</button><button disabled={busy} onClick={()=>review(r.id,"rejected")} className="rounded-lg border px-4 py-2">Reject</button></div></div>)}</section>}</PortalShell>;
 }
