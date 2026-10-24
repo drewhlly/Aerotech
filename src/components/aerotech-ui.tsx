@@ -452,10 +452,16 @@ export function AIAssistant() {
     "Hi! I’m Aerotech AI. Ask me about payroll, employees, attendance, training, recruitment or compliance."
   );
 
-  function ask() {
-    if (!prompt.trim()) return;
-    setAnswer(getAiResponse(prompt));
-    setPrompt("");
+  const [busy, setBusy] = useState(false);
+  async function ask() {
+    if (!prompt.trim() || busy) return;
+    setBusy(true);
+    try {
+      const response = await fetch("/api/ai/ask", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question: prompt }) });
+      const data = await response.json();
+      setAnswer(response.ok ? data.answer : data.error || "AI is unavailable.");
+      if (response.ok) setPrompt("");
+    } catch { setAnswer("Unable to reach Aerotech AI."); } finally { setBusy(false); }
   }
 
   return (
@@ -513,6 +519,7 @@ export function AIAssistant() {
               />
               <button
                 onClick={ask}
+                disabled={busy}
                 className="rounded-xl bg-gradient-to-r from-[#6366F1] to-[#9D4EDD] px-4 text-xs font-bold text-white"
               >
                 Ask
