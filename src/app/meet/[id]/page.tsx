@@ -16,7 +16,7 @@ export default function JoinMeeting({params}:{params:Promise<{id:string}>}){
     if(!response.ok)throw Error(result.error||"Unable to join");
     if(cancelled)return;
     const domain=String(result.domain);
-    script=document.createElement("script");script.src="https://"+domain+"/external_api.js";script.async=true;
+    script=document.createElement("script");script.src="https://"+domain+"/"+(domain==="8x8.vc"?String(result.room).split("/")[0]+"/":"")+"external_api.js";script.async=true;
     script.onload=()=>{
      if(cancelled||!container.current)return;
      const Jitsi=(window as JitsiWindow).JitsiMeetExternalAPI;
