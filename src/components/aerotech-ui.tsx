@@ -118,6 +118,7 @@ const navigation = [
     title: "PEOPLE",
     items: [
       { label: "Employees", href: "/dashboard/employer/employees", icon: Users },
+      { label: "Departments & Managers", href: "/dashboard/employer/hr/departments", icon: Building2 },
       { label: "Recruitment", href: "/dashboard/employer/recruitment", icon: BriefcaseBusiness },
       { label: "Onboarding", href: "/dashboard/employer/onboarding", icon: UserRound },
       { label: "Documents", href: "/dashboard/employer/documents", icon: FileText },
@@ -131,6 +132,7 @@ const navigation = [
       { label: "Attendance", href: "/dashboard/employer/attendance", icon: CalendarCheck2 },
       { label: "Leave", href: "/dashboard/employer/attendance/leave", icon: Clock3 },
       { label: "Shifts", href: "/dashboard/employer/attendance/shifts", icon: ClipboardCheck },
+      { label: "Shift Assignments", href: "/dashboard/employer/hr/shifts", icon: ClipboardCheck },
       { label: "Training", href: "/dashboard/employer/training", icon: GraduationCap },
       { label: "Performance", href: "/dashboard/employer/performance", icon: Activity },
       { label: "Goals & OKRs", href: "/dashboard/employer/hr/goals", icon: Target },
