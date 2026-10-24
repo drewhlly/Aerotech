@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   ArrowRight,
   ArrowLeft,
@@ -193,6 +194,17 @@ export function PortalShell({
   children: React.ReactNode;
   role?: "employee" | "applicant" | "employer";
 }) {
+  const router = useRouter();
+  const [signingOut, setSigningOut] = useState(false);
+  async function signOut() {
+    if (signingOut) return;
+    setSigningOut(true);
+    try {
+      const response = await fetch(role === "employer" ? "/api/auth/logout" : role === "employee" ? "/api/auth/logout/employee" : "/api/auth/logout/applicant", {method:"POST"});
+      if (!response.ok) throw new Error("Sign out failed");
+      window.location.assign("/auth/login?role=" + role);
+    } catch { setSigningOut(false); window.alert("Unable to sign out. Please try again."); }
+  }
   const employeeLinks = [
     ["/employee", "Dashboard", LayoutDashboard],
     ["/employee/attendance", "Attendance", Clock3],
@@ -229,8 +241,8 @@ export function PortalShell({
         : employeeLinks;
 
   return (
-    <div className="min-h-screen bg-[#F5F8FA]">
-      <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-slate-200 bg-white lg:block">
+    <div className="min-h-screen bg-gradient-to-br from-[#E8F5FF] via-[#F3F7FF] to-[#EEF0FF]">
+      <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-blue-100 bg-white/95 shadow-xl shadow-blue-900/5 lg:block">
         <div className="border-b border-slate-200 p-5">
           <Logo />
         </div>
@@ -269,18 +281,12 @@ export function PortalShell({
         </div>
 
         <div className="absolute bottom-0 left-0 right-0 border-t border-slate-200 p-4">
-          <Link
-            href="/auth/login"
-            className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-slate-500 hover:bg-slate-100"
-          >
-            <LogOut size={18} />
-            Sign out
-          </Link>
+          <button type="button" disabled={signingOut} onClick={signOut} className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-slate-600 hover:bg-blue-50 disabled:opacity-50"><LogOut size={18}/>{signingOut ? "Signing out..." : "Log out"}</button>
         </div>
       </aside>
 
       <div className="lg:pl-64">
-        <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-slate-200 bg-white/95 px-5 backdrop-blur">
+        <header className="sticky top-0 z-40 flex min-h-16 items-center justify-between gap-2 border-b border-blue-100 bg-white/90 px-4 py-3 backdrop-blur">
           <div>
             <div className="text-xs font-semibold uppercase tracking-widest text-slate-400">
               Aerotech
@@ -311,7 +317,7 @@ export function PortalShell({
           </div>
         </header>
 
-        <main className="mx-auto max-w-7xl p-5 lg:p-8">{children}</main>
+        <main className="mx-auto max-w-7xl p-5 lg:p-8"><div className="mb-5 flex flex-wrap items-center justify-between gap-2"><button type="button" onClick={() => { if (window.history.length > 1) router.back(); else router.push(role === "employee" ? "/employee" : role === "applicant" ? "/applicant" : "/dashboard/employer"); }} className="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-white px-4 py-2 text-sm font-semibold text-[#102A43] shadow-sm hover:bg-blue-50"><ArrowLeft size={16}/> Back</button><button type="button" disabled={signingOut} onClick={signOut} className="inline-flex items-center gap-2 rounded-xl bg-[#102A43] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1A4971] disabled:opacity-50"><LogOut size={16}/>{signingOut ? "Signing out..." : "Log out"}</button></div>{children}</main>
       </div>
     </div>
   );
