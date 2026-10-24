@@ -50,3 +50,12 @@ test("Aerotech AI screens use the real API rather than canned replies", () => {
   assert.match(route, /currentEmployer/);
   assert.match(route, /api\.openai\.com\/v1\/responses/);
 });
+
+test("employee directory and profile use matching IDs and source", () => {
+ const directory=read("src/app/dashboard/employer/employees/page.tsx");
+ const profile=read("src/app/dashboard/employer/employees/[id]/page.tsx");
+ assert.match(directory, /employerOSData\.workforce/);
+ assert.match(profile, /employerOSData\.workforce\.find/);
+ assert.match(profile, /item\.id === id/);
+ assert.doesNotMatch(profile, /getEmployee\(/);
+});
