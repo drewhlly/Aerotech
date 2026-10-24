@@ -136,6 +136,7 @@ const navigation = [
       { label: "Goals & OKRs", href: "/dashboard/employer/hr/goals", icon: Target },
       { label: "Pulse Surveys", href: "/dashboard/employer/hr/surveys", icon: ListChecks },
       { label: "Attendance Register", href: "/dashboard/employer/hr/attendance", icon: CalendarCheck2 },
+      { label: "Geofenced Attendance", href: "/dashboard/employer/hr/attendance/verification", icon: ShieldCheck },
     ],
   },
   {
