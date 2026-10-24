@@ -1,0 +1,14 @@
+"use client";
+import {useEffect,useState,type FormEvent} from "react";
+import {DashboardShell,PageHeader} from "@/components/aerotech-ui";
+type Employee={id:string;first_name:string;last_name:string};
+type Approver={stage:string;employee_id:string;first_name:string;last_name:string};
+const stages=["hr","finance","management","ceo"] as const;
+export default function PayrollApprovers(){
+ const [employees,setEmployees]=useState<Employee[]>([]),[approvers,setApprovers]=useState<Approver[]>([]),[message,setMessage]=useState(""),[busy,setBusy]=useState(false);
+ async function load(){const [a,b]=await Promise.all([fetch("/api/employees"),fetch("/api/payroll/approvers")]);const x=await a.json(),y=await b.json();if(!a.ok||!b.ok)throw Error(x.error||y.error||"Unable to load");setEmployees(x.employees||[]);setApprovers(y.approvers||[]);}
+ useEffect(()=>{load().catch(e=>setMessage(e.message));},[]);
+ async function assign(e:FormEvent<HTMLFormElement>,stage:string){e.preventDefault();setBusy(true);setMessage("");const employeeId=String(new FormData(e.currentTarget).get("employeeId")||"");
+ try{const r=await fetch("/api/payroll/approvers",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({stage,employeeId})});const d=await r.json();if(!r.ok)throw Error(d.error||"Unable to assign");setMessage(stage.toUpperCase()+" approver saved.");await load();}catch(e){setMessage(e instanceof Error?e.message:"Unable to assign");}finally{setBusy(false);}}
+ return <DashboardShell title="Payroll approval roles"><PageHeader eyebrow="PAYROLL / CONTROLS" title="Payroll approval roles" description="Assign four different employees to HR, Finance, Management, and CEO approvals. Each reviewer signs in to their own employee account."/>{message&&<p role="status" className="mb-5 text-sm">{message}</p>}<div className="grid gap-4 md:grid-cols-2">{stages.map(stage=>{const current=approvers.find(a=>a.stage===stage);return <form onSubmit={e=>assign(e,stage)} key={stage} className="rounded-2xl border bg-white p-6"><h2 className="font-bold uppercase">{stage}</h2><p className="mt-2 text-sm text-slate-500">Currently: {current?current.first_name+" "+current.last_name:"Not assigned"}</p><select name="employeeId" required defaultValue={current?.employee_id||""} className="mt-4 block w-full rounded-lg border p-3"><option value="">Select employee</option>{employees.map(e=><option key={e.id} value={e.id}>{e.first_name} {e.last_name}</option>)}</select><button disabled={busy} className="mt-4 rounded-lg bg-slate-950 px-4 py-2 text-white">Save approver</button></form>})}</div><p className="mt-5 text-sm text-amber-700">Approved payroll is an accounting status only. Automated salary disbursement remains unavailable.</p></DashboardShell>;
+}
