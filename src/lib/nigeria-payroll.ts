@@ -2,7 +2,8 @@
 // Verify benefits, eligibility and relief evidence before final authorization.
 export type PayrollInput = {
  monthlyGross:number; basic:number; housing:number; transport:number;
- annualRentRelief:number; // annual rent actually paid; claim limited to 20% or NGN 500,000 pensionEnabled:boolean; nhfEnabled:boolean;
+ annualRentRelief:number; // annual rent actually paid; claim limited to 20% or NGN 500,000
+ pensionEnabled:boolean; nhfEnabled:boolean;
  taxExempt:boolean; sanctions:number; otherDeductions:number;
 };
 const money=(v:number)=>Math.round(v*100)/100;
