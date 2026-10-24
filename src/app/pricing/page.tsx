@@ -5,7 +5,6 @@ import { Check, Crown, Sparkles, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import {
   EMPLOYER_PLANS,
-  EMPLOYEE_PLAN,
   type Currency,
   type EmployerPlan,
 } from "@/lib/subscriptions";
@@ -154,58 +153,10 @@ export default function PricingPage() {
           </div>
         </section>
 
-        {/* Employee plan */}
-        <section className="mx-auto mt-16 max-w-3xl">
-          <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-            <div className="flex items-center gap-3">
-              <Sparkles size={24} />
-
-              <h2 className="text-2xl font-bold text-slate-950">
-                Employee Access
-              </h2>
-            </div>
-
-            <p className="mt-3 text-slate-600">
-              A one-time payment gives professionals access to Aerotech's
-              employee recruitment ecosystem.
-            </p>
-
-            <div className="mt-6 flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
-              <div>
-                <div className="text-4xl font-bold text-slate-950">
-                  {formatPrice(EMPLOYEE_PLAN.prices[currency])}
-                </div>
-
-                <p className="mt-1 text-sm text-slate-500">
-                  One-time payment
-                </p>
-              </div>
-
-              <Link
-                href={`/pricing/checkout?type=employee&plan=employee&currency=${currency}`}
-                className="rounded-xl bg-slate-950 px-6 py-3.5 text-center text-sm font-semibold text-white hover:bg-slate-800"
-              >
-                Get Employee Access
-              </Link>
-            </div>
-
-            <div className="mt-6 border-t border-slate-200 pt-6">
-              <ul className="space-y-3">
-                {EMPLOYEE_PLAN.features.map((feature: string) => (
-                  <li
-                    key={feature}
-                    className="flex items-start gap-3 text-sm text-slate-700"
-                  >
-                    <Check
-                      size={17}
-                      className="mt-0.5 shrink-0 text-slate-950"
-                    />
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
+        <section className="mx-auto mt-16 max-w-3xl rounded-2xl border border-slate-200 bg-white p-8 text-center">
+          <h2 className="text-2xl font-bold text-slate-950">Employees and applicants join free</h2>
+          <p className="mt-3 text-slate-600">Only companies pay for Aerotech subscriptions. Employees are invited by their employers, and applicants can explore job opportunities at no cost.</p>
+          <Link href="/jobs" className="mt-6 inline-block rounded-xl bg-slate-950 px-6 py-3.5 font-semibold text-white">Find jobs</Link>
         </section>
 
         <div className="mt-16 text-center text-sm text-slate-500">
