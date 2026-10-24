@@ -8,7 +8,7 @@ Diagnostics use fixed SQL projections scoped to the ticket's employer ID. Only c
 
 ## Deployment
 
-Apply `021_support_console.sql` with `npm run db:migrate` before serving the new routes. This feature has no dependency on the separate Paystack subscription PR/migration 020. When merging both, retain both migrations in the runner.
+For an existing production database, apply only `021_support_console.sql` with `node scripts/migrate-support.mjs` before serving the new routes. The production deployment build command is `node scripts/migrate-support.mjs && npm run build`. This runs transactionally with an advisory lock and avoids replaying older non-idempotent payroll migrations. Fresh isolated databases can use `npm run db:migrate` to create the complete schema. This feature has no dependency on the separate Paystack subscription PR/migration 020. When merging both, retain both migrations in the runner.
 
 Before enrolling staff, set a cryptographically random 32-byte hex `SUPPORT_MFA_ENCRYPTION_KEY` as a production server Secret. Retain it in the operator's secure secret manager: rotating without re-encrypting existing authenticator secrets prevents staff sign-in. Never put it in source, chat or public-prefixed variables.
 
