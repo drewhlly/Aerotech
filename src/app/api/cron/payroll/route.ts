@@ -1,7 +1,7 @@
 import {NextResponse} from "next/server";
 import {timingSafeEqual} from "node:crypto";
 import {db} from "@/lib/employer-session";
-import {preparePayroll} from "@/app/api/payroll/run/route";
+import {preparePayroll} from "@/lib/prepare-payroll";
 export const runtime="nodejs";
 function authorised(request:Request){
  const key=process.env.CRON_SECRET;
