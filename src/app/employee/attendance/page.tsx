@@ -1,50 +1,12 @@
-import { CheckCircle2, Clock3, MapPin } from "lucide-react";
-import { PortalShell } from "@/components/aerotech-portal";
-
-export default function EmployeeAttendancePage() {
-  return (
-    <PortalShell role="employee">
-      <h1 className="text-3xl font-black text-[#102A43]">Attendance</h1>
-      <p className="mt-2 text-slate-500">
-        Your attendance, clock-ins, shifts and work hours.
-      </p>
-
-      <div className="mt-7 grid gap-5 lg:grid-cols-[1fr_1fr]">
-        <div className="rounded-2xl bg-[#102A43] p-7 text-white">
-          <div className="text-sm text-white/50">Today</div>
-          <div className="mt-2 text-4xl font-black">08:02 AM</div>
-          <div className="mt-1 text-sm text-white/50">Clocked in</div>
-
-          <button className="mt-8 w-full rounded-xl bg-[#00A896] px-5 py-3.5 font-black">
-            Clock out
-          </button>
-
-          <div className="mt-5 flex items-center gap-2 text-xs text-white/50">
-            <MapPin size={14} />
-            Location verification enabled
-          </div>
-        </div>
-
-        <div className="rounded-2xl border border-slate-200 bg-white p-7">
-          <h2 className="font-black text-[#102A43]">This week</h2>
-          <div className="mt-5 space-y-4">
-            {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"].map(
-              (day, index) => (
-                <div key={day} className="flex items-center justify-between">
-                  <span className="font-semibold text-slate-600">{day}</span>
-                  <span className="flex items-center gap-2 text-sm text-slate-500">
-                    <Clock3 size={15} />
-                    {index < 4 ? "8h 12m" : "Today"}
-                  </span>
-                  {index < 4 && (
-                    <CheckCircle2 size={17} className="text-[#00A896]" />
-                  )}
-                </div>
-              )
-            )}
-          </div>
-        </div>
-      </div>
-    </PortalShell>
-  );
+"use client";
+import {useEffect,useState} from "react";
+import {PortalShell} from "@/components/aerotech-portal";
+type Event={id:string;work_date:string;event_type:string;event_time:string;source:string};
+export default function AttendancePage(){
+ const [events,setEvents]=useState<Event[]>([]),[today,setToday]=useState(""),[busy,setBusy]=useState(false),[message,setMessage]=useState("");
+ async function load(){const r=await fetch("/api/employee/attendance",{cache:"no-store"});const d=await r.json();if(!r.ok)throw Error(d.error||"Attendance unavailable");setEvents(d.events||[]);setToday(d.today);}
+ useEffect(()=>{load().catch(e=>setMessage(e.message));},[]);
+ const current=events.filter(e=>String(e.work_date).slice(0,10)===today),clockedIn=current.some(e=>e.event_type==="clock_in"),clockedOut=current.some(e=>e.event_type==="clock_out");
+ async function clock(eventType:"clock_in"|"clock_out"){setBusy(true);setMessage("");try{const r=await fetch("/api/employee/attendance",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({eventType})});const d=await r.json();if(!r.ok)throw Error(d.error||"Unable to record attendance");await load();setMessage("Attendance recorded successfully.");}catch(e){setMessage(e instanceof Error?e.message:"Unable to record attendance");}finally{setBusy(false);}}
+ return <PortalShell role="employee"><div className="mb-7"><p className="text-xs font-bold uppercase tracking-widest text-cyan-700">My workday</p><h1 className="mt-2 text-3xl font-extrabold">Attendance</h1><p className="mt-2 text-slate-500">Your actual clock-ins and clock-outs, not sample data.</p></div><div className="grid gap-5 lg:grid-cols-2"><section className="rounded-3xl border bg-white p-7 shadow-sm"><p className="text-sm text-slate-500">Today · {today||"Loading"}</p><h2 className="mt-4 text-2xl font-extrabold">{clockedOut?"Clocked out":clockedIn?"Clocked in":"Not clocked in"}</h2><div className="mt-6 flex flex-wrap gap-3"><button disabled={busy||clockedIn} onClick={()=>clock("clock_in")} className="rounded-xl bg-[#07111f] px-5 py-3 font-bold text-white disabled:opacity-40">Clock in</button><button disabled={busy||!clockedIn||clockedOut} onClick={()=>clock("clock_out")} className="rounded-xl border px-5 py-3 font-bold disabled:opacity-40">Clock out</button></div>{message&&<p role="status" className="mt-4 text-sm">{message}</p>}<p className="mt-6 text-xs text-slate-500">Self-reported time in Africa/Lagos. Geolocation is not verified.</p></section><section className="rounded-3xl border bg-white p-7 shadow-sm"><h2 className="text-xl font-extrabold">Recent attendance</h2>{events.length?events.map(e=><div key={e.id} className="flex justify-between gap-3 border-b py-3 text-sm"><span>{e.event_type==="clock_in"?"Clock in":"Clock out"}</span><span>{new Date(e.event_time).toLocaleString("en-NG",{timeZone:"Africa/Lagos",dateStyle:"medium",timeStyle:"short"})}</span></div>):<p className="mt-4 text-sm text-slate-500">No attendance recorded yet.</p>}</section></div></PortalShell>;
 }
