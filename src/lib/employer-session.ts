@@ -14,12 +14,15 @@ export async function startEmployerSession(pool: Pool, employerId: string) {
   const jar = await cookies();
   jar.set(SESSION_COOKIE, token, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: 7 * 24 * 60 * 60 });
 }
-export async function currentEmployer() {
+export async function currentEmployer(billingAccess = false) {
   const token = (await cookies()).get(SESSION_COOKIE)?.value;
   if (!token) return null;
   const pool = db();
   try {
     const result = await pool.query("SELECT employer_id FROM employer_sessions WHERE token_hash = $1 AND expires_at > NOW()", [sessionDigest(token)]);
-    return (result.rows[0]?.employer_id as string | undefined) ?? null;
+    const employerId=(result.rows[0]?.employer_id as string | undefined) ?? null;
+    if(!employerId || billingAccess)return employerId;
+    const subscription=await pool.query("SELECT employer_id FROM employer_subscriptions WHERE employer_id=$1 AND expires_at>NOW()",[employerId]);
+    return subscription.rowCount ? employerId : null;
   } finally { await pool.end(); }
 }

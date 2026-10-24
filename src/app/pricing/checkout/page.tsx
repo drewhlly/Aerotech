@@ -18,6 +18,13 @@ import {
 
 function CheckoutContent() {
   const searchParams = useSearchParams();
+  const [busy,setBusy]=useState(false);
+  const [error,setError]=useState("");
+  async function pay(){setBusy(true);setError("");try{
+   const r=await fetch("/api/subscription/initialize",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({plan:selectedPlan})});
+   const d=await r.json();if(r.status===401){window.location.assign("/auth/signup/employer");return;}if(!r.ok)throw Error(d.error);window.location.assign(d.url);
+  }catch(e){setError(e instanceof Error?e.message:"Unable to start payment.");}finally{setBusy(false);}}
+
 
   const accountType = searchParams.get("type") || "employer";
   const [country, setCountry] = useState("UNKNOWN");
@@ -33,7 +40,7 @@ function CheckoutContent() {
 
   const price = regionalPrice(plan, country);
   const formattedPrice = selectedPlan === "enterprise" ? "Contact sales" : displayRegionalPrice(price);
-  const isEmployee = accountType === "employee";
+  const isEmployee = accountType === "employee" || accountType === "applicant";
   if (isEmployee) {
     return <main className="mx-auto max-w-xl px-5 py-20 text-center"><h1 className="text-2xl font-bold">Employee access is free</h1><p className="mt-4">Only employers pay for subscriptions. Applicants can search for jobs without a payment.</p><Link href="/jobs" className="mt-6 inline-block underline">Browse jobs</Link></main>;
   }
@@ -133,17 +140,16 @@ function CheckoutContent() {
 
             <button
               type="button"
-              disabled
+              disabled={busy || selectedPlan === "enterprise" || price.amount === null}
+              onClick={pay}
               className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-6 py-4 font-semibold text-white transition hover:bg-slate-800"
             >
               <CreditCard size={18} />
-              Continue to secure payment
+              {busy ? "Opening Paystack..." : "Continue to Paystack"}
             </button>
 
-            <p className="mt-4 text-center text-xs text-slate-400">
-              Payment processing will be connected to Aerotech's payment
-              infrastructure next.
-            </p>
+            {error && <p role="alert" className="mt-4 text-red-700">{error}</p>}
+            <p className="mt-4 text-center text-xs text-slate-500">Pay once for one year. No automatic renewal. Your company country determines billing currency.</p>
           </section>
 
           <aside className="h-fit rounded-2xl border border-slate-200 bg-white p-7 shadow-sm">

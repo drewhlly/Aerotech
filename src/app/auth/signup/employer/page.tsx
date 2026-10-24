@@ -58,7 +58,7 @@ export default function EmployerSignupPage() {
         return;
       }
       window.localStorage.setItem("aerotech_employer_country", values.country.trim());
-      window.location.assign("/onboarding/employer");
+      window.location.assign("/pricing?subscription=required");
     } catch {
       setError("Unable to connect to Aerotech right now. Please try again.");
     } finally {
