@@ -156,7 +156,7 @@ export function formatPrice(
     return `₦${amount.toLocaleString("en-NG")}`;
   }
 
-  return `$${amount.toLocaleString("en-US")}`;
+  return `USD ${amount.toLocaleString("en-US")}`;
 }
 
 export function getAllEmployerPlans(): SubscriptionPlan[] {
