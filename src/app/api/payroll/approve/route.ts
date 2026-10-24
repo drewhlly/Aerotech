@@ -17,7 +17,7 @@ export async function POST(request:Request) {
   if(!run || !String(run.status).startsWith("awaiting_")) {await client.query("ROLLBACK");return NextResponse.json({error:"Payroll run is not awaiting approval"},{status:409});}
   const stage=String(run.status).replace("awaiting_","");
   if(!order.includes(stage as typeof order[number]))throw Error("Invalid stage");
-  // A company account can act as CEO only for its own payroll. Other stages require assigned approvers.
+  // The current employer session does not identify an individual approver. Fail closed until\n  // per-person HR, Finance, Management and CEO permissions are configured.\n  await client.query("ROLLBACK");\n  return NextResponse.json({error:"Payroll approval is paused until authenticated individual approver roles and audit trails are configured."},{status:503});\n  // A company account can act as CEO only for its own payroll. Other stages require assigned approvers.
   if(stage!=="ceo"){
     const permission=await client.query("SELECT 1 FROM payroll_approval_roles WHERE employer_id=$1 AND approver_id=$2 AND role=$3",[employerId,employerId,stage]);
     if(!permission.rowCount){await client.query("ROLLBACK");return NextResponse.json({error:`Only the assigned ${stage} approver can approve this stage`},{status:403});}
