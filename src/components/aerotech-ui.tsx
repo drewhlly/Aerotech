@@ -161,6 +161,7 @@ const navigation = [
     title: "SETTINGS",
     items: [
       { label: "Payroll Settings", href: "/dashboard/employer/payroll/settings", icon: Settings },
+      { label: "Payroll Approvers", href: "/dashboard/employer/payroll/approvers", icon: ShieldCheck },
       { label: "HR Tasks", href: "/dashboard/employer/hr/tasks", icon: ClipboardCheck },
       { label: "Disciplinary Cases", href: "/dashboard/employer/hr/disciplinary", icon: Scale },
     ],
