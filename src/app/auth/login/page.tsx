@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 import { ArrowRight, LockKeyhole, Sparkles } from "lucide-react";
 import { Logo } from "@/components/aerotech-portal";
 
-export default function LoginPage() {
-  const [role, setRole] = useState<"employer" | "applicant" | "employee">("employer");
+function LoginForm() {
+  const requestedRole = useSearchParams().get("role");
+  const [role, setRole] = useState<"employer" | "applicant" | "employee">(requestedRole === "applicant" ? "applicant" : requestedRole === "employee" ? "employee" : "employer");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -81,7 +83,7 @@ export default function LoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@company.com"
+                  placeholder={role === "employer" ? "you@company.com" : "you@example.com"}
                   className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3.5 outline-none focus:border-[#00A896]"
                 />
               </div>
@@ -128,3 +130,5 @@ export default function LoginPage() {
     </div>
   );
 }
+
+export default function LoginPage(){return <Suspense fallback={<p>Loading sign in...</p>}><LoginForm/></Suspense>;}
