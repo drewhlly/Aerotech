@@ -11,37 +11,15 @@ import {
   WalletCards,
 } from "lucide-react";
 
-import {
-  DEMO_EMPLOYEES,
-  formatCurrency,
-} from "@/lib/employer-os";
+import { employerOSData, formatMoney as formatCurrency } from "@/lib/employer-os";
 
-const gross = DEMO_EMPLOYEES.reduce(
-  (sum, employee) => sum + employee.payroll.grossSalary,
-  0
-);
-
-const paye = DEMO_EMPLOYEES.reduce(
-  (sum, employee) => sum + employee.payroll.employeePAYE,
-  0
-);
-
-const employeePension = DEMO_EMPLOYEES.reduce(
-  (sum, employee) =>
-    sum + employee.payroll.employeePension,
-  0
-);
-
-const employerPension = DEMO_EMPLOYEES.reduce(
-  (sum, employee) =>
-    sum + employee.payroll.employerPension,
-  0
-);
-
-const netPay = DEMO_EMPLOYEES.reduce(
-  (sum, employee) => sum + employee.payroll.netPay,
-  0
-);
+// Use the same summary as the payroll overview; do not invent employee breakdowns.
+const payroll = employerOSData.payroll;
+const gross = payroll.gross;
+const paye = payroll.employeeTax;
+const employeePension = payroll.pension;
+const employerContributions = payroll.employerContributions;
+const netPay = payroll.net;
 
 export default function PayrollRunPage() {
   return (
@@ -56,7 +34,7 @@ export default function PayrollRunPage() {
         </Link>
 
         <div className="text-xs font-medium text-slate-500">
-          Payroll run · August 2026
+          Payroll run · {payroll.currentPeriod}
         </div>
       </header>
 
@@ -79,7 +57,7 @@ export default function PayrollRunPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           <Box
             title="Employees"
-            value={`${DEMO_EMPLOYEES.length}`}
+            value={`${employerOSData.company.employees}`}
             icon={<WalletCards size={16} />}
           />
 
@@ -133,14 +111,14 @@ export default function PayrollRunPage() {
             />
 
             <ReviewRow
-              title="Employer pension"
-              value={formatCurrency(employerPension)}
+              title="Employer contributions"
+              value={formatCurrency(employerContributions)}
               status="Ready"
             />
 
             <ReviewRow
               title="Employee bank/payment details"
-              value={`${DEMO_EMPLOYEES.length} employees`}
+              value={`${employerOSData.company.employees} employees`}
               status="Ready"
             />
           </div>

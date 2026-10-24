@@ -11,7 +11,7 @@ import {
   Users,
   Wallet,
 } from "lucide-react";
-import { PublicNav } from "@/components/aerotech-portal";
+import { Logo, PublicNav } from "@/components/aerotech-portal";
 
 export default function HomePage() {
   return (

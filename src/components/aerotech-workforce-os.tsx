@@ -1281,11 +1281,11 @@ function PayrollWallet() {
         </div>
 
         <div className="divide-y divide-slate-100">
-          {[
+          {([
             ["Payroll reserve", "₦48,600,000", "Reserved", ArrowDownLeft],
             ["Wallet funding", "₦25,000,000", "Received", ArrowUpRight],
             ["Payroll payout", "₦41,250,000", "Completed", ArrowUpRight],
-          ].map(([title, amount, status, Icon]) => {
+          ] as const).map(([title, amount, status, Icon]) => {
             const WalletIcon = Icon as typeof ArrowUpRight;
 
             return (
