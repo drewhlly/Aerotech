@@ -1,5 +1,4 @@
 // Server-only transactional invitation delivery. Configure RESEND_API_KEY and INVITATION_FROM_EMAIL on hosting.
-import "server-only";
 export async function sendEmployeeInvitation(to:string,firstName:string,activationLink:string){
  const apiKey=process.env.RESEND_API_KEY;
  const from=process.env.INVITATION_FROM_EMAIL;
