@@ -13,7 +13,7 @@ export async function GET(_request:Request,context:{params:Promise<{id:string}>}
  const domain=process.env.JITSI_DOMAIN?.trim().replace(/^https?:\/\//,"").replace(/\/$/,"");
  const appId=process.env.JITSI_APP_ID;
  const secret=process.env.JITSI_APP_SECRET;
- if(!domain||!appId||!secret||! /^[a-z0-9.-]+(?::\d+)?$/i.test(domain))return NextResponse.json({error:"Video conferencing server has not been configured"},{status:503});
+ if(!domain||!appId||!secret||secret.length<32||! /^[a-z0-9.-]+(?::\d+)?$/i.test(domain))return NextResponse.json({error:"Video conferencing server has not been configured"},{status:503});
  const pool=db();try{
   const access=employee?
    await pool.query("SELECT m.id,m.title FROM meet_rooms m JOIN meet_participants p ON p.room_id=m.id AND p.employer_id=m.employer_id WHERE m.id=$1 AND m.employer_id=$2 AND p.employee_id=$3",[id,employerId,employee.id]):
@@ -22,7 +22,7 @@ export async function GET(_request:Request,context:{params:Promise<{id:string}>}
   const room="aerotech-"+employerId.replaceAll("-","")+"-"+id.replaceAll("-","");
   const now=Math.floor(Date.now()/1000);
   const header=encode({alg:"HS256",typ:"JWT"});
-  const payload=encode({aud:appId,iss:appId,sub:process.env.JITSI_JWT_SUB||"meet.jitsi",room,iat:now,nbf:now-5,exp:now+3600,context:{user:{name:employee?employee.first_name+" "+employee.last_name:"Employer host",email:employee?.email||undefined,moderator:!employee}}});
+  const payload=encode({aud:appId,iss:appId,sub:process.env.JITSI_JWT_SUB||"meet.jitsi",room,iat:now,nbf:now-5,exp:now+900,context:{user:{name:employee?employee.first_name+" "+employee.last_name:"Employer host",email:employee?.email||undefined,moderator:!employee}}});
   const body=header+"."+payload;
   const signature=createHmac("sha256",secret).update(body).digest("base64url");
   return NextResponse.json({domain,room,token:body+"."+signature,title:access.rows[0].title});
