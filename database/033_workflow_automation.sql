@@ -1,0 +1,16 @@
+ALTER TABLE ats_jobs ADD COLUMN IF NOT EXISTS approval_status TEXT NOT NULL DEFAULT 'legacy';
+ALTER TABLE ats_jobs ALTER COLUMN approval_status SET DEFAULT 'pending';
+ALTER TABLE ats_jobs ADD COLUMN IF NOT EXISTS approval_note TEXT NOT NULL DEFAULT '';
+ALTER TABLE ats_jobs ADD COLUMN IF NOT EXISTS approved_at TIMESTAMPTZ;
+ALTER TABLE ats_jobs ADD COLUMN IF NOT EXISTS approved_by TEXT;
+ALTER TABLE ats_applications ADD COLUMN IF NOT EXISTS rejection_details JSONB;
+ALTER TABLE ats_applications ADD COLUMN IF NOT EXISTS interview_completed_at TIMESTAMPTZ;
+ALTER TABLE workforce_submissions ADD COLUMN IF NOT EXISTS credential_type TEXT NOT NULL DEFAULT 'other';
+CREATE TABLE IF NOT EXISTS company_workflow_settings(employer_id UUID PRIMARY KEY REFERENCES employer_accounts(id),probation_days INTEGER NOT NULL DEFAULT 90 CHECK(probation_days BETWEEN 1 AND 730),vacancy_approver_employee_id UUID REFERENCES workforce_employees(id),confidentiality_title TEXT NOT NULL DEFAULT 'Confidentiality acknowledgement',confidentiality_text TEXT NOT NULL DEFAULT '',confidentiality_version INTEGER NOT NULL DEFAULT 1,updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW());
+CREATE TABLE IF NOT EXISTS employee_agreement_acknowledgements(id UUID PRIMARY KEY,employer_id UUID NOT NULL REFERENCES employer_accounts(id),employee_id UUID NOT NULL REFERENCES workforce_employees(id),version INTEGER NOT NULL,title TEXT NOT NULL,agreement_text TEXT NOT NULL,acknowledged_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),UNIQUE(employee_id,version));
+CREATE TABLE IF NOT EXISTS employee_workflow_enrollments(employee_id UUID PRIMARY KEY REFERENCES workforce_employees(id),employer_id UUID NOT NULL REFERENCES employer_accounts(id),created_at TIMESTAMPTZ NOT NULL DEFAULT NOW());
+CREATE TABLE IF NOT EXISTS workforce_report_snapshots(id UUID PRIMARY KEY,employer_id UUID NOT NULL REFERENCES employer_accounts(id),period DATE NOT NULL,payload JSONB NOT NULL,generated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),generation_source TEXT NOT NULL,UNIQUE(employer_id,period));
+CREATE TABLE IF NOT EXISTS workflow_alerts(employer_id UUID NOT NULL REFERENCES employer_accounts(id),alert_key TEXT NOT NULL,title TEXT NOT NULL,details TEXT NOT NULL,created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),PRIMARY KEY(employer_id,alert_key));
+ALTER TABLE company_workflow_settings ADD COLUMN IF NOT EXISTS credential_types JSONB NOT NULL DEFAULT '["identity","qualification","reference"]';
+ALTER TABLE employee_onboarding_tasks ADD COLUMN IF NOT EXISTS automation_key TEXT;
+CREATE UNIQUE INDEX IF NOT EXISTS onboarding_automation_unique ON employee_onboarding_tasks(employee_id,automation_key) WHERE automation_key IS NOT NULL;

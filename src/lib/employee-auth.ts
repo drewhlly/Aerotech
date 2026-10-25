@@ -1,3 +1,4 @@
+import {selectPortal} from './portal-selection';
 import {randomBytes,createHash,scrypt as scryptCallback,timingSafeEqual} from "node:crypto";
 import {promisify} from "node:util";
 import {cookies} from "next/headers";
@@ -16,6 +17,7 @@ export async function checkPassword(password:string,stored:string){
  return timingSafeEqual(original,derived);
 }
 export async function startEmployeeSession(pool:Pool,employeeId:string){
+ await selectPortal('employee');
  (await cookies()).delete("aerotech_employer_session");
  (await cookies()).delete("aerotech_applicant_session");
 

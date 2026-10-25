@@ -17,7 +17,7 @@ export default function ApplicantSignup() {
   }catch{setError("Unable to connect right now.");}finally{setBusy(false);}
  }
  return <main className="min-h-screen bg-[#F5F8FA] px-5 py-8">
-  <div className="mx-auto max-w-xl"><Logo/><div className="mt-12 rounded-3xl bg-white p-8 shadow-sm">
+  <div className="mx-auto max-w-xl"><div className="mt-12 rounded-3xl bg-white p-8 shadow-sm">
    <h1 className="text-3xl font-black text-[#07152c]">Create your free account</h1>
    <p className="mt-3 text-slate-600">Create your own account to discover jobs and apply across companies. No employer invitation or payment is required.</p>
    <form onSubmit={submit} className="mt-7 space-y-4">

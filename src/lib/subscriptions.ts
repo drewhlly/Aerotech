@@ -51,13 +51,10 @@ export const EMPLOYER_PLANS: Record<
       USD: 350,
     },
     features: [
-      "Recruitment dashboard",
-      "Job posting",
-      "Candidate management",
-      "Basic AI recruitment assistance",
-      "Candidate matching",
-      "Basic recruitment analytics",
-      "Standard support",
+      "Employee directory and staff profiles",
+      "Job drafts and HR vacancy approvals",
+      "Applicant pipeline and CV review",
+      "Role assessments and interview planner",
     ],
   },
 
@@ -76,12 +73,10 @@ export const EMPLOYER_PLANS: Record<
     },
     features: [
       "Everything in Basic",
-      "Advanced candidate matching",
-      "Advanced AI recruitment assistance",
-      "Advanced recruitment analytics",
-      "Candidate pipeline automation",
-      "Team collaboration",
-      "Priority support",
+      "Attendance and leave workflows",
+      "Payroll drafts, approvals and payslips",
+      "Onboarding, document review and learning",
+      "Performance reviews, surveys and exits",
     ],
   },
 
@@ -100,13 +95,10 @@ export const EMPLOYER_PLANS: Record<
     },
     features: [
       "Everything in Professional",
-      "Unlimited recruitment workflows",
-      "Advanced AI automation",
-      "AI candidate screening",
-      "Workforce intelligence",
-      "Premium analytics and reporting",
-      "Unlimited team collaboration",
-      "Priority enterprise support",
+      "Workflow automation and confidentiality tracking",
+      "Monthly workforce report generation",
+      "Document expiry alerts and review queues",
+      "Company workflow configuration",
     ],
   },
   enterprise: {
@@ -120,11 +112,9 @@ export const EMPLOYER_PLANS: Record<
     prices: { NGN: 0, USD: 0 },
     features: [
       "Everything in Business",
-      "Custom integrations and workflows",
-      "Dedicated implementation support",
-      "Organisation-specific automation",
-      "Advanced reporting and controls",
-      "Enterprise account management",
+      "Organisation-specific implementation by agreement",
+      "Custom integrations by written scope",
+      "Dedicated account support by agreement",
     ],
   },
 
@@ -143,15 +133,7 @@ export const EMPLOYEE_PLAN: SubscriptionPlan = {
     NGN: 0,
     USD: 0,
   },
-  features: [
-    "Employee profile",
-    "Job discovery",
-    "AI-assisted job matching",
-    "Application management",
-    "Candidate profile visibility",
-    "Career tools",
-    "Employee dashboard",
-  ],
+  features: ["Employee profile and company records","Payslips and company notifications","Assigned learning and document uploads","Leave requests and employee feedback"],
 };
 
 export function getEmployerPlan(

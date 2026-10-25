@@ -1,5 +1,6 @@
 "use client";
 
+import CountrySelect from "@/components/country-select";
 import Link from "next/link";
 import { Check, Crown, Sparkles, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -10,7 +11,7 @@ import {
 } from "@/lib/subscriptions";
 
 export default function PricingPage() {
-  const [country, setCountry] = useState("UNKNOWN");
+  const [country, setCountry] = useState("NG");
   useEffect(() => setCountry(detectCountry()), []);
 
   const planIcon = (plan: EmployerPlan) => {
@@ -39,7 +40,7 @@ export default function PricingPage() {
 
         <p className="mt-8 text-center text-sm text-slate-600">Prices are based on your region. {country === "UNKNOWN" ? "Your region could not be detected." : `Detected region: ${country}`}</p>
 
-        {/* Employer plans */}
+        <label className="mx-auto mt-6 block max-w-sm text-sm">Select country<CountrySelect className="aero-input mt-2" value={country==='NG'?'Nigeria':country==='US'?'United States':country} onChange={e=>{setCountry(e.target.value);localStorage.setItem('aerotech_employer_country',e.target.value)}}/></label>
         <section className="mt-12">
           <div className="mb-6">
             <h2 className="text-2xl font-bold text-slate-950">
@@ -127,8 +128,7 @@ export default function PricingPage() {
 
         <div className="mt-16 text-center text-sm text-slate-500">
           <p>
-            Payment infrastructure will be connected when Aerotech's payment
-            provider is ready.
+            Company plan activation requires a verified live payment. Review billing availability at checkout.
           </p>
         </div>
       </div>

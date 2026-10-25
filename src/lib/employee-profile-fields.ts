@@ -11,3 +11,9 @@ export const profileSections = [
 ] as const;
 export const validProfileKeys = new Set(profileSections.flatMap(s=>s.fields.map(f=>s.key+"."+f[0])));
 export function sanitizeProfile(input:unknown){if(!input||typeof input!=="object"||Array.isArray(input))throw Error("Invalid profile");const out:Record<string,Record<string,string>>={};for(const [section,fields] of Object.entries(input)){if(!fields||typeof fields!=="object"||Array.isArray(fields))throw Error("Invalid section");for(const [field,value] of Object.entries(fields)){if(!validProfileKeys.has(section+"."+field)||typeof value!=="string"||value.length>500)throw Error("Invalid profile field");if((field==="nin"||field==="bvn")&&value.trim()&&!/^\d{11}$/.test(value.trim()))throw Error("NIN and BVN must contain 11 digits");(out[section]??={})[field]=value.trim();}}return out;}
+export const profileOptions:Record<string,string[]>={
+ 'personal.gender':['Female','Male','Self-described','Prefer not to say'],
+ 'personal.maritalStatus':['Single','Married','Separated','Divorced','Widowed','Prefer not to say'],
+ 'employment.employmentType':['Full-time','Part-time','Contract','Temporary','Internship'],
+ 'rentRelief.eligible':['Pending HR review','Verified eligible','Not eligible','Not applicable']
+};

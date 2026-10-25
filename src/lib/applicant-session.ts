@@ -1,3 +1,4 @@
+import {selectPortal} from './portal-selection';
 import { randomBytes, createHash } from "node:crypto";
 import { cookies } from "next/headers";
 import { Pool } from "pg";
@@ -8,6 +9,7 @@ export function applicantDB() {
  return new Pool({ connectionString: process.env.DATABASE_URL, max: 2, connectionTimeoutMillis: 5000 });
 }
 export async function startApplicantSession(pool: Pool, applicantId: string) {
+ await selectPortal('applicant');
  (await cookies()).delete("aerotech_employer_session");
  (await cookies()).delete("aerotech_employee_session");
 

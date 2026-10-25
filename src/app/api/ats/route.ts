@@ -3,6 +3,8 @@ import {randomUUID} from 'node:crypto';
 import {currentEmployer,db} from '@/lib/employer-session';
 import {currentApplicant} from '@/lib/applicant-session';
 import {stages,grade,type Question} from '@/lib/ats';
+import {rejectionFeedback} from '@/lib/recruitment-feedback';
+import {enrollWorkflows} from '@/lib/workflow-automation';
 import {generateRoleAssessment} from '@/lib/role-assessment';
 export const runtime='nodejs';
 const bad=(error:string,status=400)=>NextResponse.json({error},{status});
@@ -33,13 +35,13 @@ export async function POST(request:Request){
  if(!['draft','open'].includes(b.status))return bad('Invalid status');
  const questions=b.questions?.length?b.questions:generateRoleAssessment(b.title,b.department,b.requirements);
  if(!Array.isArray(questions)||questions.length>20||questions.some(q=>!q||typeof q.prompt!=='string'||!q.prompt.trim()||q.prompt.length>2000||!Array.isArray(q.options)||q.options.length!==4||q.options.some((o:unknown)=>typeof o!=='string'||!o.trim()||o.length>1000)||!Number.isInteger(q.correct)||q.correct<0||q.correct>3))return bad('Each assessment question needs four choices and a correct answer');
- const id=randomUUID();await c.query('INSERT INTO ats_jobs(id,employer_id,title,department,location,country,employment_type,description,requirements,status,questions) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)',[id,employer,b.title,b.department,b.location,b.country,b.employment_type,b.description,String(b.requirements||'').slice(0,20000),b.status,JSON.stringify(questions)]);
+ const id=randomUUID();await c.query('INSERT INTO ats_jobs(id,employer_id,title,department,location,country,employment_type,description,requirements,status,questions) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)',[id,employer,b.title,b.department,b.location,b.country,b.employment_type,b.description,String(b.requirements||'').slice(0,20000),'draft',JSON.stringify(questions)]);
  await c.query('COMMIT');return NextResponse.json({id},{status:201});
  }
  if(b.action==='jobstatus'){
  if(!employer)return bad('Employer access required',403);
- if(!['draft','open','closed'].includes(b.status))return bad('Invalid status');
- const changed=await c.query('UPDATE ats_jobs SET status=$1 WHERE id=$2 AND employer_id=$3 RETURNING id',[b.status,b.id,employer]);
+ if(!['draft','open','closed'].includes(b.status))return bad('Invalid status');if(b.status==='open')return bad('Use the HR vacancy approval queue to approve and publish this role',403);
+ const changed=await c.query("UPDATE ats_jobs SET status=$1,approval_status=CASE WHEN $1='draft' THEN 'pending' ELSE approval_status END WHERE id=$2 AND employer_id=$3 RETURNING id",[b.status,b.id,employer]);
  if(!changed.rowCount)return bad('Vacancy not found',404);
  await c.query('COMMIT');return NextResponse.json({ok:true});
  }
@@ -62,7 +64,8 @@ export async function POST(request:Request){
  const record=await c.query('SELECT a.*,j.employer_id,j.questions,j.title,j.department,j.location,p.first_name,p.last_name,p.email,p.phone FROM ats_applications a JOIN ats_jobs j ON j.id=a.job_id JOIN applicant_accounts p ON p.id=a.applicant_id WHERE a.id=$1 FOR UPDATE OF a',[b.id]);
  const a=record.rows[0];if(!a||employer&&a.employer_id!==employer||applicant&&a.applicant_id!==applicant)return bad('Application not found',404);
  let stage=a.stage;let message='';
- if(b.action==='assessment'){
+ if(b.action==='accept_offer'){if(!applicant||a.stage!=='offer'||b.confirm!==true)return bad('A confirmed offer is required',409);stage='hired';message='Applicant accepted the employer offer. Onboarding started.';
+ }else if(b.action==='assessment'){
  if(!applicant||a.stage!=='assessment'||a.assessment_score!==null)return bad('Assessment is not available',409);
  const q=a.questions as Question[];
  if(!q.length||!Array.isArray(b.answers)||b.answers.length!==q.length||b.answers.some((n:unknown)=>!Number.isInteger(n)||Number(n)<0||Number(n)>3))return bad('Answer every question');
@@ -70,15 +73,17 @@ export async function POST(request:Request){
  await c.query('UPDATE ats_applications SET assessment_score=$1,answers=$2 WHERE id=$3',[score,JSON.stringify(b.answers),a.id]);
  }else if(b.action==='update'){
  if(!employer)return bad('Employer access required',403);
- if(!stages.includes(b.stage))return bad('Invalid hiring stage');
+ if(!stages.includes(b.stage))return bad('Invalid hiring stage');const newlyScheduled=!!b.interview_at;b.interview_at=b.interview_at||a.interview_at;
  if(a.stage==='hired'&&b.stage!=='hired')return bad('Manage this person through Employees after hiring',409);
  if(b.stage==='assessment'&&!a.questions.length)return bad('This vacancy has no assessment questions');
  if(b.stage==='interview'&&(!b.interview_at||!Number.isFinite(Date.parse(b.interview_at))))return bad('Set an interview date and time');
- stage=b.checks_passed===true?'shortlisted':b.stage;message=String(b.feedback||'').trim().slice(0,5000)||'Application moved to '+stage;
+ stage=b.checks_passed===true?'shortlisted':b.stage;if(newlyScheduled&&stage==='shortlisted')stage='interview';message=String(b.feedback||'').trim().slice(0,5000)||'Application moved to '+stage;if(stage==='rejected'){let feedback;try{feedback=rejectionFeedback(b.rejection,a.title)}catch(err){return bad(err instanceof Error?err.message:'Complete rejection feedback')}message=feedback.message;b.feedback=message;await c.query('UPDATE ats_applications SET rejection_details=$1::jsonb WHERE id=$2',[JSON.stringify(feedback.details),a.id]);}if(b.interview_complete===true&&stage!=='rejected'){if(a.stage!=='interview'||!String(b.feedback||'').trim())return bad('Interview feedback is required before marking the interview complete');await c.query('UPDATE ats_applications SET interview_completed_at=NOW() WHERE id=$1',[a.id]);message='Interview completed. HR feedback: '+String(b.feedback).slice(0,2000);}
  await c.query('UPDATE ats_applications SET feedback=$1,interview_at=$2,interview_details=$3 WHERE id=$4',[String(b.feedback||'').slice(0,5000),b.interview_at||a.interview_at,String(b.interview_details||'').slice(0,2000),a.id]);
  if(stage==='interview'){let roomId=a.interview_room_id;if(!roomId){roomId=randomUUID();await c.query('INSERT INTO meet_rooms(id,employer_id,title,starts_at,duration_minutes) VALUES($1,$2,$3,$4,60)',[roomId,employer,'Interview: '+a.title,b.interview_at]);await c.query('UPDATE ats_applications SET interview_room_id=$1 WHERE id=$2',[roomId,a.id]);}else{await c.query('UPDATE meet_rooms SET starts_at=$1 WHERE id=$2 AND employer_id=$3',[b.interview_at,roomId,employer]);}await c.query('UPDATE ats_applications SET interview_details=$1 WHERE id=$2',['/meet/'+roomId,a.id]);}
- if(stage==='hired'&&!a.employee_id){const employeeId=randomUUID();const e=await c.query("INSERT INTO workforce_employees(id,employer_id,first_name,last_name,email,phone,job_title,department,location,hire_date) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,CURRENT_DATE) ON CONFLICT(employer_id,email) DO UPDATE SET updated_at=NOW() RETURNING id",[employeeId,employer,a.first_name,a.last_name,a.email,a.phone,a.title,a.department,a.location]);await c.query('UPDATE ats_applications SET employee_id=$1 WHERE id=$2',[e.rows[0].id,a.id]);}
  }else return bad('Unknown action');
+ if(stage==='hired'&&!a.employee_id){const employeeId=randomUUID();const e=await c.query("INSERT INTO workforce_employees(id,employer_id,first_name,last_name,email,phone,job_title,department,location,hire_date) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,CURRENT_DATE) ON CONFLICT(employer_id,email) DO UPDATE SET updated_at=NOW() RETURNING id",[employeeId,a.employer_id,a.first_name,a.last_name,a.email,a.phone,a.title,a.department,a.location]);await c.query('UPDATE ats_applications SET employee_id=$1 WHERE id=$2',[e.rows[0].id,a.id]);}
+
+ if(stage==='hired')await enrollWorkflows(c,a.employer_id);
  await c.query('UPDATE ats_applications SET stage=$1 WHERE id=$2',[stage,a.id]);
  await c.query('INSERT INTO ats_events(id,application_id,stage,message) VALUES($1,$2,$3,$4)',[randomUUID(),a.id,stage,message]);
  await c.query('COMMIT');return NextResponse.json({ok:true});

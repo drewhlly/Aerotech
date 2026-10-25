@@ -8,6 +8,6 @@ export async function GET(){
  try{
  const birthdays=await pool.query("SELECT id,first_name,last_name,department,TO_CHAR(date_of_birth,'MM-DD') AS birthday FROM workforce_employees WHERE employer_id=$1 AND date_of_birth IS NOT NULL AND employment_status <> 'terminated' ORDER BY EXTRACT(MONTH FROM date_of_birth),EXTRACT(DAY FROM date_of_birth)",[employer]);
  const alerts=await pool.query("SELECT w.first_name,w.last_name,l.notified_at FROM birthday_notification_log l JOIN workforce_employees w ON w.id=l.employee_id AND w.employer_id=l.employer_id WHERE l.employer_id=$1 AND (l.notified_at AT TIME ZONE 'Africa/Lagos')::date=(NOW() AT TIME ZONE 'Africa/Lagos')::date ORDER BY w.first_name",[employer]);
- return NextResponse.json({birthdays:birthdays.rows,hrAlerts:alerts.rows});
+ const tomorrow=await pool.query("SELECT first_name,last_name,department FROM workforce_employees WHERE employer_id=$1 AND date_of_birth IS NOT NULL AND employment_status IN ('active','probation','on_leave') AND TO_CHAR(date_of_birth,'MM-DD')=TO_CHAR((NOW() AT TIME ZONE 'Africa/Lagos')::date+1,'MM-DD')",[employer]);return NextResponse.json({birthdays:birthdays.rows,hrAlerts:alerts.rows,tomorrow:tomorrow.rows});
  }catch{return NextResponse.json({error:"Birthdays unavailable"},{status:503});}finally{await pool.end();}
 }
