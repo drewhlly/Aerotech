@@ -56,24 +56,11 @@ export function PublicNav() {
         <Logo />
 
         <nav className="hidden items-center gap-7 lg:flex">
-          <Link href="/auth/signup/applicant" className="text-sm font-medium text-slate-600 hover:text-[#07152c]">Applicant signup</Link><Link href="/jobs" className="text-sm font-medium text-slate-600 hover:text-[#07152c]">
-            Find Jobs
-          </Link>
-          <Link href="/solutions" className="text-sm font-medium text-slate-600 hover:text-[#07152c]">
-            Solutions
-          </Link>
-          <Link href="/solutions" className="text-sm font-medium text-slate-600 hover:text-[#07152c]">
-            Payroll
-          </Link>
-          <Link href="/solutions" className="text-sm font-medium text-slate-600 hover:text-[#07152c]">
-            Training
-          </Link>
-          <Link href="/solutions" className="text-sm font-medium text-slate-600 hover:text-[#07152c]">
-            AI
-          </Link>
-          <Link href="/pricing" className="text-sm font-medium text-slate-600 hover:text-[#07152c]">
-            Pricing
-          </Link>
+          <Link href="/jobs" className="text-sm font-medium text-slate-600 hover:text-blue-700">Find jobs</Link>
+          <Link href="/auth/login?role=employee" className="text-sm font-medium text-slate-600 hover:text-blue-700">For employees</Link>
+          <Link href="/solutions" className="text-sm font-medium text-slate-600 hover:text-blue-700">For companies</Link>
+          <Link href="/pricing" className="text-sm font-medium text-slate-600 hover:text-blue-700">Company plans</Link>
+          <Link href="/support" className="text-sm font-medium text-slate-600 hover:text-blue-700">Support</Link>
         </nav>
 
         <div className="hidden items-center gap-3 sm:flex">
@@ -84,10 +71,10 @@ export function PublicNav() {
             Sign in
           </Link>
           <Link
-            href="/auth/signup/employer"
+            href="/#choose-your-path"
             className="rounded-xl bg-[#07152c] px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-[#183B56]"
           >
-            Start with Aerotech
+            Choose your path
           </Link>
         </div>
 
@@ -109,17 +96,15 @@ export function PublicNav() {
             <Link href="/solutions" className="rounded-lg p-3 hover:bg-slate-50">
               Solutions
             </Link>
-            <Link href="/solutions" className="rounded-lg p-3 hover:bg-slate-50">
-              Payroll
-            </Link>
+            <Link href="/auth/login?role=employee" className="rounded-lg p-3 hover:bg-slate-50">Employee sign in</Link>
             <Link href="/auth/login" className="rounded-lg p-3 hover:bg-slate-50">
               Sign in
             </Link>
             <Link
-              href="/auth/signup/employer"
+              href="/#choose-your-path"
               className="rounded-xl bg-[#07152c] p-3 text-center font-bold text-white"
             >
-              Start with Aerotech
+              Choose your path
             </Link>
           </div>
         </div>

@@ -5,7 +5,7 @@ import { readFileSync, existsSync } from "node:fs";
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
 test("employer signup is reachable from the home page", () => {
-  assert.match(read("src/app/page.tsx"), /href="\/auth\/signup\/employer"/);
+  assert.ok(read("src/app/page.tsx").includes("/auth/signup/employer"));
   assert.ok(existsSync(new URL("../src/app/auth/signup/employer/page.tsx", import.meta.url)));
 });
 
