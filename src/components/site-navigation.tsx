@@ -1,3 +1,3 @@
 "use client";
-import {usePathname} from 'next/navigation';import {PublicNav,PublicNavigationContext} from './aerotech-portal';import BackNavigation from './back-navigation';
-export default function SiteNavigation({children}:{children:React.ReactNode}){const path=usePathname();const workspace=['/dashboard','/employee','/applicant','/meet','/jobs','/auth','/aerochat','/admin'].some(p=>path===p||path.startsWith(p+'/'));return <>{!workspace&&<><PublicNav/>{path!=='/'&&<div className="mx-auto max-w-7xl px-5 pt-5"><BackNavigation/></div>}</>}<PublicNavigationContext.Provider value={!workspace}>{children}</PublicNavigationContext.Provider></>}
+import {usePathname} from 'next/navigation';import {PublicNav,PublicNavigationContext} from './aerotech-portal';
+export default function SiteNavigation({children}:{children:React.ReactNode}){const path=usePathname();const workspace=['/dashboard','/employee','/applicant','/meet','/jobs','/auth','/aerochat','/admin'].some(p=>path===p||path.startsWith(p+'/'));return <>{!workspace&&<><PublicNav/></>}<PublicNavigationContext.Provider value={!workspace}>{children}</PublicNavigationContext.Provider></>}

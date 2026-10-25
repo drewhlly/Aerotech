@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { ArrowLeft, Wallet, LockKeyhole } from "lucide-react";
+import {  Wallet, LockKeyhole } from "lucide-react";
 export default function PayrollWalletPage() {
  return <main className="min-h-screen bg-slate-50 px-6 py-14">
   <div className="mx-auto max-w-3xl">
-   <Link href="/dashboard/employer/payroll" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600"><ArrowLeft size={16}/> Back to payroll</Link>
+   
    <section className="mt-10 rounded-3xl border border-slate-200 bg-white px-8 py-16 text-center shadow-sm">
     <Wallet size={36} className="mx-auto text-[#2563eb]"/>
     <h1 className="mt-5 text-3xl font-black text-[#07152c]">Payroll Wallet — Coming Soon</h1>

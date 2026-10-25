@@ -9,7 +9,7 @@ export default function Page(){
  const [alerts,setAlerts]=useState<Alert[]>([]);
  useEffect(()=>{fetch("/api/hr/birthdays").then(async r=>{const x=await r.json();if(!r.ok)throw Error(x.error);setItems(x.birthdays||[]);setAlerts(x.hrAlerts||[])}).catch(e=>setError(e.message))},[]);
  return <main className="min-h-screen bg-slate-50 p-8">
- <Link href="/dashboard/employer">Back to dashboard</Link>
+ 
  <h1 className="mt-5 text-3xl font-bold">Employee birthdays</h1>
  <p className="mt-2 text-slate-600">Birthdays from your employee records. Birth years stay private.</p>
  {error&&<p role="alert">{error}</p>}
