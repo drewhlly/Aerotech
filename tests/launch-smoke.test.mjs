@@ -10,15 +10,16 @@ test("employer signup is reachable from the home page", () => {
 });
 
 test("job seekers can reach the jobs page", () => {
-  assert.match(read("src/app/page.tsx"), /href="\/jobs"/);
+  assert.match(read("src/components/aerotech-portal.tsx"), /href="\/jobs"/);
   assert.ok(existsSync(new URL("../src/app/jobs/page.tsx", import.meta.url)));
 });
 
-test("home page introduces the essential workforce modules", () => {
-  const home = read("src/app/page.tsx");
-  for (const module of ["Workforce", "Recruitment", "Payroll", "Training", "Attendance", "Compliance", "AI"]) {
-    assert.ok(home.includes(`"${module}"`), `Missing module: ${module}`);
-  }
+test("home links to dedicated solutions and the shared navigation serves every audience", () => {
+  assert.match(read("src/app/page.tsx"), /href="\/solutions"/);
+  const solutions=read("src/app/solutions/page.tsx");
+  for(const module of ["Recruitment","Learning","Attendance","Payroll","compliance"]) assert.ok(solutions.toLowerCase().includes(module.toLowerCase()));
+  const nav=read("src/components/site-navigation.tsx");
+  for(const portal of ["/dashboard","/employee","/applicant"]) assert.ok(nav.includes(portal));
 });
 
 test("unknown job IDs do not display another vacancy", () => {

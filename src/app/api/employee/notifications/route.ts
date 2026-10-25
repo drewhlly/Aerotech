@@ -1,10 +1,11 @@
+import {syncPayslipNotifications} from '@/lib/payslip-notifications';
 import {NextResponse} from "next/server";
 import {currentEmployee} from "@/lib/employee-auth";
 import {db} from "@/lib/employer-session";
 export const runtime="nodejs";
 export async function GET(){
  const user=await currentEmployee();if(!user)return NextResponse.json({error:"Employee sign-in required"},{status:401});
- const pool=db();try{const r=await pool.query("SELECT id,title,body,created_at,read_at FROM employee_notifications WHERE employer_id=$1 AND employee_id=$2 ORDER BY created_at DESC LIMIT 100",[user.employer_id,user.id]);return NextResponse.json({notifications:r.rows});}
+ const pool=db();try{await syncPayslipNotifications(pool,user.employer_id);const r=await pool.query("SELECT id,title,body,created_at,read_at FROM employee_notifications WHERE employer_id=$1 AND employee_id=$2 ORDER BY created_at DESC LIMIT 100",[user.employer_id,user.id]);return NextResponse.json({notifications:r.rows});}
  catch{return NextResponse.json({error:"Notifications unavailable"},{status:503});}finally{await pool.end();}
 }
 export async function PATCH(request:Request){

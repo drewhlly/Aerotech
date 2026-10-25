@@ -62,13 +62,13 @@ export function PublicNav() {
           <Link href="/solutions" className="text-sm font-medium text-slate-600 hover:text-[#07152c]">
             Solutions
           </Link>
-          <Link href="/#payroll" className="text-sm font-medium text-slate-600 hover:text-[#07152c]">
+          <Link href="/solutions" className="text-sm font-medium text-slate-600 hover:text-[#07152c]">
             Payroll
           </Link>
-          <Link href="/#training" className="text-sm font-medium text-slate-600 hover:text-[#07152c]">
+          <Link href="/solutions" className="text-sm font-medium text-slate-600 hover:text-[#07152c]">
             Training
           </Link>
-          <Link href="/#ai" className="text-sm font-medium text-slate-600 hover:text-[#07152c]">
+          <Link href="/solutions" className="text-sm font-medium text-slate-600 hover:text-[#07152c]">
             AI
           </Link>
           <Link href="/pricing" className="text-sm font-medium text-slate-600 hover:text-[#07152c]">
@@ -109,7 +109,7 @@ export function PublicNav() {
             <Link href="/solutions" className="rounded-lg p-3 hover:bg-slate-50">
               Solutions
             </Link>
-            <Link href="/#payroll" className="rounded-lg p-3 hover:bg-slate-50">
+            <Link href="/solutions" className="rounded-lg p-3 hover:bg-slate-50">
               Payroll
             </Link>
             <Link href="/auth/login" className="rounded-lg p-3 hover:bg-slate-50">
@@ -156,4 +156,3 @@ export function StatCard({
     </div>
   );
 }
-
