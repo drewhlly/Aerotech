@@ -1,0 +1,1 @@
+import Confirmations from '@/components/staff-confirmations';export default function Page(){return <Confirmations/>}

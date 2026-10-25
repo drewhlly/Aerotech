@@ -69,7 +69,7 @@ export default function EmployerSignupPage() {
   return (
     <div className="min-h-screen bg-[#F5F8FA]">
       <div className="mx-auto max-w-6xl px-5 py-8">
-        <Logo />
+        
         <div className="mx-auto mt-10 max-w-3xl rounded-3xl border border-slate-200 bg-white p-7 shadow-sm sm:p-10">
           <div className="text-sm font-black uppercase tracking-widest text-[#2563eb]">Employer setup</div>
           <h1 className="mt-3 text-3xl font-black text-[#07152c] sm:text-4xl">Build your workforce on Aerotech.</h1>

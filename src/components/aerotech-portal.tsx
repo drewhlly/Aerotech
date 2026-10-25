@@ -3,7 +3,7 @@
 import Link from "next/link";
 import WorkspaceShell from "./workspace-shell";
 import BrandLogo from "./brand-logo";
-import { useState } from "react";
+import { createContext, useContext, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowRight,
@@ -44,8 +44,11 @@ export const AEROTECH = {
 
 export function Logo({light=false}:{light?:boolean}){return <BrandLogo light={light}/>;}
 
+export const PublicNavigationContext=createContext(false);
 export function PublicNav() {
   const [open, setOpen] = useState(false);
+  const alreadyVisible=useContext(PublicNavigationContext);
+  if(alreadyVisible)return null;
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur">
@@ -56,7 +59,7 @@ export function PublicNav() {
           <Link href="/auth/signup/applicant" className="text-sm font-medium text-slate-600 hover:text-[#07152c]">Applicant signup</Link><Link href="/jobs" className="text-sm font-medium text-slate-600 hover:text-[#07152c]">
             Find Jobs
           </Link>
-          <Link href="/#solutions" className="text-sm font-medium text-slate-600 hover:text-[#07152c]">
+          <Link href="/solutions" className="text-sm font-medium text-slate-600 hover:text-[#07152c]">
             Solutions
           </Link>
           <Link href="/#payroll" className="text-sm font-medium text-slate-600 hover:text-[#07152c]">
@@ -103,7 +106,7 @@ export function PublicNav() {
             <Link href="/auth/signup/applicant" className="rounded-lg p-3 hover:bg-slate-50">Applicant signup</Link><Link href="/pricing" className="rounded-lg p-3 hover:bg-slate-50">Pricing</Link><Link href="/jobs" className="rounded-lg p-3 hover:bg-slate-50">
               Find Jobs
             </Link>
-            <Link href="/#solutions" className="rounded-lg p-3 hover:bg-slate-50">
+            <Link href="/solutions" className="rounded-lg p-3 hover:bg-slate-50">
               Solutions
             </Link>
             <Link href="/#payroll" className="rounded-lg p-3 hover:bg-slate-50">
@@ -154,55 +157,3 @@ export function StatCard({
   );
 }
 
-export function AIBox() {
-  const [question, setQuestion] = useState("");
-  const [answer, setAnswer] = useState("");
-
-  function ask() {
-    if (!question.trim()) return;
-
-    setAnswer(
-      "Aerotech AI can help with workforce insights, recruitment, payroll explanations, attendance analysis, training recommendations and HR policy guidance. In production this panel will connect to your organisation's secured AI layer."
-    );
-  }
-
-  return (
-    <div className="rounded-2xl bg-[#07152c] p-6 text-white shadow-sm">
-      <div className="flex items-start gap-4">
-        <div className="rounded-xl bg-white/10 p-3">
-          <Sparkles size={22} />
-        </div>
-        <div className="flex-1">
-          <div className="text-lg font-black">Aerotech AI</div>
-          <div className="mt-1 text-sm text-white/60">
-            Your intelligent HR and workforce copilot.
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-5 flex gap-2">
-        <input
-          value={question}
-          onChange={(e) => setQuestion(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") ask();
-          }}
-          placeholder="Ask about your workforce..."
-          className="min-w-0 flex-1 rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-sm text-white outline-none placeholder:text-white/40"
-        />
-        <button
-          onClick={ask}
-          className="rounded-xl bg-[#2563eb] px-4 py-3 font-bold text-white"
-        >
-          Ask
-        </button>
-      </div>
-
-      {answer && (
-        <div className="mt-4 rounded-xl bg-white/10 p-4 text-sm leading-6 text-white/80">
-          {answer}
-        </div>
-      )}
-    </div>
-  );
-}

@@ -29,7 +29,7 @@ export async function POST(req:Request,{params}:{params:Promise<{module:string}>
  if(body.reviewer_employee_id!=null)return NextResponse.json({error:"Reviewer identity cannot be asserted by an employer form"},{status:400});
  for(const field of ['content_url','external_url'])if(body[field]){try{if(new URL(String(body[field])).protocol!=='https:')throw Error()}catch{return NextResponse.json({error:'Document and learning links must use HTTPS'},{status:400})}}
  const pool=db();try{
- const names=["id","employer_id","employee_id",...fields],values=[randomUUID(),employer,body.employeeId,...fields.map(f=>body[f]??null)];
+ const names=["id","employer_id","employee_id",...fields],values=[randomUUID(),employer,body.employeeId,...fields.map(f=>body[f]===''?null:body[f]??null)];
  const columns=names.join(","),placeholders=names.map((_,i)=>"$"+(i+1)).join(",");
  const r=await pool.query(`INSERT INTO ${cfg.table}(${columns}) SELECT ${placeholders} FROM workforce_employees WHERE id=$3 AND employer_id=$2 RETURNING id`,values);
  if(!r.rowCount)return NextResponse.json({error:"Employee not found"},{status:404});

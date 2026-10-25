@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import SiteNavigation from "@/components/site-navigation";
 
 export const metadata: Metadata = {
   title: "Aerotech — People. Performance. Progress.",
@@ -14,7 +15,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body><SiteNavigation>{children}</SiteNavigation></body>
     </html>
   );
 }

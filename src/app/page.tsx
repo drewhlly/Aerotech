@@ -32,7 +32,7 @@ export default function HomePage() {
 
             <p className="mt-7 max-w-2xl text-lg leading-8 text-white/65">
               Recruit, onboard, manage, train, track attendance, run payroll,
-              stay compliant and empower your people — all from Aerotech.
+              track document obligations and empower your people — all from Aerotech.
             </p>
 
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
@@ -113,9 +113,9 @@ export default function HomePage() {
             [Users, "Workforce", "Employee 360, onboarding, documents and people management."],
             [BriefcaseBusiness, "Recruitment", "Jobs, applicants, interviews, assessments and offers."],
             [Banknote, "Payroll", "Payroll processing, statutory deductions and payslips."],
-            [GraduationCap, "Training", "Courses, learning paths, certifications and L&D tracking."],
+            [GraduationCap, "Training", "Assign learning materials and track employee completion."],
             [Clock3, "Attendance", "Attendance, shifts, leave and workforce time management."],
-            [ShieldCheck, "Compliance", "Country-aware requirements, expiry tracking and reports."],
+            [ShieldCheck, "Compliance", "Saved document expiry, acknowledgement and operational reports."],
             [Wallet, "Payroll Wallet", "Review payroll statements and approvals. Wallet transactions are not enabled."],
             [Sparkles, "AI", "Intelligent HR insights and an AI workforce copilot."],
           ].map(([Icon, title, description]) => {
@@ -220,7 +220,7 @@ export default function HomePage() {
 
       <footer className="border-t border-slate-200 bg-white">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-5 py-8 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
-          <Logo />
+          
           <div>© 2026 Aerotech. The operating system for modern work.</div>
         </div>
       </footer>
