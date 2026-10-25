@@ -24,7 +24,7 @@ export default function PayrollRunPage(){
  }
  return <main className="min-h-screen bg-slate-50 p-6 text-slate-900">
   <div className="mx-auto max-w-3xl space-y-6">
-   <Link href="/dashboard/employer/payroll" className="text-sm underline">Back to payroll</Link>
+   
    <header><h1 className="text-2xl font-bold">Prepare payroll</h1><p className="mt-2 text-sm text-slate-600">Calculate a payroll draft from your company's active payroll employees and approved deductions. No funds will be transferred.</p></header>
    <section className="aero-card"><h2 className="font-bold">Employee compensation</h2><p className="mt-2 text-sm text-slate-600">{setup?`${setup.ready} on payroll · ${setup.missing} need setup`:'Checking payroll setup…'}</p><Link href="/dashboard/employer/payroll/setup" className="mt-3 inline-block font-semibold text-blue-700">Review employees & set up salaries →</Link></section>
    <section className="rounded-xl border bg-white p-6">
