@@ -190,6 +190,7 @@ export function DashboardShell({
     catch { setSigningOut(false); window.alert("Unable to sign out. Please try again."); }
   }
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [profileOpen,setProfileOpen]=useState(false);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#E8F5FF] via-[#F6F9FF] to-[#F0EEFF] text-slate-900">
@@ -273,7 +274,7 @@ export function DashboardShell({
           <div className="flex h-16 items-center justify-between px-4 sm:px-6">
             <div className="flex items-center gap-3">
               <button
-                className="rounded-xl border border-slate-200 p-2 lg:hidden"
+                aria-label="Open navigation" aria-expanded={mobileOpen} className="rounded-xl border border-slate-200 p-2 lg:hidden"
                 onClick={() => setMobileOpen(true)}
               >
                 <Menu className="h-5 w-5" />
@@ -301,28 +302,17 @@ export function DashboardShell({
             <div className="flex items-center gap-3">
               <Link
                 href="/dashboard/employer/ai"
-                className="relative rounded-xl p-2 text-slate-500 hover:bg-slate-100"
+                aria-label="AI assistant" className="relative flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-100"
               >
                 <Bot className="h-5 w-5" />
                 <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-[#9D4EDD]" />
               </Link>
 
-              <button className="rounded-xl p-2 text-slate-500 hover:bg-slate-100">
-                <Bell className="h-5 w-5" />
-              </button>
+              <Link aria-label="Pending requests" href="/dashboard/employer/requests" className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-100"><Bell className="h-5 w-5" /></Link>
 
               <div className="hidden h-8 w-px bg-slate-200 sm:block" />
 
-              <div className="flex items-center gap-2">
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-500 text-xs font-bold text-white">
-                  A
-                </div>
-                <div className="hidden sm:block">
-                  <p className="text-xs font-semibold">Employer account</p>
-                  <p className="text-[10px] text-slate-500">Signed-in organisation</p>
-                </div>
-                <ChevronDown className="hidden h-4 w-4 text-slate-400 sm:block" />
-              </div>
+              <div className="relative"><button type="button" aria-label="HR account menu" aria-expanded={profileOpen} onClick={()=>setProfileOpen(v=>!v)} className="flex min-h-11 items-center gap-2 rounded-xl p-1.5 hover:bg-slate-50"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-500 text-xs font-bold text-white">HR</span><span className="hidden text-left sm:block"><span className="block text-xs font-bold">HR workspace</span><span className="block text-[10px] text-slate-500">Account & settings</span></span><ChevronDown className="h-4 w-4 text-slate-400"/></button>{profileOpen&&<div className="absolute right-0 top-full mt-2 w-60 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl"><Link onClick={()=>setProfileOpen(false)} href="/dashboard/employer/account" className="block rounded-xl px-4 py-3 text-sm hover:bg-indigo-50">Company & HR profile</Link><Link href="/dashboard/employer/employees/new" className="block rounded-xl px-4 py-3 text-sm hover:bg-indigo-50">Add another employee</Link><Link href="/dashboard/employer/recruitment" className="block rounded-xl px-4 py-3 text-sm hover:bg-indigo-50">Recruitment workspace</Link><button disabled={signingOut} onClick={signOut} className="w-full rounded-xl px-4 py-3 text-left text-sm text-red-600 hover:bg-red-50">Sign out</button></div>}</div>
             </div>
           </div>
         </header>
