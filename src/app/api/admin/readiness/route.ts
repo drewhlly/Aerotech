@@ -10,7 +10,8 @@ export async function GET(){
   email:Boolean(process.env.RESEND_API_KEY&&process.env.INVITATION_FROM_EMAIL&&process.env.APP_BASE_URL),
   appUrl:Boolean(process.env.APP_BASE_URL),
   biometricProvider:false,
-  payrollPayouts:false
+  payrollPayouts:Boolean(process.env.PAYOUT_ENCRYPTION_KEY),
+  payrollPayoutAccountRequired:true
  };
  const pool=db();try{
   const r=await pool.query("SELECT to_regclass('public.workforce_employees') AS employees,to_regclass('public.employee_requests') AS requests,to_regclass('public.employee_credentials') AS employee_login,to_regclass('public.attendance_sites') AS geofencing,to_regclass('public.workforce_shifts') AS shifts");

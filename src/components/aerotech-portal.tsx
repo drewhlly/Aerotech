@@ -65,7 +65,7 @@ export function PublicNav() {
 
         <div className="hidden items-center gap-3 sm:flex">
           <Link
-            href="/auth/login"
+            href="/#sign-in"
             className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100"
           >
             Sign in
@@ -87,6 +87,8 @@ export function PublicNav() {
         </button>
       </div>
 
+      <nav id="sign-in" aria-label="Portal sign in" className="border-t border-slate-100 bg-slate-50/80"><div className="mx-auto grid max-w-7xl grid-cols-3 gap-2 px-4 py-2 sm:px-5">{(['employer','employee','applicant'] as const).map(role=><Link key={role} href={'/auth/login?role='+role} className="rounded-lg px-2 py-2 text-center text-xs font-semibold text-blue-700 hover:bg-blue-50 sm:text-sm"><span className="capitalize">{role}</span> sign in</Link>)}</div></nav>
+
       {open && (
         <div className="border-t border-slate-200 bg-white px-5 py-5 lg:hidden">
           <div className="grid gap-3">
@@ -97,9 +99,8 @@ export function PublicNav() {
               Solutions
             </Link>
             <Link href="/auth/login?role=employee" className="rounded-lg p-3 hover:bg-slate-50">Employee sign in</Link>
-            <Link href="/auth/login" className="rounded-lg p-3 hover:bg-slate-50">
-              Sign in
-            </Link>
+            <Link href="/auth/login?role=applicant" className="rounded-lg p-3 hover:bg-slate-50">Applicant sign in</Link>
+            <Link href="/auth/login?role=employer" className="rounded-lg p-3 hover:bg-slate-50">Employer sign in</Link>
             <Link
               href="/#choose-your-path"
               className="rounded-xl bg-[#07152c] p-3 text-center font-bold text-white"

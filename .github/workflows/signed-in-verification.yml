@@ -1,0 +1,49 @@
+name: Signed-in verification
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  journeys:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: aerotech_test
+          POSTGRES_PASSWORD: disposable_ci_only
+          POSTGRES_DB: aerotech_verify
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U aerotech_test -d aerotech_verify"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://aerotech_test:disposable_ci_only@localhost:5432/aerotech_verify
+      APP_BASE_URL: http://localhost:3010
+      SUPPORT_INITIAL_AGENT_EMAIL: owner-fixture@example.invalid
+      PAYOUT_ENCRYPTION_KEY: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+      JITSI_DOMAIN: meeting-fixture.example.invalid
+      JITSI_APP_ID: fixture
+      JITSI_APP_SECRET: only_for_disposable_integration_tests_1234567890
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - run: npm install --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - run: npm run db:migrate
+      - run: npm run build
+      - name: Verify browser, API and database journeys
+        run: |
+          npm run start -- --hostname localhost --port 3010 > /tmp/aerotech-server.log 2>&1 &
+          node scripts/verify-signed-in.mjs
+      - name: Server diagnostics
+        if: failure()
+        run: cat /tmp/aerotech-server.log
