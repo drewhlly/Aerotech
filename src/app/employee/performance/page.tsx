@@ -1,0 +1,1 @@
+import Progress from '@/components/employee-progress';import Learning from '@/components/employee-learning';export default function Page(){return <div className="space-y-6"><Progress/><Learning module="reviews"/></div>}

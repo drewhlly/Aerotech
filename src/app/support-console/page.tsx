@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import {redirect} from "next/navigation";
 import {supportAgent} from "@/lib/support-session";
 import SupportWorkspace from "@/components/support-workspace";

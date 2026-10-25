@@ -1,0 +1,1 @@
+import Help from '@/components/help-desk';import {supportAgent} from '@/lib/support-session';import {redirect} from 'next/navigation';export default async function Page(){if(!await supportAgent())redirect('/support-console/login');return <main className="mx-auto max-w-5xl px-5 py-10"><Help staff/></main>}

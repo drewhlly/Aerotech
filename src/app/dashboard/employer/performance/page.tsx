@@ -1,2 +1,1 @@
-import Lifecycle from '@/components/employee-lifecycle';
-export default function Page(){return <Lifecycle module="reviews"/>}
+import Workflows from '@/components/workflow-workspace';import Lifecycle from '@/components/employee-lifecycle';export default function Page(){return <div className="space-y-6"><Workflows mode="performance"/><Lifecycle module="reviews"/></div>}
