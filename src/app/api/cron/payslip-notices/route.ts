@@ -7,7 +7,7 @@ function valid(request:Request){const secret=process.env.CRON_SECRET||"";const t
 export async function GET(req:Request){
  if(!valid(req))return NextResponse.json({error:"Unauthorized"},{status:401});
  const pool=db();try{
- const employers=await pool.query('SELECT DISTINCT employer_id FROM payable_payroll_runs');let count=0;for(const e of employers.rows){const r=await syncPayslipNotifications(pool,e.employer_id);count+=r.rowCount||0;}
+ const employers=await pool.query('SELECT DISTINCT employer_id FROM payroll_runs WHERE status=\'approved\'');let count=0;for(const e of employers.rows){const r=await syncPayslipNotifications(pool,e.employer_id);count+=r.rowCount||0;}
  return NextResponse.json({notificationsCreated:count});
  }catch{return NextResponse.json({error:"Payslip notifications unavailable pending employee-to-payroll identity mapping"},{status:503});}finally{await pool.end();}
 }
