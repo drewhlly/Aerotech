@@ -30,7 +30,7 @@ a,
 input,
 select,
 textarea {
-  font: inherit;
+  font-family: inherit;
 }
 
 ::selection {
@@ -72,3 +72,14 @@ textarea {
   background-clip: text;
   color: transparent;
 }
+
+.aero-hero { position:relative; overflow:hidden; border-radius:24px; padding:32px; color:white; background:radial-gradient(ellipse at 95% 0%,#6366f1 0%,transparent 55%),linear-gradient(125deg,#0b1832,#262264); box-shadow:0 14px 40px #312e811c; }
+.aero-card { min-width:0; border:1px solid #e2e8f0; border-radius:20px; padding:24px; background:white; box-shadow:0 4px 16px #0f172a04; }
+.aero-button { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:44px; border-radius:12px; padding:12px 18px; font-size:14px; font-weight:650; cursor:pointer; }
+.aero-button:disabled { opacity:.5; cursor:wait; }
+.aero-input { display:block; width:100%; min-width:0; border:1px solid #cbd5e1; border-radius:12px; padding:12px; background:white; color:#0f172a; font-size:14px; }
+.aero-input:focus { outline:2px solid #818cf8; outline-offset:2px; }
+button,a,input,select,textarea { -webkit-tap-highlight-color:transparent; }
+button:focus-visible,a:focus-visible { outline:2px solid #6366f1; outline-offset:3px; }
+svg { flex-shrink:0; }
+@media(max-width:640px){.aero-hero{padding:24px}.aero-card{padding:18px} }
