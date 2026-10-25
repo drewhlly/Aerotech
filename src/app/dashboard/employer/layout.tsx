@@ -4,6 +4,6 @@ import { currentEmployer } from "@/lib/employer-session";
 
 export default async function EmployerLayout({ children }: { children: React.ReactNode }) {
   const employerId = await currentEmployer();
-  if (!employerId) redirect("/auth/login");
+  if (!employerId) redirect("/auth/login?role=employer");
   return <WorkspaceShell role="employer">{children}</WorkspaceShell>;
 }

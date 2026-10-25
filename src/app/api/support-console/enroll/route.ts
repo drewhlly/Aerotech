@@ -41,7 +41,7 @@ export async function POST(request:Request){
   const account=(await client.query(pending.account_type==="employer"?"SELECT admin_first_name AS name FROM employer_accounts WHERE id=$1":"SELECT first_name AS name FROM applicant_accounts WHERE id=$1",[pending.account_id])).rows[0];
   if(!account){await client.query("ROLLBACK");return json({error:"Approved account no longer exists"},401);}
   const id=randomUUID(),session=randomBytes(32).toString("hex");
-  await client.query("INSERT INTO support_agents(id,email,display_name,password_hash,totp_encrypted,last_totp_step) VALUES($1,$2,$3,$4,$5,$6)",[id,pending.email,account.name||"Aerotech Support",pending.password_hash,pending.totp_encrypted,step]);
+  await client.query("INSERT INTO support_agents(id,email,display_name,password_hash,totp_encrypted,last_totp_step,is_super_admin) VALUES($1,$2,$3,$4,$5,$6,$7)",[id,pending.email,account.name||"Aerotech Support",pending.password_hash,pending.totp_encrypted,step,pending.email===process.env.SUPPORT_INITIAL_AGENT_EMAIL?.trim().toLowerCase()]);
   await client.query("UPDATE support_enrollment_approvals SET used_at=NOW() WHERE email=$1",[pending.email]);await client.query("DELETE FROM support_pending_enrollments WHERE token_hash=$1",[sessionDigest(token)]);
   await client.query("INSERT INTO support_sessions(token_hash,agent_id,expires_at) VALUES($1,$2,NOW()+INTERVAL '15 minutes')",[sessionDigest(session),id]);
   await client.query("INSERT INTO support_auth_events(id,email_hash,agent_id,outcome) VALUES($1,$2,$3,'success')",[randomUUID(),createHash("sha256").update(pending.email).digest("hex"),id]);await client.query("COMMIT");

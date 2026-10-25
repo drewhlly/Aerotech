@@ -29,6 +29,6 @@ export async function POST(request:Request){
   const token=randomBytes(32).toString("hex");await client.query("UPDATE support_agents SET last_totp_step=$1,failed_attempts=0,locked_until=NULL WHERE id=$2",[step,agent.id]);
   await client.query("INSERT INTO support_sessions(token_hash,agent_id,expires_at) VALUES($1,$2,NOW()+INTERVAL '15 minutes')",[sessionDigest(token),agent.id]);await client.query("COMMIT");
   (await cookies()).set(SUPPORT_COOKIE,token,{httpOnly:true,secure:process.env.NODE_ENV==="production",sameSite:"strict",path:"/",maxAge:900});
-  return NextResponse.json({ok:true});
+  return NextResponse.json({ok:true,superAdmin:agent.is_super_admin===true});
  }catch{await client.query("ROLLBACK").catch(()=>{});return NextResponse.json({error:"Support sign-in is temporarily unavailable"},{status:503});}finally{client.release();await pool.end();}
 }

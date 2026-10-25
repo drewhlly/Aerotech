@@ -16,6 +16,9 @@ export async function checkPassword(password:string,stored:string){
  return timingSafeEqual(original,derived);
 }
 export async function startEmployeeSession(pool:Pool,employeeId:string){
+ (await cookies()).delete("aerotech_employer_session");
+ (await cookies()).delete("aerotech_applicant_session");
+
  const token=randomBytes(32).toString("hex");await pool.query("INSERT INTO employee_sessions(token_hash,employee_id,expires_at) VALUES($1,$2,NOW()+INTERVAL '7 days')",[digest(token),employeeId]);
  (await cookies()).set(EMPLOYEE_COOKIE,token,{httpOnly:true,secure:process.env.NODE_ENV==="production",sameSite:"lax",path:"/",maxAge:604800});
 }

@@ -8,7 +8,7 @@ import { Logo } from "@/components/aerotech-portal";
 
 function LoginForm() {
   const requestedRole = useSearchParams().get("role");
-  const [role, setRole] = useState<"employer" | "applicant" | "employee">(requestedRole === "applicant" ? "applicant" : requestedRole === "employee" ? "employee" : "employer");
+  const [role] = useState<"employer" | "applicant" | "employee">(requestedRole === "applicant" ? "applicant" : requestedRole === "employee" ? "employee" : "employer");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -36,7 +36,7 @@ function LoginForm() {
             <div className="mt-24">
               <Sparkles className="text-[#2563eb]" size={32} />
               <h1 className="mt-5 text-4xl font-black leading-tight">
-                One login. Your entire work experience.
+                Your workspace. Your workday.
               </h1>
               <p className="mt-5 leading-7 text-white/60">
                 Aerotech connects employers, applicants and employees in one
@@ -52,24 +52,10 @@ function LoginForm() {
               Welcome back
             </h1>
             <p className="mt-2 text-sm text-slate-500">
-              Sign in to continue to Aerotech.
+              Sign in to your dedicated Aerotech portal.
             </p>
 
-            <div className="mt-7 grid grid-cols-3 rounded-xl bg-slate-100 p-1">
-              {(["employer", "employee", "applicant"] as const).map((item) => (
-                <button
-                  key={item}
-                  onClick={() => setRole(item)}
-                  className={`rounded-lg py-2.5 text-sm font-bold capitalize ${
-                    role === item
-                      ? "bg-white text-[#07152c] shadow-sm"
-                      : "text-slate-500"
-                  }`}
-                >
-                  {item}
-                </button>
-              ))}
-            </div>
+            <p className="mt-7 rounded-xl bg-blue-50 p-3 text-sm font-bold capitalize">{role} portal</p>
 
             <form
               className="mt-7 space-y-4"
@@ -120,16 +106,8 @@ function LoginForm() {
               authentication layer.
             </div>
 
-            <div className="mt-7 text-center text-sm text-slate-500">
-              Need an account?{" "}
-              <Link
-                href="/auth/signup/employer"
-                className="font-bold text-[#2563eb]"
-              >
-                Create an employer account
-              </Link>
-            </div>
-            <div className="mt-3 text-center text-sm"><Link href="/auth/signup/applicant" className="font-bold text-[#2563eb]">Create free applicant account</Link></div>
+            {role==='employee'?<p className="mt-7 text-center text-sm text-slate-500">Use the activation link sent by your employer to set up your account.</p>:<div className="mt-7 text-center text-sm"><Link href={role==='applicant'?'/auth/signup/applicant':'/auth/signup/employer'} className="font-bold text-blue-700">{role==='applicant'?'Create free applicant account':'Create an employer account'}</Link></div>}
+
           </div>
         </div>
       </div>
