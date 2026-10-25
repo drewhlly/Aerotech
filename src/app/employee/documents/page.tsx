@@ -1,2 +1,1 @@
-import EmployeeLearning from '@/components/employee-learning';
-export default function Page(){return <EmployeeLearning module="documents"/>}
+import Learning from '@/components/employee-learning';import Submissions from '@/components/document-submissions';export default function Page(){return <div className="space-y-6"><Submissions role="employee"/><Learning module="documents"/></div>}

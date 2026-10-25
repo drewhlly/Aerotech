@@ -32,7 +32,7 @@ function LoginForm() {
       <div className="mx-auto flex min-h-screen max-w-6xl items-center px-5 py-10">
         <div className="grid w-full overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl lg:grid-cols-2">
           <div className="hidden bg-[#07152c] p-10 text-white lg:block">
-            <Logo light />
+            
             <div className="mt-24">
               <Sparkles className="text-[#2563eb]" size={32} />
               <h1 className="mt-5 text-4xl font-black leading-tight">
@@ -46,7 +46,7 @@ function LoginForm() {
           </div>
 
           <div className="p-7 sm:p-10">
-            <Logo />
+            
 
             <h1 className="mt-10 text-3xl font-black text-[#07152c]">
               Welcome back
