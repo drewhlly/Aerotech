@@ -17,7 +17,7 @@ export async function GET(){
      AND r.status='approved'
      AND (SELECT COUNT(DISTINCT stage) FROM payroll_stage_reviews v
           WHERE v.run_id=r.id AND v.employer_id=r.employer_id
-            AND v.decision='approved')=4
+            AND v.decision='approved' AND v.stage IN ('hr','finance','ceo'))=3
    ORDER BY r.payroll_month DESC LIMIT 24`,[user.employer_id,user.email]);
   return NextResponse.json({statements:rows.rows,
    notice:"Approved payroll statement. This does not confirm that salary has been transferred."});
