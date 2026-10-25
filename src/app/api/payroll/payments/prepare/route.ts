@@ -11,9 +11,9 @@ export async function POST(request:Request){
  const pool=db(),client=await pool.connect();try{
  await client.query("BEGIN");
  const run=await client.query("SELECT id,status FROM payroll_runs WHERE id=$1 AND employer_id=$2 FOR UPDATE",[runId,employer]);
- if(run.rows[0]?.status!=="approved"){await client.query("ROLLBACK");return NextResponse.json({error:"Four-stage approval required before preparing transfers"},{status:409});}
- const reviews=await client.query("SELECT stage FROM payroll_stage_reviews WHERE employer_id=$1 AND run_id=$2 AND decision='approved'",[employer,runId]);
- if(new Set(reviews.rows.map(x=>x.stage)).size!==4){await client.query("ROLLBACK");return NextResponse.json({error:"Four distinct completed approval stages required"},{status:409});}
+ if(run.rows[0]?.status!=="approved"){await client.query("ROLLBACK");return NextResponse.json({error:"HR, Finance and CEO approval required before preparing transfers"},{status:409});}
+ const reviews=await client.query("SELECT stage FROM payroll_stage_reviews WHERE employer_id=$1 AND run_id=$2 AND decision='approved' AND stage IN ('hr','finance','ceo')",[employer,runId]);
+ if(new Set(reviews.rows.map(x=>x.stage)).size!==3){await client.query("ROLLBACK");return NextResponse.json({error:"Three distinct completed approval stages required"},{status:409});}
  const items=await client.query(`SELECT p.id AS employee_id,i.net,r.recipient_code FROM payroll_run_items i JOIN payroll_employees p ON p.id=i.employee_id AND p.employer_id=$2 LEFT JOIN payroll_transfer_recipients r ON r.employer_id=$2 AND r.payroll_employee_id=p.id WHERE i.run_id=$1`,[runId,employer]);
  if(!items.rowCount||items.rows.some(i=>!i.recipient_code||!Number.isSafeInteger(Math.round(Number(i.net)*100))||Number(i.net)<=0)){await client.query("ROLLBACK");return NextResponse.json({error:"Every employee needs a verified transfer recipient and positive net pay"},{status:422});}
  for(const item of items.rows){const reference="aero-"+runId.replaceAll("-","").slice(0,20)+"-"+item.employee_id.replaceAll("-","").slice(0,20);
