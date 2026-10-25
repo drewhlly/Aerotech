@@ -21,7 +21,7 @@ export default function JoinMeeting({params}:{params:Promise<{id:string}>}){
      if(cancelled||!container.current)return;
      const Jitsi=(window as JitsiWindow).JitsiMeetExternalAPI;
      if(!Jitsi){setMessage("Meeting service did not load.");return;}
-     instance=new Jitsi(domain,{roomName:result.room,jwt:result.token,width:"100%",height:650,parentNode:container.current,configOverwrite:{startWithAudioMuted:true,startWithVideoMuted:true}});
+     instance=new Jitsi(domain,{roomName:result.room,jwt:result.token,width:"100%",height:"100%",parentNode:container.current,configOverwrite:{startWithAudioMuted:true,startWithVideoMuted:true,subject:"Aerotech meeting",hideConferenceSubject:true}});
      setMessage("");
     };
     script.onerror=()=>setMessage("Could not reach the configured meeting server.");
@@ -30,5 +30,5 @@ export default function JoinMeeting({params}:{params:Promise<{id:string}>}){
   }
   void connect();return ()=>{cancelled=true;instance?.dispose();script?.remove();};
  },[params]);
- return <main className="min-h-screen bg-slate-950 p-4 text-white"><div className="mx-auto max-w-6xl"><Link href="/meet" className="text-sm underline">Back to Aerotech Meet</Link><h1 className="mt-4 text-2xl font-bold">Meeting room</h1><p role="status" className="my-4 text-sm">{message}</p><div ref={container} className="mt-3 min-h-[420px] overflow-hidden rounded-xl bg-slate-900"/></div></main>;
+ return <div className="space-y-4"><section className="aero-card flex flex-wrap items-center justify-between gap-3"><div><h1 className="text-2xl font-bold text-slate-900">Meeting room</h1><p className="mt-2 text-sm text-slate-500">Use the call controls to turn on your microphone or camera.</p></div><Link href="/meet" className="aero-button bg-blue-50 text-blue-700">All meetings</Link></section>{message&&<p role="status" className="text-sm text-slate-600">{message}</p>}<div ref={container} className="meeting-stage overflow-hidden rounded-2xl bg-slate-950"/></div>;
 }

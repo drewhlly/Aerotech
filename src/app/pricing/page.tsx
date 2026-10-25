@@ -51,7 +51,7 @@ export default function PricingPage() {
             </p>
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-4">
+          <div className="grid items-stretch gap-6 md:grid-cols-2 xl:grid-cols-4">
             {Object.entries(EMPLOYER_PLANS).map(([key, plan]) => {
               const planId = key as EmployerPlan;
 
@@ -76,7 +76,7 @@ export default function PricingPage() {
                     <h3 className="text-xl font-bold">{plan.name}</h3>
                   </div>
 
-                  <p className="mt-4 text-sm leading-6 text-slate-600">
+                  <p className="mt-4 min-h-18 text-sm leading-6 text-slate-600">
                     {plan.description}
                   </p>
 
@@ -92,7 +92,7 @@ export default function PricingPage() {
 
                   <div className="my-6 border-t border-slate-200" />
 
-                  <ul className="space-y-3">
+                  <ul className="mb-8 flex-1 space-y-3">
                     {plan.features.map((feature: string) => (
                       <li
                         key={feature}
@@ -109,7 +109,7 @@ export default function PricingPage() {
 
                   <Link
                     href={planId === "enterprise" ? "/auth/signup/employer" : `/pricing/checkout?type=employer&plan=${planId}`}
-                    className="mt-8 block rounded-xl bg-slate-950 px-5 py-3.5 text-center text-sm font-semibold text-white transition hover:bg-slate-800"
+                    className="mt-auto block rounded-xl bg-slate-950 px-5 py-3.5 text-center text-sm font-semibold text-white transition hover:bg-slate-800"
                   >
                     {planId === "enterprise" ? "Contact us" : `Choose ${plan.name}`}
                   </Link>
