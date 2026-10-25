@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import WorkspaceShell from "./workspace-shell";
+import BrandLogo from "./brand-logo";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -41,73 +43,9 @@ import {
   ArrowLeft,
   LogOut,
 } from "lucide-react";
-import { AEROTECH, employerOSData, formatMoney, getAiResponse } from "@/lib/aerotech";
 
-export function Logo({
-  compact = false,
-  light = false,
-}: {
-  compact?: boolean;
-  light?: boolean;
-}) {
-  return (
-    <div className="flex items-center gap-3">
-      <div className="relative flex h-10 w-10 shrink-0 items-center justify-center">
-        <svg viewBox="0 0 100 100" className="h-10 w-10" aria-label="Aerotech logo">
-          <defs>
-            <linearGradient id="aeroLogoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#00D4FF" />
-              <stop offset="50%" stopColor="#6366F1" />
-              <stop offset="100%" stopColor="#9D4EDD" />
-            </linearGradient>
-          </defs>
-          <path
-            d="M18 76 L37 24 L54 24 L44 43 L66 43 L84 17 L84 37 L74 37 L59 57 L82 57 L68 82 L51 82 L60 67 L36 67 L31 82 Z"
-            fill="none"
-            stroke="url(#aeroLogoGradient)"
-            strokeWidth="8"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M22 49 H45 M22 49 L31 40 M22 49 L31 58"
-            fill="none"
-            stroke="#00D4FF"
-            strokeWidth="6"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M68 18 V45 M68 18 L61 26 M68 18 L75 26"
-            fill="none"
-            stroke="#00D4FF"
-            strokeWidth="6"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </div>
 
-      {!compact && (
-        <div>
-          <div
-            className={`text-lg font-extrabold tracking-[0.16em] ${
-              light ? "text-white" : "text-slate-900"
-            }`}
-          >
-            AEROTECH
-          </div>
-          <div className="text-[9px] font-medium tracking-wide text-slate-400">
-            People. Performance. Progress.
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-export function BrandMark() {
-  return <Logo compact />;
-}
+export function Logo({compact=false,light=false}:{compact?:boolean;light?:boolean}){return <BrandLogo compact={compact} light={light}/>;}
 
 const navigation = [
   {
@@ -174,154 +112,7 @@ const navigation = [
   },
 ];
 
-export function DashboardShell({
-  children,
-  title = "Employer Command Center",
-}: {
-  children: React.ReactNode;
-  title?: string;
-}) {
-  const pathname = usePathname();
-  const router = useRouter();
-  const [signingOut, setSigningOut] = useState(false);
-  async function signOut() {
-    setSigningOut(true);
-    try { const r = await fetch("/api/auth/logout", {method:"POST"}); if(!r.ok) throw new Error(); window.location.assign("/auth/login?role=employer"); }
-    catch { setSigningOut(false); window.alert("Unable to sign out. Please try again."); }
-  }
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [profileOpen,setProfileOpen]=useState(false);
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-[#E8F5FF] via-[#F6F9FF] to-[#F0EEFF] text-slate-900">
-      <aside
-        className={`fixed inset-y-0 left-0 z-50 w-[270px] transform border-r border-white/10 bg-[#07111f] text-white transition-transform lg:translate-x-0 ${
-          mobileOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
-        <div className="flex h-full flex-col">
-          <div className="border-b border-white/10 px-5 py-5">
-            <Logo light />
-          </div>
-
-          <div className="flex-1 overflow-y-auto px-3 py-5">
-            {navigation.map((section) => (
-              <div key={section.title} className="mb-6">
-                <div className="mb-2 px-3 text-[10px] font-bold tracking-[0.18em] text-slate-500">
-                  {section.title}
-                </div>
-
-                <div className="space-y-1">
-                  {section.items.map((item) => {
-                    const active =
-                      pathname === item.href ||
-                      (item.href !== "/dashboard/employer" &&
-                        pathname.startsWith(item.href + "/"));
-
-                    const Icon = item.icon;
-
-                    return (
-                      <Link
-                        key={item.href + item.label}
-                        href={item.href}
-                        onClick={() => setMobileOpen(false)}
-                        className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition ${
-                          active
-                            ? "bg-gradient-to-r from-[#00D4FF]/20 via-[#6366F1]/30 to-[#9D4EDD]/30 text-white shadow-lg shadow-indigo-950/20"
-                            : "text-slate-400 hover:bg-white/5 hover:text-white"
-                        }`}
-                      >
-                        <Icon
-                          className={`h-4 w-4 ${
-                            active ? "text-[#00D4FF]" : "text-slate-500"
-                          }`}
-                        />
-                        <span className="font-medium">{item.label}</span>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="border-t border-white/10 p-4">
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#00D4FF] via-[#6366F1] to-[#9D4EDD]">
-                  <ShieldCheck className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <p className="text-xs font-semibold">Company workspace</p>
-                  <p className="text-[10px] text-slate-500">Workforce OS</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </aside>
-
-      {mobileOpen && (
-        <button
-          aria-label="Close menu"
-          className="fixed inset-0 z-40 bg-slate-950/60 lg:hidden"
-          onClick={() => setMobileOpen(false)}
-        />
-      )}
-
-      <main className="min-h-screen lg:pl-[270px]">
-        <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur-xl">
-          <div className="flex h-16 items-center justify-between px-4 sm:px-6">
-            <div className="flex items-center gap-3">
-              <button
-                aria-label="Open navigation" aria-expanded={mobileOpen} className="rounded-xl border border-slate-200 p-2 lg:hidden"
-                onClick={() => setMobileOpen(true)}
-              >
-                <Menu className="h-5 w-5" />
-              </button>
-
-              <div className="hidden items-center gap-2 text-sm text-slate-500 sm:flex">
-                <span>Aerotech</span>
-                <span>/</span>
-                <span className="font-semibold text-slate-900">{title}</span>
-              </div>
-            </div>
-
-            <div className="hidden w-[330px] md:block">
-              <div className="flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3">
-                <Search className="h-4 w-4 text-slate-400" />
-                <span className="text-xs text-slate-400">
-                  Search anything...
-                </span>
-                <span className="ml-auto rounded-md bg-white px-1.5 py-0.5 text-[9px] font-semibold text-slate-400 shadow-sm">
-                  ⌘K
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <Link
-                href="/dashboard/employer/ai"
-                aria-label="AI assistant" className="relative flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-100"
-              >
-                <Bot className="h-5 w-5" />
-                <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-[#9D4EDD]" />
-              </Link>
-
-              <Link aria-label="Pending requests" href="/dashboard/employer/requests" className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-100"><Bell className="h-5 w-5" /></Link>
-
-              <div className="hidden h-8 w-px bg-slate-200 sm:block" />
-
-              <div className="relative"><button type="button" aria-label="HR account menu" aria-expanded={profileOpen} onClick={()=>setProfileOpen(v=>!v)} className="flex min-h-11 items-center gap-2 rounded-xl p-1.5 hover:bg-slate-50"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-500 text-xs font-bold text-white">HR</span><span className="hidden text-left sm:block"><span className="block text-xs font-bold">HR workspace</span><span className="block text-[10px] text-slate-500">Account & settings</span></span><ChevronDown className="h-4 w-4 text-slate-400"/></button>{profileOpen&&<div className="absolute right-0 top-full mt-2 w-60 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl"><Link onClick={()=>setProfileOpen(false)} href="/dashboard/employer/account" className="block rounded-xl px-4 py-3 text-sm hover:bg-indigo-50">Company & HR profile</Link><Link href="/dashboard/employer/employees/new" className="block rounded-xl px-4 py-3 text-sm hover:bg-indigo-50">Add another employee</Link><Link href="/dashboard/employer/recruitment" className="block rounded-xl px-4 py-3 text-sm hover:bg-indigo-50">Recruitment workspace</Link><button disabled={signingOut} onClick={signOut} className="w-full rounded-xl px-4 py-3 text-left text-sm text-red-600 hover:bg-red-50">Sign out</button></div>}</div>
-            </div>
-          </div>
-        </header>
-
-        <div className="p-4 sm:p-6 lg:p-8"><div className="mb-5 flex flex-wrap justify-between gap-2"><button type="button" onClick={() => { if(window.history.length > 1) router.back(); else router.push("/dashboard/employer"); }} className="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-blue-50"><ArrowLeft className="h-4 w-4"/> Back</button><button type="button" disabled={signingOut} onClick={signOut} className="inline-flex items-center gap-2 rounded-xl bg-[#07111f] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"><LogOut className="h-4 w-4"/>{signingOut ? "Signing out..." : "Log out"}</button></div>{children}</div>
-      </main>
-    </div>
-  );
-}
+export function DashboardShell({children,title}:{children:React.ReactNode;title?:string}){return <WorkspaceShell role="employer" title={title}>{children}</WorkspaceShell>}
 
 export function PageHeader({
   eyebrow,
@@ -389,75 +180,6 @@ export function StatCard({
 
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-50 to-violet-100">
           <Icon className="h-5 w-5 text-[#6366F1]" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export function WalletCard() {
-  const payroll = employerOSData.payroll;
-  const coverage = Math.min(
-    100,
-    Math.round((payroll.walletBalance / payroll.payrollRequired) * 100)
-  );
-
-  return (
-    <div className="overflow-hidden rounded-2xl bg-[#07111f] p-6 text-white shadow-xl shadow-slate-950/10">
-      <div className="relative">
-        <div className="absolute -right-10 -top-16 h-40 w-40 rounded-full bg-[#6366F1]/20 blur-3xl" />
-        <div className="absolute -bottom-16 left-10 h-40 w-40 rounded-full bg-[#00D4FF]/10 blur-3xl" />
-
-        <div className="relative">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-medium text-slate-400">
-                Payroll Wallet
-              </p>
-              <p className="mt-2 text-3xl font-bold">
-                {formatMoney(payroll.walletBalance)}
-              </p>
-            </div>
-
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10">
-              <Wallet className="h-5 w-5 text-[#00D4FF]" />
-            </div>
-          </div>
-
-          <div className="mt-6">
-            <div className="mb-2 flex items-center justify-between text-[11px]">
-              <span className="text-slate-400">Payroll funding coverage</span>
-              <span className="font-semibold text-white">{coverage}%</span>
-            </div>
-
-            <div className="h-2 overflow-hidden rounded-full bg-white/10">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-[#00D4FF] via-[#6366F1] to-[#9D4EDD]"
-                style={{ width: `${Math.min(100, coverage)}%` }}
-              />
-            </div>
-          </div>
-
-          <div className="mt-5 grid grid-cols-2 gap-3">
-            <div className="rounded-xl border border-white/10 bg-white/5 p-3">
-              <p className="text-[10px] text-slate-500">Required</p>
-              <p className="mt-1 text-sm font-semibold">
-                {formatMoney(payroll.payrollRequired)}
-              </p>
-            </div>
-
-            <div className="rounded-xl border border-white/10 bg-white/5 p-3">
-              <p className="text-[10px] text-slate-500">Next payroll</p>
-              <p className="mt-1 text-sm font-semibold">31 Aug 2026</p>
-            </div>
-          </div>
-
-          <Link
-            href="/dashboard/employer/payroll/wallet"
-            className="mt-5 flex w-full items-center justify-center rounded-xl bg-white px-4 py-3 text-sm font-bold text-slate-900 transition hover:bg-slate-100"
-          >
-            Manage Payroll Wallet
-          </Link>
         </div>
       </div>
     </div>

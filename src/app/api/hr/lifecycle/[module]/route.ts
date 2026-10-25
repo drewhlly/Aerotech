@@ -4,9 +4,9 @@ import {currentEmployer,db} from "@/lib/employer-session";
 export const runtime="nodejs";
 const modules={
  onboarding:{table:"employee_onboarding_tasks",fields:["title","due_date"],required:["title"]},
- training:{table:"employee_training_records",fields:["title"],required:["title"]},
+ training:{table:"employee_training_records",fields:["title","content_url","description","due_date"],required:["title"]},
  reviews:{table:"employee_performance_reviews",fields:["summary","rating","reviewer_employee_id"],required:["summary"]},
- documents:{table:"employee_document_records",fields:["title","external_url"],required:["title"]},
+ documents:{table:"employee_document_records",fields:["title","external_url","expiry_date"],required:["title"]},
  notifications:{table:"employee_notifications",fields:["title","body"],required:["title","body"]}
 } as const;
 type Module=keyof typeof modules;
@@ -27,6 +27,7 @@ export async function POST(req:Request,{params}:{params:Promise<{module:string}>
  if(body.due_date&&!/^\d{4}-\d{2}-\d{2}$/.test(String(body.due_date)))return NextResponse.json({error:"Invalid date"},{status:400});
  if(body.rating!=null&&(!Number.isInteger(body.rating)||Number(body.rating)<1||Number(body.rating)>5))return NextResponse.json({error:"Rating must be 1 to 5"},{status:400});
  if(body.reviewer_employee_id!=null)return NextResponse.json({error:"Reviewer identity cannot be asserted by an employer form"},{status:400});
+ for(const field of ['content_url','external_url'])if(body[field]){try{if(new URL(String(body[field])).protocol!=='https:')throw Error()}catch{return NextResponse.json({error:'Document and learning links must use HTTPS'},{status:400})}}
  const pool=db();try{
  const names=["id","employer_id","employee_id",...fields],values=[randomUUID(),employer,body.employeeId,...fields.map(f=>body[f]??null)];
  const columns=names.join(","),placeholders=names.map((_,i)=>"$"+(i+1)).join(",");

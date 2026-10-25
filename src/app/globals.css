@@ -83,3 +83,6 @@ button,a,input,select,textarea { -webkit-tap-highlight-color:transparent; }
 button:focus-visible,a:focus-visible { outline:2px solid #6366f1; outline-offset:3px; }
 svg { flex-shrink:0; }
 @media(max-width:640px){.aero-hero{padding:24px}.aero-card{padding:18px} }
+
+.workspace-content > main {min-height:0;background:transparent;padding:0;}
+.workspace-content main > main {min-height:0;background:transparent;}

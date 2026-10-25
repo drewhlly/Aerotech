@@ -16,7 +16,7 @@ import {
   DashboardShell,
   PageHeader,
 } from "@/components/aerotech-ui";
-import { employerOSData } from "@/lib/aerotech";
+
 
 export default function AIPage() {
   const [prompt, setPrompt] = useState("");
@@ -118,7 +118,7 @@ export default function AIPage() {
             </p>
 
             <div className="mt-5 space-y-3">
-              {employerOSData.ai.capabilities.map((item) => (
+              {["HR question answering", "Recruitment assistance", "Workforce guidance"].map((item) => (
                 <div
                   key={item}
                   className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] p-3 text-xs text-slate-300"
