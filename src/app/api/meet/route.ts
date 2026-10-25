@@ -1,16 +1,19 @@
 import {NextResponse} from "next/server";
 import {randomUUID} from "node:crypto";
 import {currentEmployer,db} from "@/lib/employer-session";
+import {currentApplicant} from '@/lib/applicant-session';
 import {currentEmployee} from "@/lib/employee-auth";
 export const runtime="nodejs";
 async function actor(){const employee=await currentEmployee();if(employee)return {employer:employee.employer_id,employee:employee.id};const employer=await currentEmployer();return employer?{employer,employee:null}:null;}
 export async function GET(){
+ const applicant=await currentApplicant();
+ if(applicant){const p=db();try{const r=await p.query("SELECT m.id,m.title,m.starts_at,m.duration_minutes FROM meet_rooms m JOIN ats_applications a ON a.interview_room_id=m.id JOIN ats_jobs j ON j.id=a.job_id AND j.employer_id=m.employer_id WHERE a.applicant_id=$1 AND a.stage='interview' ORDER BY m.starts_at DESC",[applicant]);return NextResponse.json({meetings:r.rows,role:'applicant'})}finally{await p.end()}}
  const a=await actor();if(!a)return NextResponse.json({error:"Sign in required"},{status:401});
  const pool=db();try{
  const q=a.employee?
  "SELECT m.id,m.title,m.starts_at,m.duration_minutes FROM meet_rooms m JOIN meet_participants p ON p.room_id=m.id AND p.employer_id=m.employer_id WHERE m.employer_id=$1 AND p.employee_id=$2 ORDER BY m.starts_at DESC LIMIT 100":
  "SELECT id,title,starts_at,duration_minutes FROM meet_rooms WHERE employer_id=$1 ORDER BY starts_at DESC LIMIT 100";
- const result=await pool.query(q,a.employee?[a.employer,a.employee]:[a.employer]);return NextResponse.json({meetings:result.rows});
+ const result=await pool.query(q,a.employee?[a.employer,a.employee]:[a.employer]);return NextResponse.json({meetings:result.rows,role:a.employee?'employee':'employer'});
  }catch{return NextResponse.json({error:"Meetings unavailable"},{status:503});}finally{await pool.end();}
 }
 export async function POST(request:Request){

@@ -35,7 +35,7 @@ test("jobs require a registered applicant session", () => {
 });
 
 test("applicant registration is free and submits to backend", () => {
-  const signup = read("src/app/auth/signup/employee/page.tsx");
+  const signup = read("src/app/auth/signup/applicant/page.tsx");
   assert.match(signup, /\/api\/auth\/signup\/applicant/);
   assert.match(signup, /Create free account/);
   assert.ok(existsSync(new URL("../src/app/api/auth/signup/applicant/route.ts", import.meta.url)));

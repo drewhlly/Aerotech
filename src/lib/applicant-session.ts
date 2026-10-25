@@ -8,6 +8,9 @@ export function applicantDB() {
  return new Pool({ connectionString: process.env.DATABASE_URL, max: 2, connectionTimeoutMillis: 5000 });
 }
 export async function startApplicantSession(pool: Pool, applicantId: string) {
+ (await cookies()).delete("aerotech_employer_session");
+ (await cookies()).delete("aerotech_employee_session");
+
  const token = randomBytes(32).toString("hex");
  await pool.query("INSERT INTO applicant_sessions(token_hash,applicant_id,expires_at) VALUES($1,$2,NOW()+INTERVAL '7 days')",[digest(token),applicantId]);
  (await cookies()).set(APPLICANT_COOKIE,token,{httpOnly:true,secure:process.env.NODE_ENV==="production",sameSite:"lax",path:"/",maxAge:604800});

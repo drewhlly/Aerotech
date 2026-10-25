@@ -8,6 +8,9 @@ export async function preparePayroll(employerId:string,month:string) {
  const pool=db();const client=await pool.connect();
  try {
   await client.query("BEGIN");
+  await client.query("SELECT id FROM employer_accounts WHERE id=$1 FOR UPDATE",[employerId]);
+  const existing=await client.query("SELECT id,status FROM payroll_runs WHERE employer_id=$1 AND payroll_month=$2::date",[employerId,month+'-01']);
+  if(existing.rowCount){await client.query('COMMIT');return NextResponse.json({runId:existing.rows[0].id,status:existing.rows[0].status,alreadyPrepared:true});}
   const employer=await client.query("SELECT country FROM employer_accounts WHERE id=$1",[employerId]);
   const country=String(employer.rows[0]?.country||"").trim();
   const countryCode: Record<string,string>={nigeria:"NG",ng:"NG",ghana:"GH",gh:"GH",kenya:"KE",ke:"KE","united states":"US",us:"US",usa:"US","united kingdom":"GB",uk:"GB",gb:"GB"};

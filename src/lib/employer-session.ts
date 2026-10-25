@@ -12,6 +12,9 @@ export async function startEmployerSession(pool: Pool, employerId: string) {
   const token = randomBytes(32).toString("hex");
   await pool.query("INSERT INTO employer_sessions(token_hash, employer_id, expires_at) VALUES ($1, $2, NOW() + INTERVAL '7 days')", [sessionDigest(token), employerId]);
   const jar = await cookies();
+ (await cookies()).delete("aerotech_employee_session");
+ (await cookies()).delete("aerotech_applicant_session");
+
   jar.set(SESSION_COOKIE, token, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: 7 * 24 * 60 * 60 });
 }
 export async function currentEmployer() {
