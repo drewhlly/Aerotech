@@ -1,0 +1,4 @@
+import {redirect} from 'next/navigation';
+import {currentApplicant} from '@/lib/applicant-session';
+import WorkspaceShell from '@/components/workspace-shell';
+export default async function Layout({children}:{children:React.ReactNode}){if(!await currentApplicant())redirect('/auth/login?role=applicant');return <WorkspaceShell role="applicant">{children}</WorkspaceShell>}

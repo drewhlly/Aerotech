@@ -17,14 +17,14 @@ export default function ApplicantSignup() {
  }
  return <main className="min-h-screen bg-[#F5F8FA] px-5 py-8">
   <div className="mx-auto max-w-xl"><Logo/><div className="mt-12 rounded-3xl bg-white p-8 shadow-sm">
-   <h1 className="text-3xl font-black text-[#102A43]">Create your free account</h1>
+   <h1 className="text-3xl font-black text-[#07152c]">Create your free account</h1>
    <p className="mt-3 text-slate-600">Create your own account to discover jobs and apply across companies. No employer invitation or payment is required.</p>
    <form onSubmit={submit} className="mt-7 space-y-4">
     {([{name:"firstName",label:"First name",type:"text"},{name:"lastName",label:"Last name",type:"text"},{name:"email",label:"Email",type:"email"},{name:"phone",label:"Phone",type:"tel"},{name:"password",label:"Password (12+ characters)",type:"password"}] as const).map(field=><label key={field.name} className="block text-sm font-semibold text-slate-700">{field.label}<input type={field.type} required minLength={field.name==="password"?12:undefined} value={form[field.name]} onChange={e=>setForm(v=>({...v,[field.name]:e.target.value}))} className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3.5"/></label>)}
     {error&&<p role="alert" className="text-sm text-red-700">{error}</p>}
-    <button type="submit" disabled={busy} className="w-full rounded-xl bg-[#102A43] p-4 font-bold text-white disabled:opacity-50">{busy?"Creating account...":"Create free account"}</button>
+    <button type="submit" disabled={busy} className="w-full rounded-xl bg-[#07152c] p-4 font-bold text-white disabled:opacity-50">{busy?"Creating account...":"Create free account"}</button>
    </form>
-   <Link href="/auth/login?role=applicant" className="mt-5 block text-center text-sm font-bold text-[#007F73]">Already registered? Sign in</Link>
+   <Link href="/auth/login?role=applicant" className="mt-5 block text-center text-sm font-bold text-[#2563eb]">Already registered? Sign in</Link>
   </div></div>
  </main>;
 }

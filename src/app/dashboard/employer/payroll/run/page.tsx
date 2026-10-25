@@ -30,7 +30,7 @@ export default function PayrollRunPage(){
     <button type="button" onClick={prepare} disabled={busy||!/^\d{4}-(0[1-9]|1[0-2])$/.test(month)} className="mt-5 rounded-lg bg-slate-900 px-5 py-3 text-sm font-semibold text-white disabled:opacity-50">{busy?"Preparing...":"Prepare payroll draft"}</button>
     {error&&<p role="alert" className="mt-4 text-sm text-red-700">{error}</p>}
    </section>
-   {!result&&!busy&&<p className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900"><strong>Illustrative example only:</strong> A sample gross salary of ₦200,000 is not your company payroll. Select a month and prepare payroll to see your actual company figures.</p>}
+   {!result&&!busy&&<p className="aero-card text-sm text-slate-500">Select a period to prepare payroll from your saved employee compensation records.</p>}
    {result&&<section aria-live="polite" className="rounded-xl border bg-white p-6">
     <h2 className="text-lg font-bold">Payroll draft created</h2>
     <p className="mt-2 text-sm text-slate-600">Reference: {result.runId}</p>
