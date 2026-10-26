@@ -3,37 +3,9 @@
 import Link from "next/link";
 import WorkspaceShell from "./workspace-shell";
 import BrandLogo from "./brand-logo";
-import { createContext, useContext, useState } from "react";
-import { useRouter } from "next/navigation";
-import {
-  ArrowRight,
-  ArrowLeft,
-  Bell,
-  BriefcaseBusiness,
-  Building2,
-  CalendarDays,
-  CheckCircle2,
-  ChevronDown,
-  CircleDollarSign,
-  Clock3,
-  CreditCard,
-  FileText,
-  GraduationCap,
-  LayoutDashboard,
-  Menu,
-  MessageSquare,
-  Search,
-  ShieldCheck,
-  Sparkles,
-  User,
-  Users,
-  Wallet,
-  X,
-  Banknote,
-  ClipboardCheck,
-  HeartHandshake,
-  LogOut,
-} from "lucide-react";
+import { createContext, useContext, useState, useEffect } from "react";
+import {usePathname} from "next/navigation";
+import {Menu,X} from "lucide-react";
 
 export const AEROTECH = {
   name: "Aerotech",
@@ -47,6 +19,8 @@ export function Logo({light=false}:{light?:boolean}){return <BrandLogo light={li
 export const PublicNavigationContext=createContext(false);
 export function PublicNav() {
   const [open, setOpen] = useState(false);
+  const path=usePathname();
+  useEffect(()=>{Promise.resolve().then(()=>setOpen(false))},[path]);
   const alreadyVisible=useContext(PublicNavigationContext);
   if(alreadyVisible)return null;
 
