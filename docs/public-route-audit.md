@@ -4,6 +4,10 @@ The complete reproduced bug table is in [audit-bugs.md](audit-bugs.md). The 1,48
 
 Review: https://github.com/drewhlly/Aerotech/pull/24
 
+Source checks: https://github.com/drewhlly/Aerotech/actions/runs/40359169131
+
+Browser/API/route evidence: https://github.com/drewhlly/Aerotech/actions/runs/40359169175
+
 ## Verification evidence
 
 - Local build, strict zero-warning lint, TypeScript and 32 smoke tests passed before the workspace became unavailable.
@@ -36,7 +40,8 @@ Help/auth are intentionally noindex; their SEO crawlability deduction is expecte
 - Camera face matching, real meeting media, email inbox delivery and phone reachability were not verified against live providers. They are not presented as activated capabilities.
 - CSP retains inline script/style allowance for Next.js static hydration; it is not a nonce-based strict CSP.
 - The current-source credential-pattern scan found no provider secret, private key, GitHub token or external database password. This is not a complete git-history or dependency audit.
-- The original workspace disconnected during final checks. Recovered changes were preserved on GitHub and are revalidated through CI. Post-release visual inspection depends on a restored browser/workspace.
+- npm install still reports upstream deprecation warnings from the existing spreadsheet dependency chain and a resolver install-script policy notice. Application lint has zero warnings; replacing that dependency was not attempted without export compatibility coverage.
+- The original workspace disconnected during final checks. Recovered changes were preserved on GitHub and revalidated through CI; the workspace later became available again.
 - Automated crawling records every route and API boundary. State/action tests cover shared dashboard families and core signed-in workflows, not every possible conditional button/data combination.
 
 ## Manual QA checklist
@@ -108,6 +113,7 @@ Help/auth are intentionally noindex; their SEO crawlability deduction is expecte
 | `src/app/dashboard/employer/employees/new/page.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
 | `src/app/dashboard/employer/employees/page.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
 | `src/app/dashboard/employer/exits/page.tsx` | Access/assignment checks, explicit loading and mutation feedback. |
+| `src/app/dashboard/employer/hr/attendance/page.tsx` | Distinguish loading from empty attendance; show assignment progress. |
 | `src/app/dashboard/employer/hr/attendance/verification/page.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
 | `src/app/dashboard/employer/hr/birthdays/page.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
 | `src/app/dashboard/employer/hr/departments/page.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
