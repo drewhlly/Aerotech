@@ -15,7 +15,8 @@ Browser/API/route evidence: https://github.com/drewhlly/Aerotech/actions/runs/40
 - The baseline covered 124 page routes (72 employer pages) and 86 API routes, four roles and 360/768/1280 widths: 1,488 page checks and 334 API checks.
 - Local browser checks confirmed the country hydration fix, dashboard loading/error/save feedback, corrected vacancy scoping and POST native form fallback.
 - All 51 public route/breakpoint checks passed locally, including keyboard navigation, WCAG AA checks, recovery, ticket submission and checkout return paths.
-- Final verification for the recovered commit runs in GitHub CI; consult the PR checks for its exact result.
+- Final CI source checks passed: build, zero-warning lint, TypeScript and 32 tests. All 17 signed-in journeys, 1,488 page checks and 334 API checks passed; the crawl reported zero unexpected findings.
+- All 51 public route/breakpoint checks passed in CI. Dashboard state probes verified loading/error feedback across 19 core routes, save confirmation and CSV export.
 - Baseline artifact: https://github.com/drewhlly/Aerotech/actions/runs/40303139712/artifacts/12641996778
 
 ### Lighthouse mobile lab results
@@ -23,14 +24,14 @@ Browser/API/route evidence: https://github.com/drewhlly/Aerotech/actions/runs/40
 | Page | Performance | Accessibility | Best practices | SEO |
 | --- | ---: | ---: | ---: | ---: |
 | / | 99 | 100 | 100 | 100 |
-| /careers | 100 | 100 | 100 | 100 |
+| /careers | 98 | 100 | 100 | 100 |
 | /pricing | 98 | 100 | 100 | 100 |
 | /solutions | 98 | 100 | 100 | 100 |
-| /support | 99 | 100 | 100 | 100 |
+| /support | 98 | 100 | 100 | 100 |
 | /help | 98 | 100 | 100 | 69 |
-| /auth/login | 97 | 100 | 100 | 69 |
+| /auth/login | 98 | 100 | 100 | 69 |
 
-Help/auth are intentionally noindex; their SEO crawlability deduction is expected. These are local lab results, not production field Core Web Vitals.
+Help/auth are intentionally noindex; their SEO crawlability deduction is expected. These are the final CI mobile lab results, not production field Core Web Vitals.
 
 ## Design decisions and verification limits
 
@@ -42,7 +43,7 @@ Help/auth are intentionally noindex; their SEO crawlability deduction is expecte
 - The current-source credential-pattern scan found no provider secret, private key, GitHub token or external database password. This is not a complete git-history or dependency audit.
 - npm install still reports upstream deprecation warnings from the existing spreadsheet dependency chain and a resolver install-script policy notice. Application lint has zero warnings; replacing that dependency was not attempted without export compatibility coverage.
 - The original workspace disconnected during final checks. Recovered changes were preserved on GitHub and revalidated through CI; the workspace later became available again.
-- Automated crawling records every route and API boundary. State/action tests cover shared dashboard families and core signed-in workflows, not every possible conditional button/data combination.
+- Automated crawling records every route and API boundary. State/action tests cover shared dashboard families and core signed-in workflows, not every possible conditional button/data combination. The payroll overview empty-state probe retained its nested payroll object, so that particular empty-state simulation needs a separate fresh-company check.
 
 ## Manual QA checklist
 
