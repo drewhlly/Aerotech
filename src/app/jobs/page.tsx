@@ -1,2 +1,2 @@
-import RecruitmentWorkspace from '@/components/recruitment-workspace';
-export default function Page(){return <RecruitmentWorkspace mode="jobs"/>}
+import {permanentRedirect} from 'next/navigation';
+export default function Page(){permanentRedirect('/careers')}

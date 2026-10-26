@@ -1,46 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import {
-  Activity,
-  AlertCircle,
-  ArrowDownLeft,
-  ArrowRight,
-  ArrowUpRight,
-  Award,
-  Banknote,
-  BarChart3,
-  Bell,
-  BriefcaseBusiness,
-  Building2,
-  CalendarDays,
-  Check,
-  CheckCircle2,
-  ChevronDown,
-  Clock3,
-  CreditCard,
-  FileCheck2,
-  FileText,
-  GraduationCap,
-  Headphones,
-  LayoutDashboard,
-  LifeBuoy,
-  Menu,
-  MessageSquareText,
-  MoreHorizontal,
-  PieChart,
-  Plus,
-  Search,
-  Settings,
-  ShieldCheck,
-  Sparkles,
-  Target,
-  UserCheck,
-  UserPlus,
-  Users,
-  Wallet,
-  X,
-} from "lucide-react";
+import { Activity, AlertCircle, ArrowDownLeft, ArrowRight, ArrowUpRight, Award, Banknote, BarChart3, Bell, BriefcaseBusiness, Building2, CalendarDays, CheckCircle2, ChevronDown, Clock3, FileCheck2, FileText, GraduationCap, LayoutDashboard, LifeBuoy, Menu, MessageSquareText, MoreHorizontal, Plus, Search, Settings, ShieldCheck, Sparkles, Target, UserCheck, UserPlus, Users, Wallet, X } from "lucide-react";
 
 type Section =
   | "command"
@@ -922,7 +883,7 @@ function Attendance() {
         </div>
 
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="font-bold text-slate-950">Today's attendance</h2>
+          <h2 className="font-bold text-slate-950">Today’s attendance</h2>
 
           <div className="mt-5 space-y-3">
             {[

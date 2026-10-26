@@ -9,7 +9,7 @@ permissions:
 jobs:
   journeys:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 40
     services:
       postgres:
         image: postgres:16
@@ -32,18 +32,30 @@ jobs:
       JITSI_APP_ID: fixture
       JITSI_APP_SECRET: only_for_disposable_integration_tests_1234567890
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
           node-version: '24'
       - run: npm install --no-audit --no-fund
-      - run: npx playwright install --with-deps chromium
+      - run: npm install --no-save --package-lock=false lighthouse @axe-core/playwright
+      - run: npx playwright install --with-deps chromium --only-shell
       - run: npm run db:migrate
       - run: npm run build
       - name: Verify browser, API and database journeys
         run: |
           npm run start -- --hostname localhost --port 3010 > /tmp/aerotech-server.log 2>&1 &
           node scripts/verify-signed-in.mjs
+          node scripts/verify-dashboard-states.mjs
+          APP_BASE_URL=http://localhost:3012 npm run dev -- --hostname localhost --port 3012 > /tmp/aerotech-dev-server.log 2>&1 &
+          APP_BASE_URL=http://localhost:3012 CRAWL_MODE=development node scripts/verify-route-crawl.mjs
+          node scripts/verify-public-routes.mjs
+      - name: Upload route and Lighthouse evidence
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: public-route-audit
+          path: /tmp/aerotech-public-audit
+          if-no-files-found: ignore
       - name: Server diagnostics
         if: failure()
         run: cat /tmp/aerotech-server.log

@@ -1,9 +1,6 @@
-import Link from "next/link";
-export default function CareersGate() {
- return <main className="mx-auto flex min-h-screen max-w-xl flex-col justify-center px-6 text-center">
-  <h1 className="text-4xl font-black text-[#07152c]">Find your next opportunity on Aerotech</h1>
-  <p className="mt-5 text-slate-600">Create a free applicant account or sign in to view available jobs. No applicant fees.</p>
-  <Link href="/auth/signup/applicant" className="mt-8 rounded-xl bg-[#07152c] p-4 font-bold text-white">Create free account</Link>
-  <Link href="/auth/login?role=applicant" className="mt-4 font-bold text-[#2563eb]">Already registered? Sign in</Link>
- </main>;
-}
+import Link from 'next/link';
+import {pageMetadata,siteUrl} from '@/lib/seo';
+import {publicJobs} from '@/lib/public-jobs';
+export const metadata=pageMetadata('Careers','Browse open roles from organisations using Aerotech. Compare job titles, locations and employment types, then create a free applicant account when ready.','/careers');
+export const dynamic='force-dynamic';
+export default async function Careers(){const {jobs,unavailable}=await publicJobs();const list={'@context':'https://schema.org','@type':'ItemList',itemListElement:jobs.map((j,i)=>({'@type':'ListItem',position:i+1,name:j.title,url:new URL('/careers/'+j.id,siteUrl).href}))};return <main className="mx-auto max-w-7xl px-5 py-12"><h1 className="text-4xl font-bold">Find your next opportunity</h1><p className="mt-4 max-w-2xl leading-7 text-slate-600">Browse open roles without an account. Sign in as an applicant to read full details, complete the role assessment and apply. Applicants join free.</p><script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(list).replace(/</g,'\u003c')}}/><div className="mt-8 grid gap-5 md:grid-cols-2">{jobs.map(j=><article className="aero-card" key={j.id}><h2 className="text-xl font-bold"><Link className="text-blue-700" href={'/careers/'+j.id}>{j.title}</Link></h2><p className="mt-3 font-semibold">{j.company_name}</p><p className="mt-2 text-slate-600">{j.location} · {j.country}</p><p className="mt-2 text-sm text-slate-600">{j.employment_type}</p><Link className="aero-button mt-4 bg-blue-700 text-white" href={'/careers/'+j.id}>View role & apply</Link></article>)}</div>{!jobs.length&&<section className="aero-card mt-8"><h2 className="text-xl font-bold">{unavailable?'We couldn’t load open roles':'No open roles right now'}</h2><p className="mt-3 text-slate-600">{unavailable?'Please try again shortly or contact support.':'Check back soon for new opportunities from our hiring partners.'}</p><Link className="mt-5 inline-block text-blue-700" href={unavailable?'/support':'/auth/signup/applicant'}>{unavailable?'Contact support':'Create a free applicant account'}</Link></section>}</main>}

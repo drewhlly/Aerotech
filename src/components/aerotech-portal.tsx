@@ -3,37 +3,9 @@
 import Link from "next/link";
 import WorkspaceShell from "./workspace-shell";
 import BrandLogo from "./brand-logo";
-import { createContext, useContext, useState } from "react";
-import { useRouter } from "next/navigation";
-import {
-  ArrowRight,
-  ArrowLeft,
-  Bell,
-  BriefcaseBusiness,
-  Building2,
-  CalendarDays,
-  CheckCircle2,
-  ChevronDown,
-  CircleDollarSign,
-  Clock3,
-  CreditCard,
-  FileText,
-  GraduationCap,
-  LayoutDashboard,
-  Menu,
-  MessageSquare,
-  Search,
-  ShieldCheck,
-  Sparkles,
-  User,
-  Users,
-  Wallet,
-  X,
-  Banknote,
-  ClipboardCheck,
-  HeartHandshake,
-  LogOut,
-} from "lucide-react";
+import { createContext, useContext, useState, useEffect } from "react";
+import {usePathname} from "next/navigation";
+import {Menu,X} from "lucide-react";
 
 export const AEROTECH = {
   name: "Aerotech",
@@ -47,6 +19,8 @@ export function Logo({light=false}:{light?:boolean}){return <BrandLogo light={li
 export const PublicNavigationContext=createContext(false);
 export function PublicNav() {
   const [open, setOpen] = useState(false);
+  const path=usePathname();
+  useEffect(()=>{Promise.resolve().then(()=>setOpen(false))},[path]);
   const alreadyVisible=useContext(PublicNavigationContext);
   if(alreadyVisible)return null;
 
@@ -56,16 +30,16 @@ export function PublicNav() {
         <Logo />
 
         <nav className="hidden items-center gap-7 lg:flex">
-          <Link href="/jobs" className="text-sm font-medium text-slate-600 hover:text-blue-700">Find jobs</Link>
+          <Link href="/careers" className="text-sm font-medium text-slate-600 hover:text-blue-700">Find jobs</Link>
           <Link href="/auth/login?role=employee" className="text-sm font-medium text-slate-600 hover:text-blue-700">For employees</Link>
-          <Link href="/solutions" className="text-sm font-medium text-slate-600 hover:text-blue-700">For companies</Link>
+          <Link href="/auth/signup/employer" className="text-sm font-medium text-slate-600 hover:text-blue-700">For companies</Link>
           <Link href="/pricing" className="text-sm font-medium text-slate-600 hover:text-blue-700">Company plans</Link>
           <Link href="/support" className="text-sm font-medium text-slate-600 hover:text-blue-700">Support</Link>
         </nav>
 
         <div className="hidden items-center gap-3 sm:flex">
           <Link
-            href="/#sign-in"
+            href="/auth/login"
             className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100"
           >
             Sign in
@@ -81,24 +55,25 @@ export function PublicNav() {
         <button
           onClick={() => setOpen(!open)}
           className="rounded-lg p-2 lg:hidden"
-          aria-label="Open navigation"
+          aria-label={open?"Close navigation":"Open navigation"}
+          aria-expanded={open} aria-controls="public-mobile-menu"
         >
           {open ? <X /> : <Menu />}
         </button>
       </div>
 
-      <nav id="sign-in" aria-label="Portal sign in" className="border-t border-slate-100 bg-slate-50/80"><div className="mx-auto grid max-w-7xl grid-cols-3 gap-2 px-4 py-2 sm:px-5">{(['employer','employee','applicant'] as const).map(role=><Link key={role} href={'/auth/login?role='+role} className="rounded-lg px-2 py-2 text-center text-xs font-semibold text-blue-700 hover:bg-blue-50 sm:text-sm"><span className="capitalize">{role}</span> sign in</Link>)}</div></nav>
+      <nav id="sign-in" aria-label="Portal sign in" className="border-t border-slate-100 bg-slate-50/80"><div className="mx-auto grid max-w-7xl grid-cols-3 gap-2 px-4 py-2 sm:px-5">{(['employer','employee','applicant'] as const).map(role=><Link key={role} href={'/auth/login?role='+role} className="rounded-lg px-2 py-2 text-center text-xs font-semibold text-blue-700 hover:bg-blue-50 sm:text-sm">{role[0].toUpperCase()+role.slice(1)} sign in</Link>)}</div></nav>
 
       {open && (
-        <div className="border-t border-slate-200 bg-white px-5 py-5 lg:hidden">
+        <div id="public-mobile-menu" onClick={()=>setOpen(false)} className="border-t border-slate-200 bg-white px-5 py-5 lg:hidden">
           <div className="grid gap-3">
-            <Link href="/auth/signup/applicant" className="rounded-lg p-3 hover:bg-slate-50">Applicant signup</Link><Link href="/pricing" className="rounded-lg p-3 hover:bg-slate-50">Pricing</Link><Link href="/jobs" className="rounded-lg p-3 hover:bg-slate-50">
-              Find Jobs
+            <Link href="/auth/signup/applicant" className="rounded-lg p-3 hover:bg-slate-50">Applicant signup</Link><Link href="/pricing" className="rounded-lg p-3 hover:bg-slate-50">Pricing</Link><Link href="/careers" className="rounded-lg p-3 hover:bg-slate-50">
+              Find jobs
             </Link>
             <Link href="/solutions" className="rounded-lg p-3 hover:bg-slate-50">
               Solutions
             </Link>
-            <Link href="/auth/login?role=employee" className="rounded-lg p-3 hover:bg-slate-50">Employee sign in</Link>
+            <Link href="/support" className="rounded-lg p-3 hover:bg-slate-50">Support</Link><Link href="/auth/signup/employer" className="rounded-lg p-3 hover:bg-slate-50">For companies</Link><Link href="/auth/login?role=employee" className="rounded-lg p-3 hover:bg-slate-50">Employee sign in</Link>
             <Link href="/auth/login?role=applicant" className="rounded-lg p-3 hover:bg-slate-50">Applicant sign in</Link>
             <Link href="/auth/login?role=employer" className="rounded-lg p-3 hover:bg-slate-50">Employer sign in</Link>
             <Link

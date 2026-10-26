@@ -1,7 +1,7 @@
-import {syncPayslipNotifications} from '@/lib/payslip-notifications';
-import {NextResponse} from "next/server";
-import {timingSafeEqual,randomUUID} from "node:crypto";
-import {db} from "@/lib/employer-session";
+import { syncPayslipNotifications } from '@/lib/payslip-notifications';
+import { NextResponse } from "next/server";
+import { timingSafeEqual } from "node:crypto";
+import { db } from "@/lib/employer-session";
 export const runtime="nodejs";
 function valid(request:Request){const secret=process.env.CRON_SECRET||"";const token=request.headers.get("authorization")?.replace(/^Bearer /,"")||"";const a=Buffer.from(secret),b=Buffer.from(token);return !!secret&&a.length===b.length&&timingSafeEqual(a,b);}
 export async function GET(req:Request){

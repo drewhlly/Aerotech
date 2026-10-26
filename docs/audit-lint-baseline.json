@@ -1,0 +1,530 @@
+[
+  {
+    "file": "scripts/test-support-enrollment.mjs",
+    "line": 11,
+    "rule": "@typescript-eslint/no-unused-vars",
+    "message": "'randomUUID' is defined but never used."
+  },
+  {
+    "file": "scripts/test-support-enrollment.mjs",
+    "line": 11,
+    "rule": "@typescript-eslint/no-unused-vars",
+    "message": "'scryptSync' is defined but never used."
+  },
+  {
+    "file": "scripts/test-support-enrollment.mjs",
+    "line": 11,
+    "rule": "@typescript-eslint/no-unused-vars",
+    "message": "'createHash' is defined but never used."
+  },
+  {
+    "file": "scripts/test-support-enrollment.mjs",
+    "line": 14,
+    "rule": "@typescript-eslint/no-unused-vars",
+    "message": "'encryptTotp' is defined but never used."
+  },
+  {
+    "file": "scripts/test-support-flow.mjs",
+    "line": 11,
+    "rule": "@typescript-eslint/no-unused-vars",
+    "message": "'createHash' is defined but never used."
+  },
+  {
+    "file": "scripts/verify-signed-in.mjs",
+    "line": 26,
+    "rule": "@typescript-eslint/no-unused-vars",
+    "message": "'index' is assigned a value but never used."
+  },
+  {
+    "file": "src/app/api/cron/payslip-notices/route.ts",
+    "line": 3,
+    "rule": "@typescript-eslint/no-unused-vars",
+    "message": "'randomUUID' is defined but never used."
+  },
+  {
+    "file": "src/app/api/hr/attendance/faces/route.ts",
+    "line": 1,
+    "rule": "@typescript-eslint/no-unused-vars",
+    "message": "'decodeFace' is defined but never used."
+  },
+  {
+    "file": "src/app/api/hr/lifecycle/[module]/route.ts",
+    "line": 16,
+    "rule": "@next/next/no-assign-module-variable",
+    "message": "Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable"
+  },
+  {
+    "file": "src/app/api/hr/lifecycle/[module]/route.ts",
+    "line": 21,
+    "rule": "@next/next/no-assign-module-variable",
+    "message": "Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable"
+  },
+  {
+    "file": "src/app/api/payroll/payments/connection/route.ts",
+    "line": 1,
+    "rule": "@typescript-eslint/no-unused-vars",
+    "message": "'payoutAccount' is defined but never used."
+  },
+  {
+    "file": "src/app/auth/activate/page.tsx",
+    "line": 9,
+    "rule": "@next/next/no-location-assign-relative-destination",
+    "message": "Do not use `window.location.assign()` to navigate to internal Next.js pages. Use `redirect()` in the render phase, or `useRouter().push()` in Client Components' event handlers instead. See: https://nextjs.org/docs/messages/no-location-assign-relative-destination"
+  },
+  {
+    "file": "src/app/auth/signup/employer/page.tsx",
+    "line": 115,
+    "rule": "@next/next/no-location-assign-relative-destination",
+    "message": "Do not use `window.location.assign()` to navigate to internal Next.js pages. Use `redirect()` in the render phase, or `useRouter().push()` in Client Components' event handlers instead. See: https://nextjs.org/docs/messages/no-location-assign-relative-destination"
+  },
+  {
+    "file": "src/app/billing/page.tsx",
+    "line": 3,
+    "rule": "react-hooks/set-state-in-effect",
+    "message": "Error: Calling setState synchronously within an effect can trigger cascading renders"
+  },
+  {
+    "file": "src/app/billing/page.tsx",
+    "line": 3,
+    "rule": "@next/next/no-location-assign-relative-destination",
+    "message": "Do not use `window.location.assign()` to navigate to internal Next.js pages. Use `redirect()` in the render phase, or `useRouter().push()` in Client Components' event handlers instead. See: https://nextjs.org/docs/messages/no-location-assign-relative-destination"
+  },
+  {
+    "file": "src/app/billing/page.tsx",
+    "line": 3,
+    "rule": "react-hooks/exhaustive-deps",
+    "message": "React Hook useEffect has a missing dependency: 'q'. Either include it or remove the dependency array."
+  },
+  {
+    "file": "src/app/dashboard/employer/ai/page.tsx",
+    "line": 6,
+    "rule": "@typescript-eslint/no-unused-vars",
+    "message": "'ArrowRight' is defined but never used."
+  },
+  {
+    "file": "src/app/dashboard/employer/employees/import/page.tsx",
+    "line": 3,
+    "rule": "@typescript-eslint/no-unused-vars",
+    "message": "'Link' is defined but never used."
+  },
+  {
+    "file": "src/app/dashboard/employer/employees/new/page.tsx",
+    "line": 6,
+    "rule": "@next/next/no-location-assign-relative-destination",
+    "message": "Do not use `window.location.assign()` to navigate to internal Next.js pages. Use `redirect()` in the render phase, or `useRouter().push()` in Client Components' event handlers instead. See: https://nextjs.org/docs/messages/no-location-assign-relative-destination"
+  },
+  {
+    "file": "src/app/dashboard/employer/employees/page.tsx",
+    "line": 9,
+    "rule": "react/no-unescaped-entities",
+    "message": "`'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`."
+  },
+  {
+    "file": "src/app/dashboard/employer/exits/page.tsx",
+    "line": 3,
+    "rule": "react-hooks/set-state-in-effect",
+    "message": "Error: Calling setState synchronously within an effect can trigger cascading renders"
+  },
+  {
+    "file": "src/app/dashboard/employer/hr/attendance/verification/page.tsx",
+    "line": 11,
+    "rule": "react-hooks/set-state-in-effect",
+    "message": "Error: Calling setState synchronously within an effect can trigger cascading renders"
+  },
+  {
+    "file": "src/app/dashboard/employer/hr/birthdays/page.tsx",
+    "line": 4,
+    "rule": "@typescript-eslint/no-unused-vars",
+    "message": "'Link' is defined but never used."
+  },
+  {
+    "file": "src/app/dashboard/employer/hr/departments/page.tsx",
+    "line": 10,
+    "rule": "react-hooks/set-state-in-effect",
+    "message": "Error: Calling setState synchronously within an effect can trigger cascading renders"
+  },
+  {
+    "file": "src/app/dashboard/employer/hr/shifts/page.tsx",
+    "line": 9,
+    "rule": "react-hooks/set-state-in-effect",
+    "message": "Error: Calling setState synchronously within an effect can trigger cascading renders"
+  },
+  {
+    "file": "src/app/dashboard/employer/hr/surveys/page.tsx",
+    "line": 9,
+    "rule": "react-hooks/set-state-in-effect",
+    "message": "Error: Calling setState synchronously within an effect can trigger cascading renders"
+  },
+  {
+    "file": "src/app/dashboard/employer/notifications/page.tsx",
+    "line": 1,
+    "rule": "react-hooks/set-state-in-effect",
+    "message": "Error: Calling setState synchronously within an effect can trigger cascading renders"
+  },
+  {
+    "file": "src/app/dashboard/employer/payroll/approvers/page.tsx",
+    "line": 10,
+    "rule": "react-hooks/set-state-in-effect",
+    "message": "Error: Calling setState synchronously within an effect can trigger cascading renders"
+  },
+  {
+    "file": "src/app/dashboard/employer/payroll/run/page.tsx",
+    "line": 28,
+    "rule": "react/no-unescaped-entities",
+    "message": "`'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`."
+  },
+  {
+    "file": "src/app/dashboard/employer/payroll/setup/page.tsx",
+    "line": 6,
+    "rule": "react-hooks/set-state-in-effect",
+    "message": "Error: Calling setState synchronously within an effect can trigger cascading renders"
+  },
+  {
+    "file": "src/app/dashboard/employer/payroll/wallet/page.tsx",
+    "line": 1,
+    "rule": "@typescript-eslint/no-unused-vars",
+    "message": "'Link' is defined but never used."
+  },
+  {
+    "file": "src/app/dashboard/employer/requests/page.tsx",
+    "line": 8,
+    "rule": "react-hooks/set-state-in-effect",
+    "message": "Error: Calling setState synchronously within an effect can trigger cascading renders"
+  },
+  {
+    "file": "src/app/employee/attendance/page.tsx",
+    "line": 5,
+    "rule": "react-hooks/set-state-in-effect",
+    "message": "Error: Calling setState synchronously within an effect can trigger cascading renders"
+  },
+  {
+    "file": "src/app/employee/birthdays/page.tsx",
+    "line": 3,
+    "rule": "@typescript-eslint/no-unused-vars",
+    "message": "'Link' is defined but never used."
+  },
+  {
+    "file": "src/app/employee/birthdays/page.tsx",
+    "line": 9,
+    "rule": "react/no-unescaped-entities",
+    "message": "`'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`."
+  },
+  {
+    "file": "src/app/employee/notifications/page.tsx",
+    "line": 3,
+    "rule": "@typescript-eslint/no-unused-vars",
+    "message": "'Link' is defined but never used."
+  },
+  {
+    "file": "src/app/employee/notifications/page.tsx",
+    "line": 8,
+    "rule": "react-hooks/set-state-in-effect",
+    "message": "Error: Calling setState synchronously within an effect can trigger cascading renders"
+  },
+  {
+    "file": "src/app/employee/page.tsx",
+    "line": 12,
+    "rule": "react-hooks/set-state-in-effect",
+    "message": "Error: Calling setState synchronously within an effect can trigger cascading renders"
+  },
+  {
+    "file": "src/app/employee/payroll/approvals/page.tsx",
+    "line": 3,
+    "rule": "@typescript-eslint/no-unused-vars",
+    "message": "'Link' is defined but never used."
+  },
+  {
+    "file": "src/app/employee/payroll/approvals/page.tsx",
+    "line": 8,
+    "rule": "react-hooks/set-state-in-effect",
+    "message": "Error: Calling setState synchronously within an effect can trigger cascading renders"
+  },
+  {
+    "file": "src/app/employee/payroll/statements/page.tsx",
+    "line": 3,
+    "rule": "@typescript-eslint/no-unused-vars",
+    "message": "'Link' is defined but never used."
+  },
+  {
+    "file": "src/app/employee/surveys/page.tsx",
+    "line": 9,
+    "rule": "react-hooks/set-state-in-effect",
+    "message": "Error: Calling setState synchronously within an effect can trigger cascading renders"
+  },
+  {
+    "file": "src/app/meet/page.tsx",
+    "line": 8,
+    "rule": "@typescript-eslint/no-unused-vars",
+    "message": "'role' is assigned a value but never used."
+  },
+  {
+    "file": "src/app/meet/page.tsx",
+    "line": 11,
+    "rule": "react-hooks/set-state-in-effect",
+    "message": "Error: Calling setState synchronously within an effect can trigger cascading renders"
+  },
+  {
+    "file": "src/app/support-console/page.tsx",
+    "line": 1,
+    "rule": "@typescript-eslint/no-unused-vars",
+    "message": "'Link' is defined but never used."
+  },
+  {
+    "file": "src/components/aerotech-ui.tsx",
+    "line": 6,
+    "rule": "@typescript-eslint/no-unused-vars",
+    "message": "'usePathname' is defined but never used."
+  },
+  {
+    "file": "src/components/aerotech-ui.tsx",
+    "line": 8,
+    "rule": "@typescript-eslint/no-unused-vars",
+    "message": "'useRouter' is defined but never used."
+  },
+  {
+    "file": "src/components/aerotech-ui.tsx",
+    "line": 17,
+    "rule": "@typescript-eslint/no-unused-vars",
+    "message": "'Bell' is defined but never used."
+  },
+  {
+    "file": "src/components/aerotech-ui.tsx",
+    "line": 22,
+    "rule": "@typescript-eslint/no-unused-vars",
+    "message": "'CheckCircle2' is defined but never used."
+  },
+  {
+    "file": "src/components/aerotech-ui.tsx",
+    "line": 23,
+    "rule": "@typescript-eslint/no-unused-vars",
+    "message": "'ChevronDown' is defined but never used."
+  },
+  {
+    "file": "src/components/aerotech-ui.tsx",
+    "line": 31,
+    "rule": "@typescript-eslint/no-unused-vars",
+    "message": "'Menu' is defined but never used."
+  },
+  {
+    "file": "src/components/aerotech-ui.tsx",
+    "line": 35,
+    "rule": "@typescript-eslint/no-unused-vars",
+    "message": "'Search' is defined but never used."
+  },
+  {
+    "file": "src/components/aerotech-ui.tsx",
+    "line": 43,
+    "rule": "@typescript-eslint/no-unused-vars",
+    "message": "'ArrowLeft' is defined but never used."
+  },
+  {
+    "file": "src/components/aerotech-ui.tsx",
+    "line": 44,
+    "rule": "@typescript-eslint/no-unused-vars",
+    "message": "'LogOut' is defined but never used."
+  },
+  {
+    "file": "src/components/aerotech-ui.tsx",
+    "line": 50,
+    "rule": "@typescript-eslint/no-unused-vars",
+    "message": "'navigation' is assigned a value but never used."
+  },
+  {
+    "file": "src/components/aerotech-workforce-os.tsx",
+    "line": 17,
+    "rule": "@typescript-eslint/no-unused-vars",
+    "message": "'Check' is defined but never used."
+  },
+  {
+    "file": "src/components/aerotech-workforce-os.tsx",
+    "line": 21,
+    "rule": "@typescript-eslint/no-unused-vars",
+    "message": "'CreditCard' is defined but never used."
+  },
+  {
+    "file": "src/components/aerotech-workforce-os.tsx",
+    "line": 25,
+    "rule": "@typescript-eslint/no-unused-vars",
+    "message": "'Headphones' is defined but never used."
+  },
+  {
+    "file": "src/components/aerotech-workforce-os.tsx",
+    "line": 31,
+    "rule": "@typescript-eslint/no-unused-vars",
+    "message": "'PieChart' is defined but never used."
+  },
+  {
+    "file": "src/components/aerotech-workforce-os.tsx",
+    "line": 925,
+    "rule": "react/no-unescaped-entities",
+    "message": "`'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`."
+  },
+  {
+    "file": "src/components/document-submissions.tsx",
+    "line": 4,
+    "rule": "react-hooks/set-state-in-effect",
+    "message": "Error: Calling setState synchronously within an effect can trigger cascading renders"
+  },
+  {
+    "file": "src/components/document-submissions.tsx",
+    "line": 4,
+    "rule": "react-hooks/exhaustive-deps",
+    "message": "React Hook useEffect has a missing dependency: 'load'. Either include it or remove the dependency array."
+  },
+  {
+    "file": "src/components/employee-learning.tsx",
+    "line": 3,
+    "rule": "react-hooks/set-state-in-effect",
+    "message": "Error: Calling setState synchronously within an effect can trigger cascading renders"
+  },
+  {
+    "file": "src/components/employee-learning.tsx",
+    "line": 3,
+    "rule": "react-hooks/exhaustive-deps",
+    "message": "React Hook useEffect has a missing dependency: 'load'. Either include it or remove the dependency array."
+  },
+  {
+    "file": "src/components/employee-lifecycle.tsx",
+    "line": 16,
+    "rule": "react-hooks/set-state-in-effect",
+    "message": "Error: Calling setState synchronously within an effect can trigger cascading renders"
+  },
+  {
+    "file": "src/components/employee-lifecycle.tsx",
+    "line": 16,
+    "rule": "react-hooks/exhaustive-deps",
+    "message": "React Hook useEffect has a missing dependency: 'load'. Either include it or remove the dependency array."
+  },
+  {
+    "file": "src/components/employee-profile-workspace.tsx",
+    "line": 3,
+    "rule": "@typescript-eslint/no-unused-vars",
+    "message": "'Link' is defined but never used."
+  },
+  {
+    "file": "src/components/help-desk.tsx",
+    "line": 3,
+    "rule": "react-hooks/set-state-in-effect",
+    "message": "Error: Calling setState synchronously within an effect can trigger cascading renders"
+  },
+  {
+    "file": "src/components/help-desk.tsx",
+    "line": 3,
+    "rule": "react-hooks/exhaustive-deps",
+    "message": "React Hook useEffect has a missing dependency: 'load'. Either include it or remove the dependency array."
+  },
+  {
+    "file": "src/components/hr-records.tsx",
+    "line": 15,
+    "rule": "react-hooks/set-state-in-effect",
+    "message": "Error: Calling setState synchronously within an effect can trigger cascading renders"
+  },
+  {
+    "file": "src/components/hr-records.tsx",
+    "line": 15,
+    "rule": "react-hooks/exhaustive-deps",
+    "message": "React Hook useEffect has a missing dependency: 'load'. Either include it or remove the dependency array."
+  },
+  {
+    "file": "src/components/hr-workflow.tsx",
+    "line": 16,
+    "rule": "react-hooks/set-state-in-effect",
+    "message": "Error: Calling setState synchronously within an effect can trigger cascading renders"
+  },
+  {
+    "file": "src/components/hr-workflow.tsx",
+    "line": 16,
+    "rule": "react-hooks/exhaustive-deps",
+    "message": "React Hook useEffect has a missing dependency: 'reload'. Either include it or remove the dependency array."
+  },
+  {
+    "file": "src/components/live-reports.tsx",
+    "line": 3,
+    "rule": "react-hooks/purity",
+    "message": "Error: Cannot call impure function during render"
+  },
+  {
+    "file": "src/components/password-input.tsx",
+    "line": 3,
+    "rule": "@typescript-eslint/no-unused-vars",
+    "message": "'_type' is defined but never used."
+  },
+  {
+    "file": "src/components/payroll-payments.tsx",
+    "line": 8,
+    "rule": "react-hooks/set-state-in-effect",
+    "message": "Error: Calling setState synchronously within an effect can trigger cascading renders"
+  },
+  {
+    "file": "src/components/recruitment-workspace.tsx",
+    "line": 6,
+    "rule": "@typescript-eslint/no-unused-vars",
+    "message": "'PublicNav' is defined but never used."
+  },
+  {
+    "file": "src/components/recruitment-workspace.tsx",
+    "line": 31,
+    "rule": "@next/next/no-location-assign-relative-destination",
+    "message": "Do not use `window.location.assign()` to navigate to internal Next.js pages. Use `redirect()` in the render phase, or `useRouter().push()` in Client Components' event handlers instead. See: https://nextjs.org/docs/messages/no-location-assign-relative-destination"
+  },
+  {
+    "file": "src/components/salary-bands.tsx",
+    "line": 9,
+    "rule": "react-hooks/set-state-in-effect",
+    "message": "Error: Calling setState synchronously within an effect can trigger cascading renders"
+  },
+  {
+    "file": "src/components/staff-confirmations.tsx",
+    "line": 3,
+    "rule": "react-hooks/set-state-in-effect",
+    "message": "Error: Calling setState synchronously within an effect can trigger cascading renders"
+  },
+  {
+    "file": "src/components/support-workspace.tsx",
+    "line": 15,
+    "rule": "react-hooks/set-state-in-effect",
+    "message": "Error: Calling setState synchronously within an effect can trigger cascading renders"
+  },
+  {
+    "file": "src/components/support-workspace.tsx",
+    "line": 15,
+    "rule": "react-hooks/exhaustive-deps",
+    "message": "React Hook useEffect has a missing dependency: 'refresh'. Either include it or remove the dependency array."
+  },
+  {
+    "file": "src/components/support-workspace.tsx",
+    "line": 21,
+    "rule": "@next/next/no-location-assign-relative-destination",
+    "message": "Do not use `window.location.assign()` to navigate to internal Next.js pages. Use `redirect()` in the render phase, or `useRouter().push()` in Client Components' event handlers instead. See: https://nextjs.org/docs/messages/no-location-assign-relative-destination"
+  },
+  {
+    "file": "src/components/support-workspace.tsx",
+    "line": 31,
+    "rule": "react-hooks/purity",
+    "message": "Error: Cannot call impure function during render"
+  },
+  {
+    "file": "src/components/vacancy-approvals.tsx",
+    "line": 4,
+    "rule": "react-hooks/set-state-in-effect",
+    "message": "Error: Calling setState synchronously within an effect can trigger cascading renders"
+  },
+  {
+    "file": "src/components/workflow-workspace.tsx",
+    "line": 5,
+    "rule": "react-hooks/set-state-in-effect",
+    "message": "Error: Calling setState synchronously within an effect can trigger cascading renders"
+  },
+  {
+    "file": "src/components/workflow-workspace.tsx",
+    "line": 5,
+    "rule": "react-hooks/exhaustive-deps",
+    "message": "React Hook useEffect has a missing dependency: 'load'. Either include it or remove the dependency array."
+  },
+  {
+    "file": "src/components/workspace-shell.tsx",
+    "line": 19,
+    "rule": "@next/next/no-location-assign-relative-destination",
+    "message": "Do not use `window.location.assign()` to navigate to internal Next.js pages. Use `redirect()` in the render phase, or `useRouter().push()` in Client Components' event handlers instead. See: https://nextjs.org/docs/messages/no-location-assign-relative-destination"
+  }
+]

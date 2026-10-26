@@ -1,6 +1,6 @@
 "use client";
-import {useEffect,useState} from "react";
-import Link from "next/link";
+import { useEffect, useState } from "react";
+
 type Statement={run_id:string;payroll_month:string;gross:string;paye:string;pension:string;nhf:string;sanctions:string;other_deductions:string;net:string};
 export default function Statements(){
  const [rows,setRows]=useState<Statement[]>([]),[error,setError]=useState("");

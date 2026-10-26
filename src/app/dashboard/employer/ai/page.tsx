@@ -1,21 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Activity,
-  ArrowRight,
-  Bot,
-  CircleDollarSign,
-  GraduationCap,
-  ShieldCheck,
-  Sparkles,
-  Users,
-} from "lucide-react";
-import {
-  AIAssistant,
-  DashboardShell,
-  PageHeader,
-} from "@/components/aerotech-ui";
+import { Activity, Bot, CircleDollarSign, GraduationCap, ShieldCheck, Sparkles, Users } from "lucide-react";
+import { AIAssistant, DashboardShell, PageHeader } from "@/components/aerotech-ui";
 
 
 export default function AIPage() {

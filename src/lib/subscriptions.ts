@@ -88,7 +88,7 @@ export const EMPLOYER_PLANS: Record<
     price: "₦2,000,000",
     period: "/ year",
     description:
-      "Enterprise recruitment intelligence and automation.",
+      "Workflow automation and reporting for growing organisations.",
     prices: {
       NGN: 2000000,
       USD: 1400,

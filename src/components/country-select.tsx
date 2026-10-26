@@ -1,2 +1,2 @@
-import {countries} from '@/lib/countries';
-export default function CountrySelect(props:React.SelectHTMLAttributes<HTMLSelectElement>){return <select {...props}><option value="">Select country</option>{countries.map(country=><option key={country} value={country}>{country}</option>)}</select>}
+import {countryOptions} from '@/lib/countries';
+export default function CountrySelect({codeValues=false,...props}:React.SelectHTMLAttributes<HTMLSelectElement>&{codeValues?:boolean}){return <select {...props}><option value="" disabled>Select country</option>{countryOptions.map(({code,name})=><option key={code} value={codeValues?code:name}>{name}</option>)}</select>}

@@ -1,5 +1,5 @@
-import Link from "next/link";
-import {  Wallet, LockKeyhole } from "lucide-react";
+
+import { Wallet, LockKeyhole } from "lucide-react";
 export default function PayrollWalletPage() {
  return <main className="min-h-screen bg-slate-50 px-6 py-14">
   <div className="mx-auto max-w-3xl">

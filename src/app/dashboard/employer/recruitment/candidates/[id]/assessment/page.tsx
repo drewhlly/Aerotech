@@ -1,2 +1,2 @@
-import RecruitmentWorkspace from '@/components/recruitment-workspace';
-export default function Page(){return <RecruitmentWorkspace/>}
+import RecruitmentDetail from '@/components/recruitment-detail';
+export default async function Page({params}:{params:Promise<{id:string}>}){return <RecruitmentDetail id={(await params).id} kind="application"/>}

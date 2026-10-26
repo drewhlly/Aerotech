@@ -1,8 +1,8 @@
 "use client";
-import {useEffect,useState} from "react";
-import Link from "next/link";
-import {ChevronRight,Save,ShieldCheck,UserRound,Wallet,HeartHandshake} from "lucide-react";
-import {profileSections,profileOptions} from "@/lib/employee-profile-fields";
+import { useEffect, useState } from "react";
+
+import { ChevronRight, Save, ShieldCheck, UserRound, Wallet, HeartHandshake } from "lucide-react";
+import { profileSections, profileOptions } from "@/lib/employee-profile-fields";
 import CountrySelect from './country-select';
 type Profile=Record<string,Record<string,string>>;
 type Employee={first_name?:string;last_name?:string;firstName?:string;email?:string;department?:string;job_title?:string};
