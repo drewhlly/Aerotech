@@ -9,7 +9,7 @@ permissions:
 jobs:
   journeys:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     services:
       postgres:
         image: postgres:16
@@ -37,6 +37,7 @@ jobs:
         with:
           node-version: '24'
       - run: npm install --no-audit --no-fund
+      - run: npm install --no-save --package-lock=false lighthouse @axe-core/playwright
       - run: npx playwright install --with-deps chromium
       - run: npm run db:migrate
       - run: npm run build
@@ -44,6 +45,14 @@ jobs:
         run: |
           npm run start -- --hostname localhost --port 3010 > /tmp/aerotech-server.log 2>&1 &
           node scripts/verify-signed-in.mjs
+          node scripts/verify-public-routes.mjs
+      - name: Upload route and Lighthouse evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: public-route-audit
+          path: /tmp/aerotech-public-audit
+          if-no-files-found: ignore
       - name: Server diagnostics
         if: failure()
         run: cat /tmp/aerotech-server.log

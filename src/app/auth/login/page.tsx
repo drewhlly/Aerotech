@@ -4,11 +4,12 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { ArrowRight, LockKeyhole, Sparkles, Eye, EyeOff } from "lucide-react";
-import { Logo } from "@/components/aerotech-portal";
+import {safeReturnTo} from "@/lib/auth-navigation";
 
 function LoginForm() {
-  const requestedRole = useSearchParams().get("role");
-  const [role] = useState<"employer" | "applicant" | "employee">(requestedRole === "applicant" ? "applicant" : requestedRole === "employee" ? "employee" : "employer");
+  const search=useSearchParams();
+  const requestedRole = search.get("role");
+  const role=requestedRole === "applicant" ? "applicant" : requestedRole === "employee" ? "employee" : "employer";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -22,7 +23,7 @@ function LoginForm() {
       const response = await fetch(role === "applicant" ? "/api/auth/login/applicant" : role === "employee" ? "/api/auth/login/employee" : "/api/auth/login/employer", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, password }) });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) { setError(data.error || "Unable to sign in."); return; }
-      window.location.assign(role === "applicant" ? "/jobs" : role === "employee" ? "/employee" : "/dashboard/employer");
+      window.location.assign(safeReturnTo(search.get("next"),role));
     } catch { setError("Unable to connect. Please try again."); }
     finally { setBusy(false); }
   }
@@ -55,18 +56,18 @@ function LoginForm() {
               Sign in to your dedicated Aerotech portal.
             </p>
 
-            <p className="mt-7 rounded-xl bg-blue-50 p-3 text-sm font-bold capitalize">{role} portal</p>
+            <nav aria-label="Choose sign-in role" className="mt-7 grid grid-cols-3 gap-2">{(['employer','employee','applicant'] as const).map(option=><Link key={option} href={'/auth/login?'+new URLSearchParams({role:option,...(search.get('next')?{next:safeReturnTo(search.get('next'),option)}:{})})} aria-current={role===option?'page':undefined} className={'rounded-lg px-2 py-3 text-center text-xs font-semibold '+(role===option?'bg-blue-700 text-white':'bg-slate-100 text-slate-700')}><span className="capitalize">{option}</span> sign in</Link>)}</nav>{role==='employee'&&<p className="mt-4 text-sm text-slate-600">Employee access is by employer invitation. Ask HR for your activation link.</p>}
 
             <form
               className="mt-7 space-y-4"
               onSubmit={signIn}
             >
               <div>
-                <label className="text-sm font-bold text-slate-700">
+                <label htmlFor="login-email" className="text-sm font-bold text-slate-700">
                   Email
                 </label>
                 <input
-                  type="email"
+                  id="login-email" autoComplete="email" type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -76,12 +77,12 @@ function LoginForm() {
               </div>
 
               <div>
-                <label className="text-sm font-bold text-slate-700">
+                <label htmlFor="login-password" className="text-sm font-bold text-slate-700">
                   Password
                 </label>
                 <div className="relative mt-2">
                   <input
-                    type={showPassword ? "text" : "password"}
+                    id="login-password" autoComplete="current-password" type={showPassword ? "text" : "password"}
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -94,19 +95,19 @@ function LoginForm() {
                 </div>
               </div>
 
+              <Link href={"/auth/forgot-password?role="+role} className="inline-block text-sm font-semibold text-blue-700">Forgot password?</Link>
               {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
               <button type="submit" disabled={busy} className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#07152c] px-5 py-3.5 font-black text-white disabled:opacity-60">
                 {busy ? "Signing in..." : "Sign in"} <ArrowRight size={17} />
               </button>
             </form>
 
-            <div className="mt-7 flex items-center gap-2 text-xs text-slate-400">
+            <div className="mt-7 flex items-center gap-2 text-xs text-slate-600">
               <LockKeyhole size={14} />
-              Your production account will be secured by the Aerotech
-              authentication layer.
+              Your password is sent securely and is never shared with other portals.
             </div>
 
-            {role==='employee'?<p className="mt-7 text-center text-sm text-slate-500">Use the activation link sent by your employer to set up your account.</p>:<div className="mt-7 text-center text-sm"><Link href={role==='applicant'?'/auth/signup/applicant':'/auth/signup/employer'} className="font-bold text-blue-700">{role==='applicant'?'Create free applicant account':'Create an employer account'}</Link></div>}
+            {role==='employee'?<p className="mt-7 text-center text-sm text-slate-500">Use the activation link sent by your employer to set up your account.</p>:<div className="mt-7 text-center text-sm"><Link href={(role==='applicant'?'/auth/signup/applicant':'/auth/signup/employer')+(search.get('next')?'?'+new URLSearchParams({next:safeReturnTo(search.get('next'),role)}):'')} className="font-bold text-blue-700">{role==='applicant'?'Create free applicant account':'Create an employer account'}</Link></div>}
 
           </div>
         </div>

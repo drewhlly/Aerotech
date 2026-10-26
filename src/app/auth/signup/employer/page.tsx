@@ -3,11 +3,10 @@
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
-import { Logo } from "@/components/aerotech-portal";
+import PasswordInput from "@/components/password-input";
+import {safeReturnTo} from "@/lib/auth-navigation";
 
-const countryCodes = "AD AE AF AG AI AL AM AO AQ AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT BV BW BY BZ CA CC CD CF CG CH CI CK CL CM CN CO CR CU CV CW CX CY CZ DE DJ DK DM DO DZ EC EE EG EH ER ES ET FI FJ FK FM FO FR GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GS GT GU GW GY HK HM HN HR HT HU ID IE IL IM IN IO IQ IR IS IT JE JM JO JP KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MF MG MH MK ML MM MN MO MP MQ MR MS MT MU MV MW MX MY MZ NA NC NE NF NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PM PN PR PS PT PW PY QA RE RO RS RU RW SA SB SC SD SE SG SH SI SJ SK SL SM SN SO SR SS ST SV SX SY SZ TC TD TF TG TH TJ TK TL TM TN TO TR TT TV TW TZ UA UG UM US UY UZ VA VC VE VG VI VN VU WF WS YE YT ZA ZM ZW".split(" ");
-const regionNames = new Intl.DisplayNames(["en"], { type: "region" });
-const countries = countryCodes.map((code) => regionNames.of(code) || code).sort();
+import {countries} from '@/lib/countries';
 
 const fields = [
   { name: "companyName", label: "Company name", type: "text", autoComplete: "organization" },
@@ -58,7 +57,7 @@ export default function EmployerSignupPage() {
         return;
       }
       window.localStorage.setItem("aerotech_employer_country", values.country.trim());
-      window.location.assign("/billing");
+      window.location.assign(safeReturnTo(new URLSearchParams(window.location.search).get('next'),'employer'));
     } catch {
       setError("Unable to connect to Aerotech right now. Please try again.");
     } finally {
@@ -73,7 +72,7 @@ export default function EmployerSignupPage() {
         <div className="mx-auto mt-10 max-w-3xl rounded-3xl border border-slate-200 bg-white p-7 shadow-sm sm:p-10">
           <div className="text-sm font-black uppercase tracking-widest text-[#2563eb]">Employer setup</div>
           <h1 className="mt-3 text-3xl font-black text-[#07152c] sm:text-4xl">Build your workforce on Aerotech.</h1>
-          <p className="mt-3 text-slate-500">Create your company workspace and start managing recruitment, people, training, attendance, payroll and compliance.</p>
+          <p className="mt-3 text-slate-500">Create your company account, choose a plan and activate paid services when live billing is available.</p>
           <form onSubmit={submit}>
             <div className="mt-8 grid gap-4 sm:grid-cols-2">
               {fields.map((field) => (
@@ -83,12 +82,12 @@ export default function EmployerSignupPage() {
                     name="country" autoComplete="country-name" required value={values.country}
                     onChange={(event) => setValues((prev) => ({ ...prev, country: event.target.value }))}
                     className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3.5 outline-none focus:border-[#2563eb]"
-                  >{countries.map((country) => <option key={country} value={country}>{country}</option>)}</select> : <input
+                  >{countries.map((country) => <option key={country} value={country}>{country}</option>)}</select> : field.name === "password" ? <PasswordInput required minLength={12} autoComplete="new-password" value={values.password} onChange={event=>setValues(prev=>({...prev,password:event.target.value}))} className="w-full rounded-xl border border-slate-200 px-4 py-3.5"/> : <input
                     name={field.name}
                     type={field.type}
                     autoComplete={field.autoComplete}
                     required
-                    minLength={field.name === "password" ? 12 : undefined}
+                    
                     value={values[field.name]}
                     onChange={(event) => setValues((prev) => ({ ...prev, [field.name]: event.target.value }))}
                     className="w-full rounded-xl border border-slate-200 px-4 py-3.5 outline-none focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/20"
@@ -97,9 +96,9 @@ export default function EmployerSignupPage() {
               ))}
             </div>
             <div className="mt-7 rounded-2xl bg-slate-50 p-5">
-              <div className="font-black text-[#07152c]">Your Aerotech workspace includes</div>
+              <div className="font-black text-[#07152c]">Available according to your company plan</div>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                {["Recruitment & applicant tracking","Employee 360 workforce management","Attendance & leave","Training & L&D","Payroll & statutory compliance","Payroll wallet & payment workflow","Documents & performance","Aerotech AI"].map((item) => (
+                {["Recruitment & applicant tracking","Employee 360 workforce management","Attendance & leave","Training & L&D","Payroll preparation & payslips","Salary transfers: provider activation required","Documents & performance","Document expiry & review tracking"].map((item) => (
                   <div key={item} className="flex gap-2 text-sm text-slate-600">
                     <CheckCircle2 className="shrink-0 text-[#2563eb]" size={17} />{item}
                   </div>
@@ -113,7 +112,7 @@ export default function EmployerSignupPage() {
           </form>
           <div className="mt-5 text-center text-sm text-slate-500">
             Already have an account?{" "}
-            <Link href="/auth/login" className="font-bold text-[#2563eb]">Sign in</Link>
+            <Link onClick={e=>{const next=new URLSearchParams(window.location.search).get("next");if(next){e.preventDefault();window.location.assign("/auth/login?"+new URLSearchParams({role:"employer",next:safeReturnTo(next,"employer")}))}}} href="/auth/login?role=employer" className="font-bold text-[#2563eb]">Sign in</Link>
           </div>
         </div>
       </div>

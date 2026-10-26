@@ -10,28 +10,28 @@ test("employer signup is reachable from the home page", () => {
 });
 
 test("job seekers can reach the jobs page", () => {
-  assert.match(read("src/components/aerotech-portal.tsx"), /href="\/jobs"/);
+  assert.match(read("src/components/aerotech-portal.tsx"), /href="\/careers"/);
   assert.ok(existsSync(new URL("../src/app/jobs/page.tsx", import.meta.url)));
 });
 
 test("home links to dedicated solutions and the shared navigation serves every audience", () => {
   assert.match(read("src/app/page.tsx"), /href="\/solutions"/);
   const solutions=read("src/app/solutions/page.tsx");
-  for(const module of ["Recruitment","Learning","Attendance","Payroll","compliance"]) assert.ok(solutions.toLowerCase().includes(module.toLowerCase()));
+  for(const feature of ["Recruitment","Learning","Attendance","Payroll","compliance"]) assert.ok(solutions.toLowerCase().includes(feature.toLowerCase()));
   const nav=read("src/components/site-navigation.tsx");
   for(const portal of ["/dashboard","/employee","/applicant"]) assert.ok(nav.includes(portal));
 });
 
 test("unknown job IDs do not display another vacancy", () => {
-  const details = read("src/app/jobs/[id]/page.tsx");
-  assert.match(details, /if \(!job\) notFound\(\)/);
+  const details = read("src/app/careers/[id]/page.tsx");
+  assert.match(details, /if\(!job\)notFound\(\)/);
   assert.doesNotMatch(details, /\?\? jobs\[0\]/);
 });
 
-test("jobs require a registered applicant session", () => {
-  const gate = read("src/app/jobs/layout.tsx");
+test("job details require a registered applicant session", () => {
+  const gate = read("src/app/careers/[id]/page.tsx");
   assert.match(gate, /currentApplicant/);
-  assert.match(gate, /redirect\("\/careers"\)/);
+  assert.match(gate, /redirect\(loginUrl\('applicant'/);
 });
 
 test("applicant registration is free and submits to backend", () => {

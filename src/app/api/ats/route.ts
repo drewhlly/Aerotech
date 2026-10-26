@@ -11,9 +11,10 @@ const bad=(error:string,status=400)=>NextResponse.json({error},{status});
 export async function GET(request:Request){
  const view=new URL(request.url).searchParams.get('view');
  const employer=view==='employer'?await currentEmployer():null;
- const applicant=view==='applicant'?await currentApplicant():null;
+ const applicant=view!=='employer'?await currentApplicant():null;
  if(view==='employer'&&!employer||view==='applicant'&&!applicant)return bad('Sign in required',401);
  const pool=db();try{
+ if(!employer&&!applicant){const r=await pool.query("SELECT j.id,j.title,j.location,j.country,j.employment_type,e.company_name FROM ats_jobs j JOIN employer_accounts e ON e.id=j.employer_id WHERE j.status='open' ORDER BY j.created_at DESC");return NextResponse.json({jobs:r.rows,applications:[]})}
  const jobs=await pool.query(`SELECT j.*,e.company_name FROM ats_jobs j JOIN employer_accounts e ON e.id=j.employer_id WHERE ${employer?'j.employer_id=$1':"j.status='open'"} ORDER BY j.created_at DESC`,employer?[employer]:[]);
  if(!employer)for(const j of jobs.rows)j.questions=j.questions.map((q:Question)=>({prompt:q.prompt,options:q.options}));
  let applications:Record<string,unknown>[]=[];

@@ -1,0 +1,9 @@
+import RecruitmentWorkspace from '@/components/recruitment-workspace';
+import WorkspaceShell from '@/components/workspace-shell';
+import {notFound,redirect} from 'next/navigation';
+import {publicJobs} from '@/lib/public-jobs';
+import {currentApplicant} from '@/lib/applicant-session';
+import {pageMetadata,siteUrl} from '@/lib/seo';
+import {loginUrl} from '@/lib/auth-navigation';
+export async function generateMetadata({params}:{params:Promise<{id:string}>}){const {id}=await params;return pageMetadata('Job details','Read the full role description and assessment in your Aerotech applicant account. Applications are free, and your CV is shared only with your chosen employer.','/careers/'+id,false)}
+export default async function Page({params}:{params:Promise<{id:string}>}){const {id}=await params;if(!/^[0-9a-f-]{36}$/i.test(id))notFound();if(!await currentApplicant())redirect(loginUrl('applicant','/careers/'+id));const {jobs,unavailable}=await publicJobs();if(unavailable)throw Error('Job data unavailable');const job=jobs.find(j=>j.id===id);if(!job)notFound();const type:Record<string,string>={'Full-time':'FULL_TIME','Part-time':'PART_TIME',Contract:'CONTRACTOR',Internship:'INTERN'};const schema={'@context':'https://schema.org','@type':'JobPosting',title:job.title,description:job.description+'\n'+job.requirements,datePosted:new Date(job.created_at).toISOString(),hiringOrganization:{'@type':'Organization',name:job.company_name},jobLocation:{'@type':'Place',address:{'@type':'PostalAddress',addressLocality:job.location,addressCountry:job.country}},...(type[job.employment_type]?{employmentType:type[job.employment_type]}:{}),url:new URL('/careers/'+id,siteUrl).href};return <WorkspaceShell role="applicant"><script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(schema).replace(/</g,'\u003c')}}/><RecruitmentWorkspace mode="jobs" jobId={id}/></WorkspaceShell>}

@@ -56,16 +56,16 @@ export function PublicNav() {
         <Logo />
 
         <nav className="hidden items-center gap-7 lg:flex">
-          <Link href="/jobs" className="text-sm font-medium text-slate-600 hover:text-blue-700">Find jobs</Link>
+          <Link href="/careers" className="text-sm font-medium text-slate-600 hover:text-blue-700">Find jobs</Link>
           <Link href="/auth/login?role=employee" className="text-sm font-medium text-slate-600 hover:text-blue-700">For employees</Link>
-          <Link href="/solutions" className="text-sm font-medium text-slate-600 hover:text-blue-700">For companies</Link>
+          <Link href="/auth/signup/employer" className="text-sm font-medium text-slate-600 hover:text-blue-700">For companies</Link>
           <Link href="/pricing" className="text-sm font-medium text-slate-600 hover:text-blue-700">Company plans</Link>
           <Link href="/support" className="text-sm font-medium text-slate-600 hover:text-blue-700">Support</Link>
         </nav>
 
         <div className="hidden items-center gap-3 sm:flex">
           <Link
-            href="/#sign-in"
+            href="/auth/login"
             className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100"
           >
             Sign in
@@ -81,7 +81,8 @@ export function PublicNav() {
         <button
           onClick={() => setOpen(!open)}
           className="rounded-lg p-2 lg:hidden"
-          aria-label="Open navigation"
+          aria-label={open?"Close navigation":"Open navigation"}
+          aria-expanded={open} aria-controls="public-mobile-menu"
         >
           {open ? <X /> : <Menu />}
         </button>
@@ -90,10 +91,10 @@ export function PublicNav() {
       <nav id="sign-in" aria-label="Portal sign in" className="border-t border-slate-100 bg-slate-50/80"><div className="mx-auto grid max-w-7xl grid-cols-3 gap-2 px-4 py-2 sm:px-5">{(['employer','employee','applicant'] as const).map(role=><Link key={role} href={'/auth/login?role='+role} className="rounded-lg px-2 py-2 text-center text-xs font-semibold text-blue-700 hover:bg-blue-50 sm:text-sm"><span className="capitalize">{role}</span> sign in</Link>)}</div></nav>
 
       {open && (
-        <div className="border-t border-slate-200 bg-white px-5 py-5 lg:hidden">
+        <div id="public-mobile-menu" onClick={()=>setOpen(false)} className="border-t border-slate-200 bg-white px-5 py-5 lg:hidden">
           <div className="grid gap-3">
-            <Link href="/auth/signup/applicant" className="rounded-lg p-3 hover:bg-slate-50">Applicant signup</Link><Link href="/pricing" className="rounded-lg p-3 hover:bg-slate-50">Pricing</Link><Link href="/jobs" className="rounded-lg p-3 hover:bg-slate-50">
-              Find Jobs
+            <Link href="/auth/signup/applicant" className="rounded-lg p-3 hover:bg-slate-50">Applicant signup</Link><Link href="/pricing" className="rounded-lg p-3 hover:bg-slate-50">Pricing</Link><Link href="/careers" className="rounded-lg p-3 hover:bg-slate-50">
+              Find jobs
             </Link>
             <Link href="/solutions" className="rounded-lg p-3 hover:bg-slate-50">
               Solutions
