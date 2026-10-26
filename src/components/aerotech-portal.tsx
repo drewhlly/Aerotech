@@ -99,7 +99,7 @@ export function PublicNav() {
             <Link href="/solutions" className="rounded-lg p-3 hover:bg-slate-50">
               Solutions
             </Link>
-            <Link href="/auth/login?role=employee" className="rounded-lg p-3 hover:bg-slate-50">Employee sign in</Link>
+            <Link href="/support" className="rounded-lg p-3 hover:bg-slate-50">Support</Link><Link href="/auth/signup/employer" className="rounded-lg p-3 hover:bg-slate-50">For companies</Link><Link href="/auth/login?role=employee" className="rounded-lg p-3 hover:bg-slate-50">Employee sign in</Link>
             <Link href="/auth/login?role=applicant" className="rounded-lg p-3 hover:bg-slate-50">Applicant sign in</Link>
             <Link href="/auth/login?role=employer" className="rounded-lg p-3 hover:bg-slate-50">Employer sign in</Link>
             <Link
