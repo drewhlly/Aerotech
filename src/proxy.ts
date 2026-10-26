@@ -17,4 +17,4 @@ export function proxy(req:NextRequest){
  }
  return forward(req)
 }
-export const config={matcher:['/api/:path*','/','/dashboard/:path*','/employee/:path*','/applicant/:path*','/admin/:path*','/auth/:path*','/pricing/checkout','/careers/:path*']};
+export const config={matcher:['/api/:path*','/','/dashboard/:path*','/employee/:path*','/applicant/:path*','/admin/:path*','/auth/:path*','/pricing/checkout','/careers/:path*','/meet/:path*','/aerochat/:path*','/billing','/support-console/:path*']};

@@ -1,4 +1,6 @@
 "use client";
+import {useRouter} from 'next/navigation';
+
 
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
@@ -21,7 +23,7 @@ const fields = [
 type FieldName = (typeof fields)[number]["name"];
 type FormValues = Record<FieldName, string>;
 
-export default function EmployerSignupPage() {
+export default function EmployerSignupPage() {const router=useRouter();
   const [values, setValues] = useState<FormValues>({
     companyName: "", companyEmail: "", firstName: "", lastName: "",
     phone: "", country: "Nigeria", password: "",
@@ -112,7 +114,7 @@ export default function EmployerSignupPage() {
           </form>
           <div className="mt-5 text-center text-sm text-slate-500">
             Already have an account?{" "}
-            <Link onClick={e=>{const next=new URLSearchParams(window.location.search).get("next");if(next){e.preventDefault();window.location.assign("/auth/login?"+new URLSearchParams({role:"employer",next:safeReturnTo(next,"employer")}))}}} href="/auth/login?role=employer" className="font-bold text-[#2563eb]">Sign in</Link>
+            <Link onClick={e=>{const next=new URLSearchParams(window.location.search).get("next");if(next){e.preventDefault();router.replace("/auth/login?"+new URLSearchParams({role:"employer",next:safeReturnTo(next,"employer")}))}}} href="/auth/login?role=employer" className="font-bold text-[#2563eb]">Sign in</Link>
           </div>
         </div>
       </div>

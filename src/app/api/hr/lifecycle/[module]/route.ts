@@ -13,15 +13,15 @@ type Module=keyof typeof modules;
 function selected(raw:string):Module|null{return Object.prototype.hasOwnProperty.call(modules,raw)?raw as Module:null;}
 export async function GET(_:Request,{params}:{params:Promise<{module:string}>}){
  const employer=await currentEmployer();if(!employer)return NextResponse.json({error:"Unauthorized"},{status:401});
- const module=selected((await params).module);if(!module)return NextResponse.json({error:"Unknown module"},{status:404});
- const pool=db();try{const r=await pool.query(`SELECT x.* FROM ${modules[module].table} x WHERE x.employer_id=$1 ORDER BY x.created_at DESC LIMIT 200`,[employer]);return NextResponse.json({records:r.rows});}catch{return NextResponse.json({error:"Records unavailable"},{status:503});}finally{await pool.end();}
+ const workflowModule=selected((await params).module);if(!workflowModule)return NextResponse.json({error:"Unknown module"},{status:404});
+ const pool=db();try{const r=await pool.query(`SELECT x.* FROM ${modules[workflowModule].table} x WHERE x.employer_id=$1 ORDER BY x.created_at DESC LIMIT 200`,[employer]);return NextResponse.json({records:r.rows});}catch{return NextResponse.json({error:"Records unavailable"},{status:503});}finally{await pool.end();}
 }
 export async function POST(req:Request,{params}:{params:Promise<{module:string}>}){
  const employer=await currentEmployer();if(!employer)return NextResponse.json({error:"Unauthorized"},{status:401});
- const module=selected((await params).module);if(!module)return NextResponse.json({error:"Unknown module"},{status:404});
+ const workflowModule=selected((await params).module);if(!workflowModule)return NextResponse.json({error:"Unknown module"},{status:404});
  let body:Record<string,unknown>;try{body=await req.json();}catch{return NextResponse.json({error:"Invalid JSON"},{status:400});}
  if(typeof body.employeeId!=="string")return NextResponse.json({error:"Employee required"},{status:400});
- const cfg=modules[module],fields=[...cfg.fields] as string[];
+ const cfg=modules[workflowModule],fields=[...cfg.fields] as string[];
  for(const key of fields){const value=body[key];if(value!=null&&typeof value!=="string"&&!(key==="rating"&&Number.isInteger(value)))return NextResponse.json({error:"Invalid field "+key},{status:400});if(typeof value==="string"&&value.length>2000)return NextResponse.json({error:"Field too long"},{status:400});}
  for(const key of cfg.required){if(!String(body[key]||"").trim())return NextResponse.json({error:key+" required"},{status:400});}
  if(body.due_date&&!/^\d{4}-\d{2}-\d{2}$/.test(String(body.due_date)))return NextResponse.json({error:"Invalid date"},{status:400});
@@ -31,7 +31,7 @@ export async function POST(req:Request,{params}:{params:Promise<{module:string}>
  const pool=db();try{
  const names=["id","employer_id","employee_id",...fields],values=[randomUUID(),employer,body.employeeId,...fields.map(f=>body[f]===''?null:body[f]??null)];
  const columns=names.join(","),placeholders=names.map((_,i)=>"$"+(i+1)).join(",");
- const r=await pool.query(`WITH saved AS (INSERT INTO ${cfg.table}(${columns}) SELECT ${placeholders} FROM workforce_employees WHERE id=$3 AND employer_id=$2 RETURNING id,employer_id,employee_id) INSERT INTO employee_notifications(id,employer_id,employee_id,title,body) SELECT id,employer_id,employee_id,'New ${module} record','HR has shared a new ${module} record. Open your workspace to review it.' FROM saved RETURNING id`,values);
+ const r=await pool.query(`WITH saved AS (INSERT INTO ${cfg.table}(${columns}) SELECT ${placeholders} FROM workforce_employees WHERE id=$3 AND employer_id=$2 RETURNING id,employer_id,employee_id) INSERT INTO employee_notifications(id,employer_id,employee_id,title,body) SELECT id,employer_id,employee_id,'New ${workflowModule} record','HR has shared a new ${workflowModule} record. Open your workspace to review it.' FROM saved RETURNING id`,values);
  if(!r.rowCount)return NextResponse.json({error:"Employee not found"},{status:404});
  return NextResponse.json({id:r.rows[0].id},{status:201});
  }catch{return NextResponse.json({error:"Could not save record"},{status:503});}finally{await pool.end();}

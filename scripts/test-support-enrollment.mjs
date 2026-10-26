@@ -1,5 +1,5 @@
-import {createRequire} from 'node:module';
-import {fileURLToPath,pathToFileURL} from 'node:url';
+import { createRequire } from 'node:module';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import path from 'node:path';
 import os from 'node:os';
 const deps=process.env.SUPPORT_TEST_DEPENDENCIES;
@@ -7,11 +7,11 @@ if(!deps)throw Error('Set SUPPORT_TEST_DEPENDENCIES to a temporary npm project c
 const load=createRequire(path.resolve(deps,'package.json'));
 const {PGlite}=await import(pathToFileURL(load.resolve('@electric-sql/pglite')).href);
 const {createServer}=await import(pathToFileURL(load.resolve('pglite-server')).href);
-import {spawn} from 'node:child_process';
-import {randomUUID,randomBytes,scryptSync,createHash} from 'node:crypto';
+import { spawn } from 'node:child_process';
+import { randomBytes } from 'node:crypto';
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
-import {encryptTotp,totp} from '../src/lib/support-security.ts';
+import { totp } from '../src/lib/support-security.ts';
 const root=fileURLToPath(new URL('../',import.meta.url));
 const db=new PGlite();await db.waitReady;const server=createServer(db,{logLevel:0});await new Promise(r=>server.listen(55439,'127.0.0.1',r));
 process.env.SUPPORT_MFA_ENCRYPTION_KEY=randomBytes(32).toString('hex');

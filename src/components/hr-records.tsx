@@ -1,6 +1,6 @@
 "use client";
 import {DashboardShell,PageHeader} from "@/components/aerotech-ui";
-import {useEffect,useState,type FormEvent} from "react";
+import {useCallback,useEffect,useState,type FormEvent} from "react";
 
 const configs={
  assets:{title:"Employee assets",api:"assets",fields:[["name","Asset name"],["serial_number","Serial number"],["notes","Notes"]]},
@@ -11,8 +11,8 @@ export default function Records({module}:{module:keyof typeof configs}){
  const c=configs[module];const [employees,setEmployees]=useState<Array<{id:string;first_name:string;last_name:string}>>([]);
  const [rows,setRows]=useState<Array<Record<string,unknown>>>([]),[values,setValues]=useState<Record<string,string>>({});
  const [error,setError]=useState(""),[busy,setBusy]=useState(false);
- async function load(){try{const r=await fetch("/api/hr/"+c.api);const data=await r.json();if(!r.ok)throw Error(data.error||"Failed to load");setRows(data.records||[]);}catch(e){setError(e instanceof Error?e.message:"Failed to load");}}
- useEffect(()=>{void load();fetch("/api/employees").then(r=>r.json()).then(d=>setEmployees(d.employees||[])).catch(()=>{});},[module]);
+ const load=useCallback(async()=>{try{const r=await fetch("/api/hr/"+c.api);const data=await r.json();if(!r.ok)throw Error(data.error||"Failed to load");setRows(data.records||[]);}catch(e){setError(e instanceof Error?e.message:"Failed to load");}},[c.api]);
+ useEffect(()=>{void Promise.resolve().then(()=>{void load();fetch("/api/employees").then(r=>r.json()).then(d=>setEmployees(d.employees||[])).catch(()=>{});});},[load]);
  async function submit(e:FormEvent){e.preventDefault();setBusy(true);setError("");try{
  const r=await fetch("/api/hr/"+c.api,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(values)});const d=await r.json();if(!r.ok)throw Error(d.error||"Unable to save");
  setValues({});await load();

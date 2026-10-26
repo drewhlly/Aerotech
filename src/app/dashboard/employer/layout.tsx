@@ -1,3 +1,5 @@
+import {workspaceMetadata} from '@/lib/route-metadata';
+export const generateMetadata=workspaceMetadata;
 import {loginUrl} from '@/lib/auth-navigation';
 import {headers} from 'next/headers';import {planAllows,requiredPlan} from '@/lib/plan-access';
 import WorkspaceShell from "@/components/workspace-shell";

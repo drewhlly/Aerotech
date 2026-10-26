@@ -1,3 +1,5 @@
+import {workspaceMetadata} from '@/lib/route-metadata';
+export const generateMetadata=workspaceMetadata;
 import WorkspaceShell from '@/components/workspace-shell';
 import {currentApplicant} from '@/lib/applicant-session';
 import {currentEmployee} from '@/lib/employee-auth';import {currentEmployer} from '@/lib/employer-session';import {redirect} from 'next/navigation';

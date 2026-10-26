@@ -1,7 +1,7 @@
 "use client";
 import BirthdayTomorrow from "@/components/birthday-tomorrow";
-import {useEffect,useState} from "react";
-import Link from "next/link";
+import { useEffect, useState } from "react";
+
 type B={first_name:string;last_name:string;department:string;birthday:string};
 type Alert={first_name:string;last_name:string;notified_at:string};
 export default function Page(){

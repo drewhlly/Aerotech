@@ -1,7 +1,7 @@
 "use client";
-import {useState,type FormEvent} from "react";
-import Link from "next/link";
-import {profileSections} from "@/lib/employee-profile-fields";
+import { useState, type FormEvent } from "react";
+
+import { profileSections } from "@/lib/employee-profile-fields";
 export default function ImportEmployees(){
  function template(){const headers=['first_name','last_name','email','job_title','department','phone','location','line_manager_email',...profileSections.flatMap(s=>s.fields.filter(([f])=>f!=='lineManager').map(([f])=>s.key+'.'+f))];const blob=new Blob([headers.join(',')+'\n'],{type:'text/csv'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='aerotech-employee-import.csv';a.click();URL.revokeObjectURL(url);}
 

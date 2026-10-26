@@ -1,1 +1,1 @@
-export {default} from '../meet/layout';
+export {default,generateMetadata} from '../meet/layout';

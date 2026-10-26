@@ -1,116 +1,17 @@
 "use client";
 
-import Link from "next/link";
+
 import WorkspaceShell from "./workspace-shell";
 import BrandLogo from "./brand-logo";
-import { usePathname } from "next/navigation";
+
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import {
-  Activity,
-  ClipboardList,
-  Package,
-  Scale,
-  Target,
-  ListChecks,
-  BarChart3,
-  Bell,
-  Bot,
-  BriefcaseBusiness,
-  Building2,
-  CalendarCheck2,
-  CheckCircle2,
-  ChevronDown,
-  CircleDollarSign,
-  ClipboardCheck,
-  Clock3,
-  FileText,
-  GraduationCap,
-  Headphones,
-  LayoutDashboard,
-  Menu,
-  MessageCircle,
-  PieChart,
-  Receipt,
-  Search,
-  Settings,
-  ShieldCheck,
-  Sparkles,
-  UserRound,
-  Users,
-  Wallet,
-  X,
-  ArrowLeft,
-  LogOut,
-} from "lucide-react";
+
+import { Sparkles, X } from "lucide-react";
 
 
 export function Logo({compact=false,light=false}:{compact?:boolean;light?:boolean}){return <BrandLogo compact={compact} light={light}/>;}
 
-const navigation = [
-  {
-    title: "COMMAND CENTER",
-    items: [
-      { label: "Dashboard", href: "/dashboard/employer", icon: LayoutDashboard },
-      { label: "AI Assistant", href: "/dashboard/employer/ai", icon: Bot },
-      { label: "Aerotech Meet", href: "/meet", icon: MessageCircle },
-    ],
-  },
-  {
-    title: "PEOPLE",
-    items: [
-      { label: "Employees", href: "/dashboard/employer/employees", icon: Users },
-      { label: "Contact Support", href: "/support", icon: Headphones },
-      { label: "Birthdays", href: "/dashboard/employer/hr/birthdays", icon: CalendarCheck2 },
-      { label: "Departments & Managers", href: "/dashboard/employer/hr/departments", icon: Building2 },
-      { label: "Recruitment", href: "/dashboard/employer/recruitment", icon: BriefcaseBusiness },
-      { label: "Onboarding", href: "/dashboard/employer/onboarding", icon: UserRound },
-      { label: "Documents", href: "/dashboard/employer/documents", icon: FileText },
-      { label: "Employee Assets", href: "/dashboard/employer/hr/assets", icon: Package },
-      { label: "Employee Requests", href: "/dashboard/employer/requests", icon: ClipboardList },
-    ],
-  },
-  {
-    title: "WORKFORCE",
-    items: [
-      { label: "Attendance", href: "/dashboard/employer/attendance", icon: CalendarCheck2 },
-      { label: "Leave", href: "/dashboard/employer/attendance/leave", icon: Clock3 },
-      { label: "Shifts", href: "/dashboard/employer/attendance/shifts", icon: ClipboardCheck },
-      { label: "Shift Assignments", href: "/dashboard/employer/hr/shifts", icon: ClipboardCheck },
-      { label: "Training", href: "/dashboard/employer/training", icon: GraduationCap },
-      { label: "Performance", href: "/dashboard/employer/performance", icon: Activity },
-      { label: "Goals & OKRs", href: "/dashboard/employer/hr/goals", icon: Target },
-      { label: "Pulse Surveys", href: "/dashboard/employer/hr/surveys", icon: ListChecks },
-      { label: "Attendance Register", href: "/dashboard/employer/hr/attendance", icon: CalendarCheck2 },
-      { label: "Geofenced Attendance", href: "/dashboard/employer/hr/attendance/verification", icon: ShieldCheck },
-    ],
-  },
-  {
-    title: "COMPENSATION",
-    items: [
-      { label: "Payroll", href: "/dashboard/employer/payroll", icon: CircleDollarSign },
-      { label: "Payroll Wallet", href: "/dashboard/employer/payroll/wallet", icon: Wallet },
-      { label: "Payslips", href: "/dashboard/employer/payroll/payslips", icon: Receipt },
-    ],
-  },
-  {
-    title: "INSIGHTS",
-    items: [
-      { label: "Reports", href: "/dashboard/employer/compliance/reports", icon: BarChart3 },
-      { label: "Analytics", href: "/dashboard/employer/compliance/reports", icon: PieChart },
-      { label: "Compliance", href: "/dashboard/employer/compliance", icon: ShieldCheck },
-    ],
-  },
-  {
-    title: "SETTINGS",
-    items: [
-      { label: "Payroll Settings", href: "/dashboard/employer/payroll/settings", icon: Settings },
-      { label: "Payroll Approvers", href: "/dashboard/employer/payroll/approvers", icon: ShieldCheck },
-      { label: "HR Tasks", href: "/dashboard/employer/hr/tasks", icon: ClipboardCheck },
-      { label: "Disciplinary Cases", href: "/dashboard/employer/hr/disciplinary", icon: Scale },
-    ],
-  },
-];
+
 
 export function DashboardShell({children,title}:{children:React.ReactNode;title?:string}){return <WorkspaceShell role="employer" title={title}>{children}</WorkspaceShell>}
 
@@ -281,47 +182,4 @@ export function AIAssistant() {
   );
 }
 
-export function PublicNav() {
-  return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#07111f]/90 backdrop-blur-xl">
-      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 lg:px-8">
-        <Link href="/">
-          <Logo light />
-        </Link>
-
-        <nav className="hidden items-center gap-7 lg:flex">
-          <a href="#platform" className="text-sm text-slate-300 hover:text-white">
-            Platform
-          </a>
-          <a href="#workforce" className="text-sm text-slate-300 hover:text-white">
-            Workforce
-          </a>
-          <a href="#payroll" className="text-sm text-slate-300 hover:text-white">
-            Payroll
-          </a>
-          <a href="#ai" className="text-sm text-slate-300 hover:text-white">
-            AI
-          </a>
-          <a href="#pricing" className="text-sm text-slate-300 hover:text-white">
-            Pricing
-          </a>
-        </nav>
-
-        <div className="flex items-center gap-2">
-          <Link
-            href="/auth/login"
-            className="hidden rounded-xl px-4 py-2.5 text-sm font-semibold text-white hover:bg-white/5 sm:block"
-          >
-            Sign in
-          </Link>
-          <Link
-            href="/auth/signup/employer"
-            className="rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-slate-950 shadow-lg shadow-cyan-500/10 transition hover:bg-slate-100"
-          >
-            Get started
-          </Link>
-        </div>
-      </div>
-    </header>
-  );
-}
+export {PublicNav} from './aerotech-portal';
