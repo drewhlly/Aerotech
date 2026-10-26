@@ -66,7 +66,7 @@ export default function EmployerSignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F8FA]">
+    <main className="min-h-screen bg-[#F5F8FA]">
       <div className="mx-auto max-w-6xl px-5 py-8">
 
         <div className="mx-auto mt-10 max-w-3xl rounded-3xl border border-slate-200 bg-white p-7 shadow-sm sm:p-10">
@@ -116,6 +116,6 @@ export default function EmployerSignupPage() {
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

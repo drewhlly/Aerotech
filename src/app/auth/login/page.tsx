@@ -29,7 +29,7 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F8FA]">
+    <main className="min-h-screen bg-[#F5F8FA]">
       <div className="mx-auto flex min-h-screen max-w-6xl items-center px-5 py-10">
         <div className="grid w-full overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl lg:grid-cols-2">
           <div className="hidden bg-[#07152c] p-10 text-white lg:block">
@@ -56,7 +56,7 @@ function LoginForm() {
               Sign in to your dedicated Aerotech portal.
             </p>
 
-            <nav aria-label="Choose sign-in role" className="mt-7 grid grid-cols-3 gap-2">{(['employer','employee','applicant'] as const).map(option=><Link key={option} href={'/auth/login?'+new URLSearchParams({role:option,...(search.get('next')?{next:safeReturnTo(search.get('next'),option)}:{})})} aria-current={role===option?'page':undefined} className={'rounded-lg px-2 py-3 text-center text-xs font-semibold '+(role===option?'bg-blue-700 text-white':'bg-slate-100 text-slate-700')}><span className="capitalize">{option}</span> sign in</Link>)}</nav>{role==='employee'&&<p className="mt-4 text-sm text-slate-600">Employee access is by employer invitation. Ask HR for your activation link.</p>}
+            <nav aria-label="Choose sign-in role" className="mt-7 grid grid-cols-3 gap-2">{(['employer','employee','applicant'] as const).map(option=><Link key={option} onClick={()=>{setError('');setPassword('')}} href={'/auth/login?'+new URLSearchParams({role:option,...(search.get('next')?{next:safeReturnTo(search.get('next'),option)}:{})})} aria-current={role===option?'page':undefined} className={'rounded-lg px-2 py-3 text-center text-xs font-semibold '+(role===option?'bg-blue-700 text-white':'bg-slate-100 text-slate-700')}><span className="capitalize">{option}</span> sign in</Link>)}</nav>{role==='employee'&&<p className="mt-4 text-sm text-slate-600">Employee access is by employer invitation. Ask HR for your activation link.</p>}
 
             <form
               className="mt-7 space-y-4"
@@ -112,7 +112,7 @@ function LoginForm() {
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
 
