@@ -1,106 +1,206 @@
-# Aerotech public-route audit
+# Aerotech audit and QA report
 
-Status: implementation and automated verification in progress. Final evidence is recorded in the release section below.
+The complete reproduced bug table is in [audit-bugs.md](audit-bugs.md). The 1,488-row baseline is in [audit-route-baseline.csv](audit-route-baseline.csv); all 88 original lint findings are listed in [audit-lint-baseline.json](audit-lint-baseline.json).
 
-## Scope and design decisions
+Review: https://github.com/drewhlly/Aerotech/pull/24
 
-- `/careers` is the public canonical jobs list. `/jobs` and legacy detail links return a permanent 308 redirect. Full details and applying require an applicant session. Public API responses contain summaries only.
-- The list uses ItemList structured data. JobPosting is limited to the signed-in single-job page, where its description is visible. This intentionally gated page is not eligible for Google job rich results; public full descriptions would be needed for that.
-- Auth, recovery, help and private job-detail pages intentionally use noindex. Metadata descriptions are 140–160 characters; canonical recovery URLs exclude tokens.
-- Online subscription checkout remains disabled until a live Paystack merchant key is configured. Supported published prices are NGN and USD; other regional currencies clearly require a quote.
-- Contacts reuse the existing Aerotech business email and phone, normalised to +234. Email ownership, phone reachability and recovery-email inbox delivery were not independently verified.
-- CSP retains inline script/style allowance for Next.js static hydration. It blocks object embedding, framing and unapproved third-party scripts; it is not a nonce-based strict CSP. Existing in-app meetings retain their configured domain permissions.
-- ESLint was previously empty. Real Next.js/TypeScript checks now run; legacy compiler/style findings are warnings so this audit does not require unrelated portal rewrites.
+## Verification evidence
 
-## Verification
+- Local build, strict zero-warning lint, TypeScript and 32 smoke tests passed before the workspace became unavailable.
+- Local isolated PGlite accounts and real PostgreSQL in CI were used; test accounts never used production data.
+- The baseline covered 124 page routes (72 employer pages) and 86 API routes, four roles and 360/768/1280 widths: 1,488 page checks and 334 API checks.
+- Local browser checks confirmed the country hydration fix, dashboard loading/error/save feedback, corrected vacancy scoping and POST native form fallback.
+- All 51 public route/breakpoint checks passed locally, including keyboard navigation, WCAG AA checks, recovery, ticket submission and checkout return paths.
+- Final verification for the recovered commit runs in GitHub CI; consult the PR checks for its exact result.
+- Baseline artifact: https://github.com/drewhlly/Aerotech/actions/runs/40303139712/artifacts/12641996778
 
-- Production webpack build and TypeScript: passed locally.
-- Unit/smoke tests: 32 passed.
-- Current project-source credential pattern scan: no private-key, provider-key, GitHub-token or external database-password matches. This is not a full git-history or dependency secret audit.
-- CI uses disposable PostgreSQL and generated passwords; no production payments or real user credentials are used.
-- Every listed public/auth route is checked at 360, 768 and 1280 pixels for metadata, overflow, visible images, keyboard navigation and working mobile navigation.
-- Public-page links are resolved with no accidental redirect chains; solution CTAs preserve their intended protected destination through login.
-- Signed-in checks cover each role, tenant isolation, wrong-password validation, toggles/loading, checkout returns, support ticket confirmation and single-use recovery/session invalidation.
-- Automated WCAG AA checks and Lighthouse mobile reports are attached to the GitHub signed-in workflow artifact `public-route-audit`. Scores are lab measurements, not field Core Web Vitals.
+### Lighthouse mobile lab results
+
+| Page | Performance | Accessibility | Best practices | SEO |
+| --- | ---: | ---: | ---: | ---: |
+| / | 99 | 100 | 100 | 100 |
+| /careers | 100 | 100 | 100 | 100 |
+| /pricing | 98 | 100 | 100 | 100 |
+| /solutions | 98 | 100 | 100 | 100 |
+| /support | 99 | 100 | 100 | 100 |
+| /help | 98 | 100 | 100 | 69 |
+| /auth/login | 97 | 100 | 100 | 69 |
+
+Help/auth are intentionally noindex; their SEO crawlability deduction is expected. These are local lab results, not production field Core Web Vitals.
+
+## Design decisions and verification limits
+
+- Employee routes are /employee/*; applicant routes are /applicant/*, rather than nonexistent /dashboard/employee/* or /dashboard/applicant/*.
+- Public careers summaries use ItemList. JobPosting belongs to the authenticated single-job page. Login-gated full descriptions are not eligible for Google job rich results.
+- Online checkout remains unavailable until a live Paystack merchant key is configured. No real payment was executed.
+- Camera face matching, real meeting media, email inbox delivery and phone reachability were not verified against live providers. They are not presented as activated capabilities.
+- CSP retains inline script/style allowance for Next.js static hydration; it is not a nonce-based strict CSP.
+- The current-source credential-pattern scan found no provider secret, private key, GitHub token or external database password. This is not a complete git-history or dependency audit.
+- The original workspace disconnected during final checks. Recovered changes were preserved on GitHub and are revalidated through CI. Post-release visual inspection depends on a restored browser/workspace.
+- Automated crawling records every route and API boundary. State/action tests cover shared dashboard families and core signed-in workflows, not every possible conditional button/data combination.
 
 ## Manual QA checklist
 
-- [ ] Open `/`, `/careers`, `/pricing`, `/solutions`, `/support` and `/help`; confirm titles, layout and destination links.
-- [ ] Open each `/auth/*` route and each `?role=` option; confirm invitation guidance, validation, show/hide password and recovery links.
-- [ ] Use Tab/Enter on the header, role chooser, mobile menu and primary actions; confirm visible focus and no hidden menu focus.
-- [ ] Change billing country to Nigeria, United States and an unpriced country; reload and check persistence, currency and quote text.
-- [ ] Check basic/professional/business checkout, enterprise sales and invalid plans; confirm signup/login preserves the selected plan.
-- [ ] Visit a solution workspace while signed out, and while signed into a different role; confirm login `next` and HTTP 403 respectively.
-- [ ] Submit a ticket in a test account and confirm its success message and saved entry.
-- [ ] Confirm the public careers empty state and an open job’s applicant-only full details.
-- [ ] Trigger 404 and a server failure in a non-production environment; confirm safe home/retry links.
+- [ ] Check home, careers, pricing, solutions, support/help and every auth entry at 360/768/1280.
+- [ ] Tab through header, mobile menu, role chooser and forms; confirm focus visibility, labels and password toggles.
+- [ ] Check the server-rendered sign-in form and no-JavaScript notice; ensure sensitive forms use POST.
+- [ ] Switch Nigeria/United States/unpriced countries, reload and confirm persistence and clear quote/coming-soon states.
+- [ ] Check basic/professional/business/enterprise and invalid checkout parameters; preserve selected plan through signup/login.
+- [ ] Open each workspace logged out and as the wrong role; confirm login next and HTTP 403 rather than a crash.
+- [ ] Check CV/CSV uploads, saved records, download exports, NGN/date displays and tenant isolation with test accounts.
+- [ ] Hold/fail requests, provide empty data and save a record; distinguish loading, empty, error and success states.
+- [ ] Check vacancy/candidate detail links display only the selected record.
+- [ ] Submit and read a test ticket; test expired and reused recovery tokens.
+- [ ] Verify custom 404 and a safe error boundary in a non-production environment.
 
 ## File-by-file changes
 
 | File | Change |
 | --- | --- |
-| `.github/workflows/ci.yml` | Run lint, responsive route/auth journeys, axe and Lighthouse; retain QA evidence artifacts. |
-| `.github/workflows/signed-in-verification.yml` | Run lint, responsive route/auth journeys, axe and Lighthouse; retain QA evidence artifacts. |
-| `database/036_password_recovery.sql` | Store hashed, expiring, single-use recovery tokens with account throttling index. |
-| `eslint.config.mjs` | Enable actual Next.js and TypeScript linting; retain documented legacy findings as warnings. |
-| `next.config.ts` | 308 careers redirects and CSP, framing, referrer, content-type and device permission headers. |
-| `scripts/migrate.mjs` | Include additive password-recovery migration. |
-| `scripts/verify-public-routes.mjs` | Verify listed routes, breakpoints, links, keyboard/accessibility, auth, billing, tickets, recovery and Lighthouse. |
-| `scripts/verify-signed-in.mjs` | Update canonical careers paths, coming-soon billing expectations and real 403 checks; generate test passwords. |
-| `src/app/api/ats/route.ts` | Return public job summaries; require an applicant session for full details and assessments. |
-| `src/app/api/auth/password/route.ts` | Secure role-specific recovery emails and token consumption, throttling and session invalidation. |
-| `src/app/api/billing/route.ts` | Reject checkout initialisation when live billing is unavailable. |
-| `src/app/applicant/layout.tsx` | Preserve protected destination when a session expires; retain server-side authorisation. |
-| `src/app/auth/activate/layout.tsx` | Unique route metadata, canonical/social tags and appropriate indexing controls. |
-| `src/app/auth/forgot-password/page.tsx` | Metadata and accessible recovery form entry point. |
-| `src/app/auth/login/layout.tsx` | Unique route metadata, canonical/social tags and appropriate indexing controls. |
-| `src/app/auth/login/page.tsx` | Working role chooser, accessible field labels, safe return paths, error/loading/toggle controls and recovery link. |
-| `src/app/auth/reset-password/page.tsx` | Metadata and accessible recovery form entry point. |
-| `src/app/auth/signup/applicant/layout.tsx` | Unique route metadata, canonical/social tags and appropriate indexing controls. |
-| `src/app/auth/signup/applicant/page.tsx` | Password toggle and canonical role-safe post-registration destination. |
-| `src/app/auth/signup/employee/layout.tsx` | Unique route metadata, canonical/social tags and appropriate indexing controls. |
-| `src/app/auth/signup/employee/page.tsx` | Dedicated invitation guidance and employee sign-in link instead of misleading self-registration. |
-| `src/app/auth/signup/employer/layout.tsx` | Unique route metadata, canonical/social tags and appropriate indexing controls. |
-| `src/app/auth/signup/employer/page.tsx` | Preserve chosen checkout, use shared countries/password toggle and remove unsupported feature promises. |
-| `src/app/auth/signup/layout.tsx` | Unique route metadata, canonical/social tags and appropriate indexing controls. |
-| `src/app/auth/signup/page.tsx` | Correct three-audience signup choices and invitation-only employee guidance. |
-| `src/app/billing/page.tsx` | Disable unavailable checkout, retain country/plan selection and offer a sales contact. |
-| `src/app/careers/[id]/page.tsx` | Gate single-job details by applicant session, validate vacancy IDs and add truthful JobPosting data. |
-| `src/app/careers/page.tsx` | Render indexable job summaries, real availability/empty states and ItemList data on the server. |
-| `src/app/dashboard/employer/layout.tsx` | Preserve protected destination when a session expires; retain server-side authorisation. |
-| `src/app/employee/layout.tsx` | Preserve protected destination when a session expires; retain server-side authorisation. |
-| `src/app/error.tsx` | Safe custom error/access pages with home, retry or correct-role actions. |
-| `src/app/forbidden/page.tsx` | Safe custom error/access pages with home, retry or correct-role actions. |
-| `src/app/global-error.tsx` | Safe custom error/access pages with home, retry or correct-role actions. |
-| `src/app/globals.css` | Visible keyboard focus, skip link and safe content wrapping. |
-| `src/app/help/page.tsx` | Public sign-in guidance or authenticated ticket form, without unauthorised fetch errors. |
-| `src/app/jobs/[id]/page.tsx` | Keep legacy jobs addresses as permanent canonical careers redirects. |
-| `src/app/jobs/layout.tsx` | Keep legacy jobs addresses as permanent canonical careers redirects. |
-| `src/app/jobs/page.tsx` | Keep legacy jobs addresses as permanent canonical careers redirects. |
-| `src/app/layout.tsx` | Metadata defaults, favicon, UK language and keyboard skip-to-content target. |
-| `src/app/not-found.tsx` | Safe custom error/access pages with home, retry or correct-role actions. |
-| `src/app/page.tsx` | Unique home metadata and remove duplicate role-sign-in CTA set. |
-| `src/app/pricing/checkout/page.tsx` | Validate plans and preserve chosen country/plan through authentication; handle coming-soon and enterprise sales. |
-| `src/app/pricing/layout.tsx` | Unique pricing metadata and canonical/social tags. |
-| `src/app/pricing/page.tsx` | Pass safe server-side live-billing availability to the pricing interface. |
-| `src/app/robots.ts` | Publish crawl rules and canonical public-page sitemap. |
-| `src/app/sitemap.ts` | Publish crawl rules and canonical public-page sitemap. |
-| `src/app/solutions/page.tsx` | Unique metadata; preserve explicit current capability and provider limitations. |
-| `src/app/support/page.tsx` | Unique metadata, business-contact config and working email/international telephone actions. |
-| `src/components/aerotech-portal.tsx` | Consistent careers/company/sign-in links, complete mobile menu and close-on-navigation behaviour. |
-| `src/components/brand-logo.tsx` | Use next/image with dimensions while retaining the existing brand asset. |
-| `src/components/country-select.tsx` | One disabled placeholder, deduplicated countries and code values for stable billing selection. |
-| `src/components/password-recovery.tsx` | Accessible request/reset forms with loading, errors, password toggle and confirmation. |
-| `src/components/pricing-page.tsx` | Persist country/currency, remove duplicate country options, align plan actions and expose honest payment status. |
-| `src/components/recruitment-workspace.tsx` | Use canonical careers links throughout recruitment and applicant navigation. |
-| `src/components/site-navigation.tsx` | Public header on careers list; avoid duplicate headers in the applicant job-detail workspace. |
-| `src/components/workspace-shell.tsx` | Use canonical careers links throughout recruitment and applicant navigation. |
-| `src/lib/auth-navigation.ts` | Validate same-origin, role-scoped return destinations and build safe login links. |
-| `src/lib/countries.ts` | One disabled placeholder, deduplicated countries and code values for stable billing selection. |
-| `src/lib/portal-routing.ts` | Protect careers details while keeping the canonical careers list public. |
-| `src/lib/public-jobs.ts` | Server-only public job query with explicit availability handling. |
-| `src/lib/seo.ts` | Reusable unique titles, descriptions, canonical/social tags and recovery-safe referrer policy. |
-| `src/lib/support-contact.ts` | Centralise public support email/phone with environment overrides and +234 normalisation. |
-| `src/proxy.ts` | Early role-cookie routing checks, clean 403 response for cross-portal access and trusted request-path headers. |
-| `tests/launch-smoke.test.mjs` | Update canonical-route and applicant-detail protection expectations. |
-| `tests/portal-automation.test.mjs` | Update canonical-route and applicant-detail protection expectations. |
+| `.github/workflows/ci.yml` | Enforce lint/type/build checks and run disposable role, route, state, accessibility and Lighthouse verification. |
+| `.github/workflows/signed-in-verification.yml` | Enforce lint/type/build checks and run disposable role, route, state, accessibility and Lighthouse verification. |
+| `database/036_password_recovery.sql` | Hashed, expiring, single-use password recovery tokens. |
+| `docs/audit-bugs.md` | Audit evidence, findings or verification/file summary. |
+| `docs/audit-lint-baseline.json` | Audit evidence, findings or verification/file summary. |
+| `docs/audit-route-baseline.csv` | Audit evidence, findings or verification/file summary. |
+| `docs/public-route-audit.md` | Audit evidence, findings or verification/file summary. |
+| `eslint.config.mjs` | Enable real Next.js/TypeScript lint checks. |
+| `next.config.ts` | Canonical redirects and security/permissions headers. |
+| `package.json` | Declare ESM and make lint fail on warnings. |
+| `scripts/migrate.mjs` | Migration or reproducible disposable QA coverage. |
+| `scripts/test-support-enrollment.mjs` | Migration or reproducible disposable QA coverage. |
+| `scripts/test-support-flow.mjs` | Migration or reproducible disposable QA coverage. |
+| `scripts/verify-dashboard-states.mjs` | Migration or reproducible disposable QA coverage. |
+| `scripts/verify-public-routes.mjs` | Migration or reproducible disposable QA coverage. |
+| `scripts/verify-route-crawl.mjs` | Migration or reproducible disposable QA coverage. |
+| `scripts/verify-signed-in.mjs` | Migration or reproducible disposable QA coverage. |
+| `src/app/admin/page.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/app/aerochat/layout.tsx` | Route metadata, role-aware navigation/access checks or safe return destinations. |
+| `src/app/aerochat/page.tsx` | Role-appropriate access, data fetching and return navigation. |
+| `src/app/api/ats/route.ts` | Public summaries only; authenticated full details and assessments. |
+| `src/app/api/auth/password/route.ts` | Secure password recovery, account throttling and session invalidation. |
+| `src/app/api/billing/route.ts` | Disable initialisation when real billing is unavailable. |
+| `src/app/api/cron/payslip-notices/route.ts` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/app/api/hr/attendance/faces/route.ts` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/app/api/hr/lifecycle/[module]/route.ts` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/app/api/payroll/payments/connection/route.ts` | Limit provider-status access to administrator or assigned CEO. |
+| `src/app/applicant/layout.tsx` | Route metadata, role-aware navigation/access checks or safe return destinations. |
+| `src/app/auth/activate/layout.tsx` | Route metadata, role-aware navigation/access checks or safe return destinations. |
+| `src/app/auth/activate/page.tsx` | Server-rendered/accessible authentication, recovery, invitation guidance or safe POST fallback. |
+| `src/app/auth/forgot-password/page.tsx` | Server-rendered/accessible authentication, recovery, invitation guidance or safe POST fallback. |
+| `src/app/auth/login/layout.tsx` | Route metadata, role-aware navigation/access checks or safe return destinations. |
+| `src/app/auth/login/page.tsx` | Server-rendered/accessible authentication, recovery, invitation guidance or safe POST fallback. |
+| `src/app/auth/reset-password/page.tsx` | Server-rendered/accessible authentication, recovery, invitation guidance or safe POST fallback. |
+| `src/app/auth/signup/applicant/layout.tsx` | Route metadata, role-aware navigation/access checks or safe return destinations. |
+| `src/app/auth/signup/applicant/page.tsx` | Server-rendered/accessible authentication, recovery, invitation guidance or safe POST fallback. |
+| `src/app/auth/signup/employee/layout.tsx` | Route metadata, role-aware navigation/access checks or safe return destinations. |
+| `src/app/auth/signup/employee/page.tsx` | Server-rendered/accessible authentication, recovery, invitation guidance or safe POST fallback. |
+| `src/app/auth/signup/employer/layout.tsx` | Route metadata, role-aware navigation/access checks or safe return destinations. |
+| `src/app/auth/signup/employer/page.tsx` | Server-rendered/accessible authentication, recovery, invitation guidance or safe POST fallback. |
+| `src/app/auth/signup/layout.tsx` | Route metadata, role-aware navigation/access checks or safe return destinations. |
+| `src/app/auth/signup/page.tsx` | Server-rendered/accessible authentication, recovery, invitation guidance or safe POST fallback. |
+| `src/app/billing/layout.tsx` | Route metadata, role-aware navigation/access checks or safe return destinations. |
+| `src/app/billing/page.tsx` | Clear availability, validated plan/country selection, real sales CTA and aligned price layout. |
+| `src/app/careers/[id]/page.tsx` | Public indexable summaries, protected details and canonical legacy redirects. |
+| `src/app/careers/page.tsx` | Public indexable summaries, protected details and canonical legacy redirects. |
+| `src/app/dashboard/employer/ai/page.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/app/dashboard/employer/employees/import/page.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/app/dashboard/employer/employees/new/page.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/app/dashboard/employer/employees/page.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/app/dashboard/employer/exits/page.tsx` | Access/assignment checks, explicit loading and mutation feedback. |
+| `src/app/dashboard/employer/hr/attendance/verification/page.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/app/dashboard/employer/hr/birthdays/page.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/app/dashboard/employer/hr/departments/page.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/app/dashboard/employer/hr/shifts/page.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/app/dashboard/employer/hr/surveys/page.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/app/dashboard/employer/layout.tsx` | Route metadata, role-aware navigation/access checks or safe return destinations. |
+| `src/app/dashboard/employer/notifications/page.tsx` | Access/assignment checks, explicit loading and mutation feedback. |
+| `src/app/dashboard/employer/payroll/approvers/page.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/app/dashboard/employer/payroll/run/page.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/app/dashboard/employer/payroll/setup/page.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/app/dashboard/employer/payroll/wallet/page.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/app/dashboard/employer/recruitment/candidates/[id]/assessment/page.tsx` | Scope jobs, candidates, offers and detail views to the requested route. |
+| `src/app/dashboard/employer/recruitment/candidates/[id]/interviews/page.tsx` | Scope jobs, candidates, offers and detail views to the requested route. |
+| `src/app/dashboard/employer/recruitment/candidates/[id]/offer/page.tsx` | Scope jobs, candidates, offers and detail views to the requested route. |
+| `src/app/dashboard/employer/recruitment/candidates/[id]/page.tsx` | Scope jobs, candidates, offers and detail views to the requested route. |
+| `src/app/dashboard/employer/recruitment/candidates/page.tsx` | Scope jobs, candidates, offers and detail views to the requested route. |
+| `src/app/dashboard/employer/recruitment/jobs/[id]/page.tsx` | Scope jobs, candidates, offers and detail views to the requested route. |
+| `src/app/dashboard/employer/recruitment/jobs/page.tsx` | Scope jobs, candidates, offers and detail views to the requested route. |
+| `src/app/dashboard/employer/recruitment/offers/page.tsx` | Scope jobs, candidates, offers and detail views to the requested route. |
+| `src/app/dashboard/employer/requests/page.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/app/employee/attendance/page.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/app/employee/birthdays/page.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/app/employee/layout.tsx` | Route metadata, role-aware navigation/access checks or safe return destinations. |
+| `src/app/employee/notifications/page.tsx` | Access/assignment checks, explicit loading and mutation feedback. |
+| `src/app/employee/page.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/app/employee/payroll/approvals/page.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/app/employee/payroll/payments/page.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/app/employee/payroll/statements/page.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/app/employee/surveys/page.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/app/employee/vacancy-approvals/page.tsx` | Access/assignment checks, explicit loading and mutation feedback. |
+| `src/app/error.tsx` | Safe error/access UI with home, retry or role-selection actions. |
+| `src/app/forbidden/page.tsx` | Safe error/access UI with home, retry or role-selection actions. |
+| `src/app/global-error.tsx` | Safe error/access UI with home, retry or role-selection actions. |
+| `src/app/globals.css` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/app/help/page.tsx` | Working support access, contact configuration or safe ticket form handling. |
+| `src/app/jobs/[id]/page.tsx` | Public indexable summaries, protected details and canonical legacy redirects. |
+| `src/app/jobs/layout.tsx` | Route metadata, role-aware navigation/access checks or safe return destinations. |
+| `src/app/jobs/page.tsx` | Public indexable summaries, protected details and canonical legacy redirects. |
+| `src/app/layout.tsx` | Route metadata, role-aware navigation/access checks or safe return destinations. |
+| `src/app/meet/layout.tsx` | Route metadata, role-aware navigation/access checks or safe return destinations. |
+| `src/app/meet/page.tsx` | Role-appropriate access, data fetching and return navigation. |
+| `src/app/not-found.tsx` | Safe error/access UI with home, retry or role-selection actions. |
+| `src/app/page.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/app/pricing/checkout/page.tsx` | Clear availability, validated plan/country selection, real sales CTA and aligned price layout. |
+| `src/app/pricing/layout.tsx` | Route metadata, role-aware navigation/access checks or safe return destinations. |
+| `src/app/pricing/page.tsx` | Clear availability, validated plan/country selection, real sales CTA and aligned price layout. |
+| `src/app/robots.ts` | Unique title/description, canonical/social/crawl metadata. |
+| `src/app/sitemap.ts` | Unique title/description, canonical/social/crawl metadata. |
+| `src/app/solutions/page.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/app/support-console/enroll/page.tsx` | Working support access, contact configuration or safe ticket form handling. |
+| `src/app/support-console/layout.tsx` | Route metadata, role-aware navigation/access checks or safe return destinations. |
+| `src/app/support-console/login/page.tsx` | Working support access, contact configuration or safe ticket form handling. |
+| `src/app/support-console/page.tsx` | Working support access, contact configuration or safe ticket form handling. |
+| `src/app/support/page.tsx` | Working support access, contact configuration or safe ticket form handling. |
+| `src/app/support/tickets/page.tsx` | Working support access, contact configuration or safe ticket form handling. |
+| `src/components/aerotech-portal.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/components/aerotech-ui.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/components/aerotech-workforce-os.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/components/brand-logo.tsx` | Optimised image with explicit dimensions and the existing brand. |
+| `src/components/candidate-import.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/components/company-feedback.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/components/country-select.tsx` | Stable country labels, deduplicated options and consistent billing-country values. |
+| `src/components/document-submissions.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/components/employee-learning.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/components/employee-lifecycle.tsx` | Loading/empty/error/save states, stable callbacks and safe POST fallback. |
+| `src/components/employee-profile-workspace.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/components/help-desk.tsx` | Working support access, contact configuration or safe ticket form handling. |
+| `src/components/hr-records.tsx` | Loading/empty/error/save states, stable callbacks and safe POST fallback. |
+| `src/components/hr-workflow.tsx` | Loading/empty/error/save states, stable callbacks and safe POST fallback. |
+| `src/components/live-reports.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/components/login-form.tsx` | Server-rendered/accessible authentication, recovery, invitation guidance or safe POST fallback. |
+| `src/components/password-input.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/components/password-recovery.tsx` | Server-rendered/accessible authentication, recovery, invitation guidance or safe POST fallback. |
+| `src/components/payroll-payments.tsx` | Access/assignment checks, explicit loading and mutation feedback. |
+| `src/components/pricing-page.tsx` | Clear availability, validated plan/country selection, real sales CTA and aligned price layout. |
+| `src/components/recruitment-detail.tsx` | Tenant-scoped record lookup and malformed/unknown ID handling. |
+| `src/components/recruitment-workspace.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/components/salary-bands.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/components/site-navigation.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/components/staff-confirmations.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/components/support-workspace.tsx` | Working support access, contact configuration or safe ticket form handling. |
+| `src/components/vacancy-approvals.tsx` | Access/assignment checks, explicit loading and mutation feedback. |
+| `src/components/workflow-workspace.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/components/workspace-shell.tsx` | Resolve reproduced lint/react findings, correct navigation/copy or secure native form submission. |
+| `src/lib/auth-navigation.ts` | Early role checks, HTTP 403 responses and validated return paths. |
+| `src/lib/countries.ts` | Stable country labels, deduplicated options and consistent billing-country values. |
+| `src/lib/portal-routing.ts` | Early role checks, HTTP 403 responses and validated return paths. |
+| `src/lib/public-jobs.ts` | Public indexable summaries, protected details and canonical legacy redirects. |
+| `src/lib/regional-pricing.ts` | Stable country labels, deduplicated options and consistent billing-country values. |
+| `src/lib/route-metadata.ts` | Unique title/description, canonical/social/crawl metadata. |
+| `src/lib/seo.ts` | Unique title/description, canonical/social/crawl metadata. |
+| `src/lib/subscriptions.ts` | Clear availability, validated plan/country selection, real sales CTA and aligned price layout. |
+| `src/lib/support-contact.ts` | Working support access, contact configuration or safe ticket form handling. |
+| `src/proxy.ts` | Early role checks, HTTP 403 responses and validated return paths. |
+| `tests/launch-smoke.test.mjs` | Update canonical-route and applicant access regression expectations. |
+| `tests/portal-automation.test.mjs` | Update canonical-route and applicant access regression expectations. |

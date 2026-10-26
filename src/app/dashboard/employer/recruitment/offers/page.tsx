@@ -1,2 +1,2 @@
 import RecruitmentWorkspace from '@/components/recruitment-workspace';
-export default function Page(){return <RecruitmentWorkspace/>}
+export default function Page(){return <RecruitmentWorkspace view="offers"/>}

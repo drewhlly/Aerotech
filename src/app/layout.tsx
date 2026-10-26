@@ -11,7 +11,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en-GB">
-      <body><a className="skip-link" href="#main-content">Skip to content</a><div id="main-content" tabIndex={-1}><SiteNavigation>{children}</SiteNavigation></div></body>
+      <body><noscript><p className="bg-amber-50 px-5 py-3 text-sm text-amber-950">Enable JavaScript to submit forms and use workspace tools. Contact support if a form cannot load.</p></noscript><a className="skip-link" href="#main-content">Skip to content</a><div id="main-content" tabIndex={-1}><SiteNavigation>{children}</SiteNavigation></div></body>
     </html>
   );
 }

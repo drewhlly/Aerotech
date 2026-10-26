@@ -75,7 +75,7 @@ export default function EmployerSignupPage() {const router=useRouter();
           <div className="text-sm font-black uppercase tracking-widest text-[#2563eb]">Employer setup</div>
           <h1 className="mt-3 text-3xl font-black text-[#07152c] sm:text-4xl">Build your workforce on Aerotech.</h1>
           <p className="mt-3 text-slate-500">Create your company account, choose a plan and activate paid services when live billing is available.</p>
-          <form onSubmit={submit}>
+          <form method="post" onSubmit={submit}>
             <div className="mt-8 grid gap-4 sm:grid-cols-2">
               {fields.map((field) => (
                 <label key={field.name} className={field.name === "password" ? "sm:col-span-2" : ""}>

@@ -82,7 +82,7 @@ export default function PricingPage({billingLive}:{billingLive:boolean}) {
                   </p>
 
                   <div className="mt-6">
-                    <div className="text-3xl font-bold text-slate-950">
+                    <div className="text-2xl font-bold tabular-nums text-slate-950">
                       {planId === "enterprise" ? "Contact sales" : displayRegionalPrice(regionalPrice(plan, country))}
                     </div>
 
