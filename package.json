@@ -9,7 +9,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --max-warnings=0",
-    "db:migrate": "node scripts/migrate.mjs"
+    "db:migrate": "node scripts/migrate.mjs",
+    "test:collaboration:db": "node --import ./tests/helpers/ts-loader.mjs tests/collaboration-db.integration.mjs",
+    "test:collaboration:api": "node --experimental-test-module-mocks --import ./tests/helpers/ts-loader.mjs tests/collaboration-api.integration.mjs",
+    "test:collaboration:browser": "node scripts/phase2-browser-suite.mjs"
   },
   "repository": {
     "type": "git",
@@ -34,6 +37,9 @@
     "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
+    "@electric-sql/pglite": "^0.5.12",
+    "@electric-sql/pglite-socket": "^0.2.15",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "^26.2.0",
     "@types/pg": "^8.11.11",
@@ -41,9 +47,10 @@
     "@types/react-dom": "^19.2.4",
     "eslint": "^9.39.5",
     "eslint-config-next": "^16.3.1",
+    "lighthouse": "^13.5.0",
+    "playwright": "1.64.1",
     "tailwindcss": "^4.3.3",
-    "typescript": "^6.0.3",
-    "playwright": "1.64.1"
+    "typescript": "^6.0.3"
   },
   "type": "module"
 }

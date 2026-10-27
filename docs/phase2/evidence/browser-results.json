@@ -1,0 +1,64 @@
+{
+  "origin": "http://127.0.0.1:3100",
+  "fixtureType": "Throwaway database, mock employees; no production services",
+  "staffCount": 1000,
+  "projectFixture": "b43cd093-bd5a-4929-a861-944feb6a231c",
+  "results": [
+    {
+      "name": "Public homepage and real logo render, employee and applicant sign-ins remain visible",
+      "status": "pass"
+    },
+    {
+      "name": "Sign-in refresh keeps separate roles and password visibility",
+      "status": "pass"
+    },
+    {
+      "name": "axe WCAG 2.2 AA /",
+      "status": "pass"
+    },
+    {
+      "name": "axe WCAG 2.2 AA /auth/login?role=applicant",
+      "status": "pass"
+    },
+    {
+      "name": "Employer project create and Kanban task flow persists through API and database",
+      "status": "pass"
+    },
+    {
+      "name": "Meeting picker pages a thousand staff and group chips stay bounded",
+      "status": "pass"
+    },
+    {
+      "name": "Employer uploads an encrypted document and the browser shows quarantine status",
+      "status": "pass"
+    },
+    {
+      "name": "Employer isolation and axe /dashboard/employer/projects",
+      "status": "pass"
+    },
+    {
+      "name": "Employer isolation and axe /dashboard/employer/meet",
+      "status": "pass"
+    },
+    {
+      "name": "Employer isolation and axe /dashboard/employer/documents",
+      "status": "pass"
+    },
+    {
+      "name": "Employee sees shared project only and is blocked from employer portal",
+      "status": "pass"
+    },
+    {
+      "name": "Mobile employee tasks page has no horizontal overflow",
+      "status": "pass"
+    },
+    {
+      "name": "Applicant cannot access collaboration API or employer pages",
+      "status": "pass"
+    },
+    {
+      "name": "Admin audit renders and employee cannot call its API",
+      "status": "pass"
+    }
+  ]
+}

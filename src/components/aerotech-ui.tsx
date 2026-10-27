@@ -30,7 +30,7 @@ export function PageHeader({
     <div className="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
       <div>
         {eyebrow && (
-          <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-[#6366F1]">
+          <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-[#4338CA]">
             {eyebrow}
           </div>
         )}

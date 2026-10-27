@@ -1,0 +1,53 @@
+{
+  "environment": "Local production build; synthetic data; mobile simulated throttling",
+  "scores": [
+    {
+      "page": "home",
+      "url": "http://127.0.0.1:3100/",
+      "performance": 98,
+      "accessibility": 100,
+      "best-practices": 100,
+      "seo": 100
+    },
+    {
+      "page": "login",
+      "url": "http://127.0.0.1:3100/auth/login?role=applicant",
+      "performance": 99,
+      "accessibility": 100,
+      "best-practices": 100,
+      "seo": 100
+    },
+    {
+      "page": "projects",
+      "url": "http://127.0.0.1:3100/dashboard/employer/projects",
+      "performance": 99,
+      "accessibility": 100,
+      "best-practices": 100,
+      "seo": 69
+    },
+    {
+      "page": "meetings",
+      "url": "http://127.0.0.1:3100/dashboard/employer/meet",
+      "performance": 98,
+      "accessibility": 100,
+      "best-practices": 96,
+      "seo": 69
+    },
+    {
+      "page": "documents",
+      "url": "http://127.0.0.1:3100/dashboard/employer/documents",
+      "performance": 97,
+      "accessibility": 100,
+      "best-practices": 100,
+      "seo": 69
+    },
+    {
+      "page": "employee-tasks",
+      "url": "http://127.0.0.1:3100/employee/tasks",
+      "performance": 99,
+      "accessibility": 100,
+      "best-practices": 100,
+      "seo": 69
+    }
+  ]
+}

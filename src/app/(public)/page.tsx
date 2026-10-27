@@ -1,20 +1,423 @@
-import {pageMetadata} from '@/lib/seo';
-export const metadata=pageMetadata('Home','Find your next role, manage your workday, or bring your team together. Aerotech connects applicants, employees and organisations with clear, practical HR tools.','/');
-import Link from 'next/link';
-import {organisationSchema} from '@/lib/organisation';
-import {ArrowRight,BriefcaseBusiness,UserRound,Building2,Check,Compass,MessagesSquare,CalendarDays} from 'lucide-react';
-const audiences=[
- {label:'Looking for your next role?',title:'Find your opportunity.',text:'Discover roles, share your experience and follow every step of your application.',href:'/careers',action:'Explore jobs',secondary:'/auth/signup/applicant',secondaryLabel:'Create a free account',Icon:Compass,color:'bg-blue-50 text-blue-700'},
- {label:'Already part of a team?',title:'Make work feel connected.',text:'Your payslips, leave, documents, learning and company updates, together in your workspace.',href:'/auth/login?role=employee',action:'Employee sign in',secondary:'/support',secondaryLabel:'Need help getting access?',Icon:UserRound,color:'bg-violet-50 text-violet-700'},
- {label:'Building a great team?',title:'Bring your people together.',text:'Connect recruitment and people operations, from the first application to everyday work.',href:'/auth/signup/employer',action:'Create a company account',secondary:'/solutions',secondaryLabel:'Explore company solutions',Icon:Building2,color:'bg-teal-50 text-teal-700'},
+import Link from "next/link";
+import {
+  ArrowRight,
+  BriefcaseBusiness,
+  UserRound,
+  Building2,
+  Check,
+  Compass,
+  CalendarDays,
+  FileText,
+  Layers3,
+  ShieldCheck,
+  Wallet,
+  MessageSquareText,
+} from "lucide-react";
+import { pageMetadata } from "@/lib/seo";
+import { organisationSchema } from "@/lib/organisation";
+export const metadata = pageMetadata(
+  "Home",
+  "Find your next role, manage your workday and bring your people together. Explore dedicated Aerotech workspaces for applicants, employees and companies.",
+  "/",
+);
+const audiences = [
+  {
+    label: "For applicants",
+    title: "Your next opportunity.",
+    text: "Explore roles, upload your CV and follow your application from one place.",
+    href: "/careers",
+    action: "Explore jobs",
+    secondary: "/auth/signup/applicant",
+    secondaryLabel: "Create a free account",
+    Icon: Compass,
+  },
+  {
+    label: "For employees",
+    title: "Your everyday workspace.",
+    text: "Your payslips, leave, documents and company updates, ready when you need them.",
+    href: "/auth/login?role=employee",
+    action: "Employee sign in",
+    secondary: "/support",
+    secondaryLabel: "Get help with access",
+    Icon: UserRound,
+  },
+  {
+    label: "For employers",
+    title: "Your people, connected.",
+    text: "Bring recruitment, employee records and everyday people operations together.",
+    href: "/auth/signup/employer",
+    action: "Create a company account",
+    secondary: "/solutions",
+    secondaryLabel: "Explore company solutions",
+    Icon: Building2,
+  },
 ];
-export default function Home(){return <main className="bg-white text-[#07152c]"><script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(organisationSchema).replace(/</g,'\\u003c')}}/>
- <section className="bg-gradient-to-b from-[#eef5ff] to-white px-5 pb-12 pt-14 sm:px-8 sm:pt-20"><div className="mx-auto max-w-7xl"><div className="mx-auto max-w-3xl text-center"><p className="text-xs font-bold uppercase tracking-[.24em] text-blue-600">People. Performance. Progress.</p><h1 className="mt-5 text-4xl font-bold leading-[1.12] tracking-tight sm:text-6xl">Opportunity starts with people.<br/><span className="text-blue-600">So does better work.</span></h1><p className="mx-auto mt-6 max-w-xl text-base leading-7 text-slate-600 sm:text-lg">Find your next role. Make the most of your workday. Build a team that moves forward together.</p></div>
- <div className="mt-8 flex flex-wrap justify-center gap-3"><Link href="/careers" className="aero-button bg-blue-700 text-white">Find your next role</Link><Link href="/auth/signup/employer" className="aero-button border border-slate-300 bg-white text-slate-900">Build your team</Link></div><div className="mt-10 flex flex-wrap justify-center gap-x-8 gap-y-3 border-y border-slate-200 py-5 text-sm text-slate-600"><span>Free applicant accounts</span><span>Employer-invited employee access</span><span>Dedicated role-based workspaces</span></div><section className="py-12"><h2 className="text-center text-2xl font-bold">A clear way forward</h2><ol className="mt-6 grid gap-5 md:grid-cols-3">{[['Choose your path','Explore jobs, join your company workspace or set up your organisation.'],['Bring the right information','Share your experience or organise your team’s records with authorised access.'],['Follow what comes next','Track applications, complete assigned tasks and keep everyday work moving.']].map(([title,text],i)=><li key={title} className="aero-card"><span className="text-sm font-bold text-blue-700">0{i+1}</span><h3 className="mt-3 font-bold">{title}</h3><p className="mt-3 text-sm leading-7 text-slate-600">{text}</p></li>)}</ol></section><div id="choose-your-path" className="mt-10 grid scroll-mt-28 gap-5 lg:grid-cols-3">{audiences.map(({label,title,text,href,action,secondary,secondaryLabel,Icon,color})=><article key={title} className="flex flex-col rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_12px_40px_rgba(7,21,44,.04)] sm:p-7"><div className={'mb-5 flex h-12 w-12 items-center justify-center rounded-2xl '+color}><Icon size={24}/></div><p className="text-xs font-semibold text-slate-500">{label}</p><h2 className="mt-2 text-2xl font-bold tracking-tight">{title}</h2><p className="mb-6 mt-3 text-sm leading-7 text-slate-600">{text}</p><Link href={href} className="mt-auto flex min-h-12 items-center justify-between gap-3 rounded-xl bg-[#07152c] px-4 py-3 text-sm font-semibold text-white">{action}<ArrowRight size={17}/></Link><Link className="mt-4 text-center text-xs font-semibold text-blue-700" href={secondary}>{secondaryLabel}</Link></article>)}</div>
- <p className="mt-6 text-center text-xs leading-6 text-slate-500">Applicants join free. Employees access their company workspace by invitation. Company subscriptions fund the platform.</p></div></section>
- <section className="mx-auto grid max-w-7xl gap-10 px-6 py-16 md:grid-cols-[.8fr_1.2fr] md:items-center"><div><p className="text-xs font-bold uppercase tracking-widest text-blue-600">Your journey, connected</p><h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">More clarity.<br/>At every step.</h2><p className="mt-5 text-sm leading-7 text-slate-600">Different goals. One shared experience. Aerotech gives each person a clear place to start and a clear view of what comes next.</p><Link href="/solutions" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-blue-700">Discover what you can do <ArrowRight size={16}/></Link></div><div className="space-y-4">{[[BriefcaseBusiness,'From application to decision','Submit your experience, complete assessments, plan interviews and see feedback in your recruitment planner.'],[CalendarDays,'From your first day to your daily routine','Keep track of assigned learning, documents, leave requests, approved payslips and company notices.'],[MessagesSquare,'From feedback to a better workplace','Participate in pulse surveys and share anonymous feedback about your company.']].map(([Icon,title,text])=>{const I=Icon as typeof BriefcaseBusiness;return <article key={String(title)} className="flex gap-4 rounded-2xl border border-slate-200 p-5"><I className="mt-1 shrink-0 text-blue-600" size={22}/><div><h3 className="font-bold">{String(title)}</h3><p className="mt-2 text-sm leading-7 text-slate-600">{String(text)}</p></div></article>})}</div></section>
- <section className="bg-[#07152c] px-6 py-16 text-white"><div className="mx-auto grid max-w-7xl gap-8 md:grid-cols-2 md:items-center"><div><p className="text-xs font-bold uppercase tracking-widest text-cyan-200">A shared foundation</p><h2 className="mt-4 text-3xl font-bold">One brand. Familiar tools.<br/>A workspace for you.</h2><p className="mt-5 max-w-xl text-sm leading-7 text-slate-300">Move between the moments that matter with consistent navigation and access suited to your role.</p></div><ul className="grid gap-4 sm:grid-cols-2">{['Free applicant accounts','Employer-invited employee access','Private document sharing','HR-managed employee records'].map(t=><li key={t} className="flex gap-3 rounded-xl border border-white/15 p-4 text-sm"><Check className="shrink-0 text-cyan-200" size={18}/>{t}</li>)}</ul></div></section>
- <section className="bg-slate-50 px-6 py-16"><div className="mx-auto max-w-7xl"><p className="text-sm font-semibold text-blue-700">For growing organisations</p><h2 className="mt-3 text-3xl font-bold">Choose the tools your team needs.</h2><p className="mt-4 max-w-2xl leading-7 text-slate-600">Compare Basic, Professional and Business plans. Applicants and invited employees are not charged. Billing availability is stated before checkout.</p><Link className="aero-button mt-6 bg-blue-700 text-white" href="/pricing">Compare company plans</Link></div></section><section className="mx-auto max-w-4xl px-6 py-16"><h2 className="text-3xl font-bold">A few things to know</h2>{[['Is Aerotech only for employers?','No. Applicants can explore roles and follow their applications, while employees manage their workday in an employer-invited workspace.'],['Can I register as an employee?','Your employer creates your record and sends an activation invitation. Job seekers can create their own free applicant account.'],['Are all services activated?','Some services depend on company configuration or external providers. Unavailable payment, camera-matching and conferencing services are labelled before use.']].map(([q,a])=><details key={q} className="border-b py-5"><summary className="min-h-11 cursor-pointer font-semibold">{q}</summary><p className="py-3 leading-7 text-slate-600">{a}</p></details>)}</section>
- <section className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-6 px-6 py-14"><div><h2 className="text-2xl font-bold">Where would you like to go next?</h2><p className="mt-3 text-sm text-slate-600">Your next opportunity or your everyday workspace is a click away.</p></div><div className="flex flex-wrap gap-3"><Link href="/careers" className="aero-button bg-blue-600 text-white">Find opportunities</Link><Link href="/auth/login" className="aero-button border border-slate-200">Sign in to your workspace</Link></div></section>
-
- </main>}
+export default function Home() {
+  return (
+    <main className="bg-white text-[#06163F]">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(organisationSchema).replace(/</g, "\\u003c"),
+        }}
+      />
+      <section className="relative overflow-hidden border-b border-slate-200 bg-[#f5f8ff] px-5 py-14 sm:px-8 sm:py-20">
+        <div
+          className="pointer-events-none absolute -right-32 top-0 h-[540px] w-[540px] rounded-full border-[75px] border-blue-100/50"
+          aria-hidden="true"
+        />
+        <div className="relative mx-auto grid max-w-7xl gap-12 lg:grid-cols-[1.15fr_.85fr] lg:items-center">
+          <div>
+            <p className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white px-3 py-2 text-xs font-semibold text-blue-900">
+              <span className="h-2 w-2 rounded-full bg-blue-700" />
+              Built around the people behind the work
+            </p>
+            <h1 className="mt-7 max-w-3xl text-[42px] font-semibold leading-[1.08] tracking-[-.04em] sm:text-6xl xl:text-[72px]">
+              Your next role.
+              <br />
+              Your best team.
+              <br />
+              <span className="text-blue-700">A better workday.</span>
+            </h1>
+            <p className="mt-6 max-w-lg text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
+              Good work starts with a clear path. Find your opportunity, connect
+              with your company or bring your people together.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                href="/careers"
+                className="aero-button bg-[#06163F] text-white hover:bg-blue-800"
+              >
+                Find your next role <ArrowRight size={17} />
+              </Link>
+              <Link
+                href="/auth/signup/employer"
+                className="aero-button border border-slate-300 bg-white"
+              >
+                Build your team
+              </Link>
+            </div>
+            <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-xs text-slate-600">
+              <span className="inline-flex items-center gap-2">
+                <Check size={15} />
+                Free applicant accounts
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <Check size={15} />
+                Company-sponsored employee access
+              </span>
+            </div>
+          </div>
+          <div className="rounded-[26px] border border-slate-200 bg-white p-6 shadow-[0_20px_65px_#06163f0b] sm:p-8">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-5">
+              <span className="text-sm font-semibold">
+                A little more clarity.
+              </span>
+              <Layers3 size={20} className="text-blue-700" />
+            </div>
+            <h2 className="mt-6 text-2xl font-semibold tracking-tight">
+              Less chasing.
+              <br />
+              More moving forward.
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-slate-600">
+              Keep the important parts of working life within reach.
+            </p>
+            <div className="mt-6 space-y-3">
+              {[
+                {
+                  Icon: BriefcaseBusiness,
+                  title: "Find your next step",
+                  text: "Opportunities, applications and interviews.",
+                },
+                {
+                  Icon: UserRound,
+                  title: "Stay connected to work",
+                  text: "Documents, payslips and company updates.",
+                },
+                {
+                  Icon: CalendarDays,
+                  title: "Bring the right people together",
+                  text: "Meetings, projects and a shared direction.",
+                },
+              ].map(({ Icon, title, text }) => (
+                <div
+                  key={title}
+                  className="flex gap-4 rounded-2xl bg-slate-50 p-4"
+                >
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-blue-100 bg-white text-blue-800">
+                    <Icon size={20} />
+                  </span>
+                  <div>
+                    <h3 className="text-sm font-semibold">{title}</h3>
+                    <p className="mt-1 text-xs leading-5 text-slate-600">
+                      {text}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="mt-5 flex items-center gap-2 text-xs text-slate-600">
+              <ShieldCheck size={15} />
+              Dedicated access for every workspace
+            </p>
+          </div>
+        </div>
+      </section>
+      <section
+        id="choose-your-path"
+        className="mx-auto max-w-7xl scroll-mt-40 px-5 py-16 sm:px-8"
+      >
+        <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[.16em] text-blue-800">
+              A place for you
+            </p>
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight">
+              Where would you like to start?
+            </h2>
+          </div>
+          <p className="max-w-sm text-sm leading-6 text-slate-600">
+            Different roles. Familiar tools.
+            <br />
+            Your own space to move forward.
+          </p>
+        </div>
+        <div className="grid gap-5 lg:grid-cols-3">
+          {audiences.map(
+            (
+              {
+                label,
+                title,
+                text,
+                href,
+                action,
+                secondary,
+                secondaryLabel,
+                Icon,
+              },
+              i,
+            ) => (
+              <article
+                key={title}
+                className={
+                  "flex flex-col rounded-2xl border p-6 sm:p-7 " +
+                  (i === 2
+                    ? "border-[#06163F] bg-[#06163F] text-white"
+                    : "border-slate-200 bg-white")
+                }
+              >
+                <Icon
+                  size={25}
+                  className={i === 2 ? "text-blue-200" : "text-blue-800"}
+                />
+                <p
+                  className={
+                    "mt-6 text-xs font-semibold uppercase tracking-wider " +
+                    (i === 2 ? "text-blue-100" : "text-slate-600")
+                  }
+                >
+                  {label}
+                </p>
+                <h3 className="mt-3 text-2xl font-semibold tracking-tight">
+                  {title}
+                </h3>
+                <p
+                  className={
+                    "mb-7 mt-3 text-sm leading-7 " +
+                    (i === 2 ? "text-slate-200" : "text-slate-600")
+                  }
+                >
+                  {text}
+                </p>
+                <Link
+                  href={href}
+                  className={
+                    "aero-button mt-auto justify-between " +
+                    (i === 2
+                      ? "bg-white text-[#06163F]"
+                      : "bg-blue-50 text-blue-900")
+                  }
+                >
+                  {action}
+                  <ArrowRight size={17} />
+                </Link>
+                <Link
+                  href={secondary}
+                  className={
+                    "mt-4 inline-flex min-h-11 items-center justify-center text-xs font-semibold " +
+                    (i === 2 ? "text-blue-100" : "text-blue-800")
+                  }
+                >
+                  {secondaryLabel}
+                </Link>
+              </article>
+            ),
+          )}
+        </div>
+      </section>
+      <section className="border-y border-slate-200 bg-slate-50 px-5 py-16 sm:px-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="max-w-2xl">
+            <p className="text-xs font-semibold uppercase tracking-[.16em] text-blue-800">
+              A more connected working day
+            </p>
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
+              The details matter.
+              <br />
+              Keep them together.
+            </h2>
+            <p className="mt-5 text-sm leading-7 text-slate-600">
+              From a first application to a team’s everyday routine, Aerotech
+              keeps people and their next steps connected.
+            </p>
+          </div>
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              {
+                Icon: BriefcaseBusiness,
+                title: "Recruitment",
+                text: "Keep vacancies, CVs, assessments and interviews in one hiring journey.",
+              },
+              {
+                Icon: FileText,
+                title: "People & documents",
+                text: "Organise employee records and share documents with the right people.",
+              },
+              {
+                Icon: Wallet,
+                title: "Payroll & workday",
+                text: "Follow payroll approvals, payslips, attendance and leave requests.",
+              },
+              {
+                Icon: MessageSquareText,
+                title: "Team connection",
+                text: "Bring tasks, meetings, learning and feedback into everyday work.",
+              },
+            ].map(({ Icon, title, text }) => (
+              <article key={title} className="aero-card">
+                <Icon size={22} className="text-blue-800" />
+                <h3 className="mt-5 font-semibold">{title}</h3>
+                <p className="mt-3 text-sm leading-7 text-slate-600">{text}</p>
+              </article>
+            ))}
+          </div>
+          <p className="mt-5 text-xs leading-6 text-slate-600">
+            Services follow your company’s plan and configuration.
+            Provider-dependent features are labelled when setup is needed.
+          </p>
+          <Link
+            href="/solutions"
+            className="mt-5 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-blue-800"
+          >
+            Discover what you can do <ArrowRight size={16} />
+          </Link>
+        </div>
+      </section>
+      <section className="mx-auto grid max-w-7xl gap-10 px-5 py-16 sm:px-8 lg:grid-cols-[.8fr_1.2fr]">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[.16em] text-blue-800">
+            A clear way forward
+          </p>
+          <h2 className="mt-3 text-3xl font-semibold tracking-tight">
+            Start simply.
+            <br />
+            Build from there.
+          </h2>
+        </div>
+        <ol className="space-y-5">
+          {[
+            [
+              "Choose your path",
+              "Create a free applicant account, activate your employee invitation or set up your organisation.",
+            ],
+            [
+              "Make it yours",
+              "Add your experience or organise the company records your team needs.",
+            ],
+            [
+              "Keep moving",
+              "Follow applications, manage your workday and see what needs your attention.",
+            ],
+          ].map(([title, text], i) => (
+            <li
+              key={title}
+              className="flex gap-5 border-b border-slate-200 pb-5"
+            >
+              <span className="text-sm font-semibold text-blue-800">
+                0{i + 1}
+              </span>
+              <div>
+                <h3 className="font-semibold">{title}</h3>
+                <p className="mt-2 text-sm leading-7 text-slate-600">{text}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
+      <section className="px-5 pb-16 sm:px-8">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-8 rounded-[26px] bg-[#06163F] p-7 text-white sm:p-12">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[.16em] text-blue-200">
+              For growing organisations
+            </p>
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight">
+              Make room for better work.
+            </h2>
+            <p className="mt-4 max-w-xl text-sm leading-7 text-slate-200">
+              Choose the company plan that fits your team. Applicants and
+              invited employees are not charged.
+            </p>
+          </div>
+          <Link href="/pricing" className="aero-button bg-white text-[#06163F]">
+            Compare company plans <ArrowRight size={17} />
+          </Link>
+        </div>
+      </section>
+      <section className="mx-auto max-w-4xl px-5 pb-16 sm:px-8">
+        <h2 className="text-2xl font-semibold">A few things to know</h2>
+        {[
+          [
+            "Is Aerotech only for employers?",
+            "No. Applicants explore opportunities in a free account. Employees use their company workspace, while employers manage their organisation.",
+          ],
+          [
+            "How do employees get access?",
+            "Your employer creates your record and sends an activation invitation. Use it to set your password, then select Employee sign in.",
+          ],
+          [
+            "Do applicants pay to apply?",
+            "No. Applicant accounts and applications are free. Companies pay for their subscriptions.",
+          ],
+        ].map(([q, a]) => (
+          <details key={q} className="border-b border-slate-200 py-5">
+            <summary className="flex min-h-11 cursor-pointer items-center font-semibold">
+              {q}
+            </summary>
+            <p className="mt-3 text-sm leading-7 text-slate-600">{a}</p>
+          </details>
+        ))}
+        <div className="mt-7 flex flex-wrap gap-5 text-sm">
+          <Link
+            href="/auth/login?role=applicant"
+            className="inline-flex min-h-11 items-center font-semibold text-blue-800"
+          >
+            Applicant sign in →
+          </Link>
+          <Link
+            href="/auth/login?role=employee"
+            className="inline-flex min-h-11 items-center font-semibold text-blue-800"
+          >
+            Employee sign in →
+          </Link>
+          <Link
+            href="/auth/login?role=employer"
+            className="inline-flex min-h-11 items-center font-semibold text-blue-800"
+          >
+            Employer sign in →
+          </Link>
+        </div>
+      </section>
+    </main>
+  );
+}

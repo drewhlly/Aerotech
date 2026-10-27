@@ -25,7 +25,7 @@ export function PublicNav() {
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4">
-        <Logo />
+        {path==='/auth/login'?<Link href="/" className="inline-flex min-h-11 items-center text-sm font-semibold text-slate-700">← Home</Link>:<Logo />}
 
         <nav aria-label="Public navigation" className="hidden items-center gap-5 xl:flex">{[['/solutions','Solutions'],['/pricing','Pricing'],['/about','About'],['/contact','Contact'],['/careers','Find jobs']].map(([href,label])=><Link key={href} href={href} className="inline-flex min-h-11 items-center text-sm font-medium text-slate-600 hover:text-blue-700">{label}</Link>)}</nav>
 
@@ -54,7 +54,7 @@ export function PublicNav() {
         </button>
       </div>
 
-      <nav id="sign-in" aria-label="Portal sign in" className="border-t border-slate-100 bg-slate-50/80"><div className="mx-auto grid max-w-7xl grid-cols-3 gap-2 px-4 py-2 sm:px-5">{(['employer','employee','applicant'] as const).map(role=><Link key={role} href={'/auth/login?role='+role} className="rounded-lg px-2 py-2 text-center text-xs font-semibold text-blue-700 hover:bg-blue-50 sm:text-sm">{role[0].toUpperCase()+role.slice(1)} sign in</Link>)}</div></nav>
+      {path!=='/auth/login'&&<nav id="sign-in" aria-label="Portal sign in" className="border-t border-slate-100 bg-slate-50/80"><div className="mx-auto grid max-w-7xl grid-cols-3 gap-2 px-4 py-2 sm:px-5">{(['employer','employee','applicant'] as const).map(role=><Link key={role} href={'/auth/login?role='+role} className="rounded-lg px-2 py-2 text-center text-xs font-semibold text-blue-700 hover:bg-blue-50 sm:text-sm">{role[0].toUpperCase()+role.slice(1)} sign in</Link>)}</div></nav>}
 
       {open && (
         <div id="public-mobile-menu" onClick={()=>setOpen(false)} className="border-t border-slate-200 bg-white px-5 py-5 xl:hidden">
