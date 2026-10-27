@@ -45,6 +45,6 @@ export async function POST(request:Request){
   await client.query("UPDATE support_enrollment_approvals SET used_at=NOW() WHERE email=$1",[pending.email]);await client.query("DELETE FROM support_pending_enrollments WHERE token_hash=$1",[sessionDigest(token)]);
   await client.query("INSERT INTO support_sessions(token_hash,agent_id,expires_at) VALUES($1,$2,NOW()+INTERVAL '15 minutes')",[sessionDigest(session),id]);
   await client.query("INSERT INTO support_auth_events(id,email_hash,agent_id,outcome) VALUES($1,$2,$3,'success')",[randomUUID(),createHash("sha256").update(pending.email).digest("hex"),id]);await client.query("COMMIT");
-  jar.delete(cookieName);jar.set(SUPPORT_COOKIE,session,{httpOnly:true,secure:process.env.NODE_ENV==="production",sameSite:"strict",path:"/",maxAge:900});return json({ok:true,superAdmin:pending.email===process.env.SUPPORT_INITIAL_AGENT_EMAIL?.trim().toLowerCase()});
+  for(const role of ['employer','employee','applicant']) (await cookies()).delete('aerotech_'+role+'_session');(await cookies()).delete('aerotech_portal_role');jar.delete(cookieName);jar.set(SUPPORT_COOKIE,session,{httpOnly:true,secure:process.env.NODE_ENV==="production",sameSite:"strict",path:"/",maxAge:900});return json({ok:true,superAdmin:pending.email===process.env.SUPPORT_INITIAL_AGENT_EMAIL?.trim().toLowerCase()});
  }catch{await client.query("ROLLBACK").catch(()=>{});return json({error:"Support enrollment is temporarily unavailable"},503);}finally{client.release();await pool.end();}
 }

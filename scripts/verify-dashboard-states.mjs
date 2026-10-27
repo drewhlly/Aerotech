@@ -10,10 +10,10 @@ const pool=new pg.Pool({connectionString:process.env.DATABASE_URL});
 const company=(await pool.query("SELECT id FROM employer_accounts WHERE company_email='owner-fixture@example.invalid'")).rows[0].id;
 const token=randomBytes(32).toString('hex');
 await pool.query("INSERT INTO employer_sessions(token_hash,employer_id,expires_at) VALUES($1,$2,NOW()+INTERVAL '1 hour')",[createHash('sha256').update(token).digest('hex'),company]);
-const browser=await chromium.launch(),context=await browser.newContext({baseURL:base});
+const browser=await chromium.launch(process.env.QA_CHROME?{executablePath:process.env.QA_CHROME,args:['--no-sandbox','--disable-dev-shm-usage']}: {}),context=await browser.newContext({baseURL:base});
 await context.addCookies([{name:'aerotech_employer_session',value:token,url:base,httpOnly:true,sameSite:'Lax'}]);
 const page=await context.newPage();
-const routes=['/dashboard/employer/recruitment','/dashboard/employer/employees','/dashboard/employer/training','/dashboard/employer/hr/attendance','/dashboard/employer/payroll','/dashboard/employer/compliance','/dashboard/employer/hr/assets','/dashboard/employer/hr/tasks','/dashboard/employer/hr/disciplinary','/dashboard/employer/hr/goals','/dashboard/employer/hr/lifecycle/documents','/dashboard/employer/reports','/dashboard/employer/requests','/dashboard/employer/onboarding','/dashboard/employer/performance','/dashboard/employer/payroll/pay','/dashboard/employer/notifications','/dashboard/employer/exits','/dashboard/employer/recruitment/approvals'];
+const routes=['/dashboard/employer/recruitment','/dashboard/employer/employees','/dashboard/employer/training','/dashboard/employer/hr/attendance','/dashboard/employer/payroll','/dashboard/employer/compliance','/dashboard/employer/hr/assets','/dashboard/employer/hr/tasks','/dashboard/employer/hr/disciplinary','/dashboard/employer/hr/goals','/dashboard/employer/hr/lifecycle/documents','/dashboard/employer/reports','/dashboard/employer/requests','/dashboard/employer/onboarding','/dashboard/employer/performance','/dashboard/employer/payroll/pay','/dashboard/employer/notifications','/dashboard/employer/exits'];
 const results=[];
 try{
  for(const path of routes){

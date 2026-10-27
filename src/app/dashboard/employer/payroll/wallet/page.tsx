@@ -1,7 +1,7 @@
 
 import { Wallet, LockKeyhole } from "lucide-react";
 export default function PayrollWalletPage() {
- return <main className="min-h-screen bg-slate-50 px-6 py-14">
+ return <section className="min-h-screen bg-slate-50 px-6 py-14">
   <div className="mx-auto max-w-3xl">
    
    <section className="mt-10 rounded-3xl border border-slate-200 bg-white px-8 py-16 text-center shadow-sm">
@@ -11,5 +11,5 @@ export default function PayrollWalletPage() {
     <div className="mt-7 inline-flex items-center gap-2 rounded-xl bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-700"><LockKeyhole size={16}/> Wallet transactions disabled</div>
    </section>
   </div>
- </main>;
+ </section>;
 }

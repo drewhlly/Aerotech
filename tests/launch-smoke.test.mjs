@@ -5,7 +5,7 @@ import { readFileSync, existsSync } from "node:fs";
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
 test("employer signup is reachable from the home page", () => {
-  assert.ok(read("src/app/page.tsx").includes("/auth/signup/employer"));
+  assert.ok(read("src/app/(public)/page.tsx").includes("/auth/signup/employer"));
   assert.ok(existsSync(new URL("../src/app/auth/signup/employer/page.tsx", import.meta.url)));
 });
 
@@ -15,21 +15,23 @@ test("job seekers can reach the jobs page", () => {
 });
 
 test("home links to dedicated solutions and the shared navigation serves every audience", () => {
-  assert.match(read("src/app/page.tsx"), /href="\/solutions"/);
-  const solutions=read("src/app/solutions/page.tsx");
+  assert.match(read("src/app/(public)/page.tsx"), /href="\/solutions"/);
+  const solutions=read("src/app/(public)/solutions/page.tsx");
   for(const feature of ["Recruitment","Learning","Attendance","Payroll","compliance"]) assert.ok(solutions.toLowerCase().includes(feature.toLowerCase()));
-  const nav=read("src/components/site-navigation.tsx");
-  for(const portal of ["/dashboard","/employee","/applicant"]) assert.ok(nav.includes(portal));
+  for(const role of ['employer','employee','applicant']){
+    const layout=read('src/app/'+(role==='employer'?'dashboard/employer':role)+'/layout.tsx');
+    assert.ok(layout.includes(role[0].toUpperCase()+role.slice(1)+'Nav'));
+  }
 });
 
 test("unknown job IDs do not display another vacancy", () => {
-  const details = read("src/app/careers/[id]/page.tsx");
+  const details = read("src/app/applicant/opportunities/[id]/page.tsx");
   assert.match(details, /if\(!job\)notFound\(\)/);
   assert.doesNotMatch(details, /\?\? jobs\[0\]/);
 });
 
 test("job details require a registered applicant session", () => {
-  const gate = read("src/app/careers/[id]/page.tsx");
+  const gate = read("src/app/applicant/opportunities/[id]/page.tsx");
   assert.match(gate, /currentApplicant/);
   assert.match(gate, /redirect\(loginUrl\('applicant'/);
 });

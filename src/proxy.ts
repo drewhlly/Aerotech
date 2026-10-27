@@ -1,21 +1,39 @@
 import {NextRequest,NextResponse} from 'next/server';
 import {hostPortal,pagePortal,portalHomes} from './lib/portal-routing';
+import {workspaceLink} from './lib/portal-policy';
+import {requestRole} from './lib/request-role';
 import {loginUrl} from './lib/auth-navigation';
 function forward(req:NextRequest){const h=new Headers(req.headers);h.set('x-aerotech-service-path',req.nextUrl.pathname);h.set('x-aerotech-return-path',req.nextUrl.pathname+req.nextUrl.search);return NextResponse.next({request:{headers:h}})}
-// Optimistic cookie checks only; server layouts and every API still validate sessions.
-export function proxy(req:NextRequest){
- const path=req.nextUrl.pathname,url=req.nextUrl.clone(),portal=hostPortal(url.hostname,process.env.PORTAL_ROOT_DOMAIN);
- const destination=pagePortal(path);
- if(path==='/pricing/checkout'&&!req.cookies.has('aerotech_employer_session')&&(req.cookies.has('aerotech_employee_session')||req.cookies.has('aerotech_applicant_session'))){url.pathname='/forbidden';url.search='';return NextResponse.rewrite(url,{status:403})}
- if(portal){if(path==='/'){url.pathname=portalHomes[portal];return NextResponse.redirect(url)}if(destination&&destination!==portal)return new NextResponse('This workspace is not available in this portal.',{status:404});if(path==='/auth/login'&&portal!=='admin'&&url.searchParams.get('role')!==portal){url.searchParams.set('role',portal);return NextResponse.redirect(url)}if(path.startsWith('/auth/signup/')&&path.split('/').pop()!==portal)return new NextResponse('Registration is not available in this portal.',{status:404})}
- if(path==='/aerochat'||path.startsWith('/aerochat/')){if(!req.cookies.has('aerotech_employer_session')&&!req.cookies.has('aerotech_employee_session')){if(req.cookies.has('aerotech_applicant_session')){url.pathname='/forbidden';url.search='';return NextResponse.rewrite(url,{status:403})}return NextResponse.redirect(new URL(loginUrl('employee',path+url.search),req.url))}}
- if(destination&&destination!=='admin'){
-  const roles=['employer','employee','applicant'] as const;
-  if(!req.cookies.has('aerotech_'+destination+'_session')){
-   if(roles.some(role=>role!==destination&&req.cookies.has('aerotech_'+role+'_session'))){url.pathname='/forbidden';url.search='';return NextResponse.rewrite(url,{status:403})}
-   return NextResponse.redirect(new URL(loginUrl(destination,path+url.search),req.url));
-  }
+export async function proxy(req:NextRequest){
+ const path=req.nextUrl.pathname,url=req.nextUrl.clone();
+ // Same-origin defence for browser mutations. Provider webhooks and bearer-authenticated crons verify independently.
+ if(path.startsWith('/api/')){
+  if(!['GET','HEAD','OPTIONS'].includes(req.method)&&req.headers.has('origin')&&req.headers.get('origin')!==url.origin)return NextResponse.json({error:'Invalid request origin'},{status:403});
+  return forward(req);
  }
- return forward(req)
+ if(path==='/forbidden')return forward(req);
+ let role;try{role=await requestRole(req)}catch{return new NextResponse('Workspace access is temporarily unavailable. Please retry.',{status:503})}
+ const host=hostPortal(url.hostname,process.env.PORTAL_ROOT_DOMAIN),destination=pagePortal(path);
+ const home=role==='support'?'/support-console':role?portalHomes[role]:null;
+ const deny=()=>{url.pathname='/forbidden';url.search='';return NextResponse.rewrite(url,{status:403})};
+ if(host&&destination&&destination!==host)return deny();
+ if(path==='/support'||path==='/help')return forward(req);
+ if(path==='/employee/vacancy-approvals'||path==='/dashboard/employer/recruitment/approvals')return deny();
+ if(role&&home){
+  if(path==='/billing'||path==='/pricing/checkout'||path==='/support/tickets'||path==='/meet'||path.startsWith('/meet/')||path==='/aerochat'||path.startsWith('/careers/')){
+   const target=role==='support'?home:path==='/support/tickets'&&role==='employer'?'/dashboard/employer/support-access':workspaceLink(role,path==='/pricing/checkout'?'/billing':path);
+   url.pathname=target;return NextResponse.redirect(url);
+  }
+  if(destination&&destination!==role)return deny();
+  if(path.startsWith('/support-console')&&role==='admin'){url.pathname='/admin';url.search='';return NextResponse.redirect(url)}
+  if(path.startsWith('/support-console')&&role!=='support')return deny();
+  const publicPage=path==='/'||['/pricing','/solutions','/careers','/about','/contact','/install','/privacy','/terms'].includes(path)||path.startsWith('/auth/');
+  if(publicPage){url.pathname=home;url.search='';return NextResponse.redirect(url)}
+ }else{
+  if(destination==='admin'){url.pathname='/support-console/login';url.search='?next='+encodeURIComponent(path+url.search);return NextResponse.redirect(url)}
+  if(destination)return NextResponse.redirect(new URL(loginUrl(destination,path+url.search),req.url));
+  if(path==='/meet'||path.startsWith('/meet/')||path==='/aerochat')return NextResponse.redirect(new URL(loginUrl('employee',path+url.search),req.url));
+ }
+ return forward(req);
 }
-export const config={matcher:['/api/:path*','/','/dashboard/:path*','/employee/:path*','/applicant/:path*','/admin/:path*','/auth/:path*','/pricing/checkout','/careers/:path*','/meet/:path*','/aerochat/:path*','/billing','/support/tickets','/support-console/:path*']};
+export const config={matcher:['/((?!_next/static|_next/image|favicon.ico|sw.js|offline.html|manifest.webmanifest|app-icons/|brand/|sitemap.xml|robots.txt).*)']};

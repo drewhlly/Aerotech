@@ -1,7 +1,9 @@
 import {planAllows} from './plan-access';
 import {selectPortal} from './portal-selection';
 import { randomBytes, createHash } from "node:crypto";
-import { Pool } from "pg";
+import { Pool,types } from "pg";
+// PostgreSQL DATE is a calendar day, not a midnight instant in the server timezone.
+types.setTypeParser(1082,value=>value);
 import { cookies,headers } from "next/headers";
 
 export const SESSION_COOKIE = "aerotech_employer_session";

@@ -108,7 +108,7 @@ export default function PricingPage({billingLive}:{billingLive:boolean}) {
                     ))}
                   </ul>
 
-                  {planId === 'enterprise' || regionalPrice(plan,country).amount === null ? <Link href="/support?subject=sales" className="aero-button mt-auto bg-slate-950 text-white">{planId==='enterprise'?'Contact sales':'Request local pricing'}</Link> : billingLive ? <Link href={'/pricing/checkout?'+new URLSearchParams({type:'employer',plan:planId,country:normalizeCountry(country)})} className="aero-button mt-auto bg-slate-950 text-white">Choose {plan.name}</Link> : <div className="mt-auto"><button disabled className="aero-button w-full bg-slate-200 text-slate-700">Coming soon</button><Link href="/support?subject=sales" className="mt-3 block text-center text-sm font-semibold text-blue-700">Contact us for launch access</Link></div>}
+                  {planId === 'enterprise' || regionalPrice(plan,country).amount === null ? <Link href="/contact?subject=sales" className="aero-button mt-auto bg-slate-950 text-white">{planId==='enterprise'?'Contact sales':'Request local pricing'}</Link> : billingLive ? <Link href={'/pricing/checkout?'+new URLSearchParams({type:'employer',plan:planId,country:normalizeCountry(country)})} className="aero-button mt-auto bg-slate-950 text-white">Choose {plan.name}</Link> : <div className="mt-auto"><button disabled className="aero-button w-full bg-slate-200 text-slate-700">Coming soon</button><Link href="/contact?subject=sales" className="mt-3 block text-center text-sm font-semibold text-blue-700">Contact us for launch access</Link></div>}
 
                 </div>
               );

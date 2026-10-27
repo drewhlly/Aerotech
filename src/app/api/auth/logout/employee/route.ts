@@ -10,6 +10,6 @@ export async function POST() {
    try { await pool.query("DELETE FROM employee_sessions WHERE token_hash = $1", [digest(token)]); }
    finally { await pool.end(); }
  }
- jar.delete(EMPLOYEE_COOKIE);
+ jar.delete('aerotech_portal_role');jar.delete(EMPLOYEE_COOKIE);
  return NextResponse.json({ok:true});
 }

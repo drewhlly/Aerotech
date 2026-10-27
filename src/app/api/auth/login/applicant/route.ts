@@ -1,3 +1,4 @@
+import {authAttempt} from '@/lib/auth-rate-limit';
 import { NextResponse } from "next/server";
 import { scrypt as rawScrypt, timingSafeEqual } from "node:crypto";
 import { promisify } from "node:util";
@@ -9,8 +10,10 @@ export async function POST(request:Request) {
  try {body=await request.json();}catch{return NextResponse.json({error:"Invalid request."},{status:400});}
  if(typeof body?.email!=="string"||typeof body?.password!=="string")return NextResponse.json({error:"Email and password required."},{status:400});
  if(!process.env.DATABASE_URL)return NextResponse.json({error:"Sign in unavailable."},{status:503});
+ if(body.email.length>254||body.password.length>256)return NextResponse.json({error:'Invalid email or password'},{status:400});
  const pool=applicantDB();
  try {
+ if(!await authAttempt(pool,'applicant',body.email))return NextResponse.json({error:'Too many attempts. Try again in 15 minutes.'},{status:429,headers:{'Retry-After':'900'}});
   const result=await pool.query("SELECT id,password_hash FROM applicant_accounts WHERE email=$1",[body.email.trim().toLowerCase()]);
   const account=result.rows[0];
   if(!account)return NextResponse.json({error:"Incorrect email or password."},{status:401});
