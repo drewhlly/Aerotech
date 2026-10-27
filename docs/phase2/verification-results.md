@@ -66,3 +66,5 @@ All sampled performance, accessibility and best-practice scores exceed 90. Porta
 These unchecked items prevent declaring the full Phase 2 specification complete.
 
 Hosting check: the initial automatic Vercel preview was rejected before build because the project is on Hobby and the new cron ran every five minutes. The unsupported Vercel entry was removed. The supplied GitHub schedule is opt-in and unconfigured; production automation is not active.
+
+Latest hosted preview: **blocked**. After correcting the cron configuration, Vercel rejected preview `dpl_6n8F7NwcXVunQ48Zj1x8wj4CnrQ2` with `BUILD_FAILED: Resource provisioning failed` before compilation. No build events were returned. This is separate from the successful local production build; a hosted preview is not verified.
