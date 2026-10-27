@@ -1,0 +1,5 @@
+import {pageMetadata} from '@/lib/seo';
+import {supportContact,supportPhoneHref} from '@/lib/support-contact';
+import ContactForm from '@/components/contact-form';
+export const metadata=pageMetadata('Contact','Contact Aerotech about company plans, account access or product questions. Send an enquiry to our team by email or phone and get the right next step for you.','/contact');
+export default function Contact(){return <main className="mx-auto grid max-w-6xl gap-10 px-6 py-16 md:grid-cols-2"><section><p className="text-sm font-semibold text-blue-700">Let’s talk</p><h1 className="mt-4 text-4xl font-bold">How can we help you move forward?</h1><p className="mt-5 leading-7 text-slate-600">Ask about Aerotech, your account or the right plan for your organisation.</p><a className="mt-6 flex min-h-11 items-center break-all font-semibold text-blue-700" href={'mailto:'+supportContact.email}>{supportContact.email}</a><a className="flex min-h-11 items-center text-blue-700" href={supportPhoneHref}>{supportContact.phone}</a></section><ContactForm email={supportContact.email}/></main>}

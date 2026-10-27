@@ -22,7 +22,7 @@ export default function PayrollRunPage(){
   }catch(e){setError(e instanceof Error?e.message:"Payroll request failed");}
   finally{setBusy(false);}
  }
- return <main className="min-h-screen bg-slate-50 p-6 text-slate-900">
+ return <section className="min-h-screen bg-slate-50 p-6 text-slate-900">
   <div className="mx-auto max-w-3xl space-y-6">
    
    <header><h1 className="text-2xl font-bold">Prepare payroll</h1><p className="mt-2 text-sm text-slate-600">Calculate a payroll draft from your company’s active payroll employees and approved deductions. No funds will be transferred.</p></header>
@@ -41,5 +41,5 @@ export default function PayrollRunPage(){
     <p className="mt-5 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">Status: {result.status}. HR, Finance and CEO must review this draft through their assigned accounts. Salary transfers are not enabled. This is not a payment confirmation.</p>
    </section>}
   </div>
- </main>;
+ </section>;
 }

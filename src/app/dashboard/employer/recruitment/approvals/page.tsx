@@ -1,1 +1,1 @@
-import Approvals from '@/components/vacancy-approvals';export default Approvals;
+import {forbidden} from 'next/navigation';export default function Page(){forbidden()}

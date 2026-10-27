@@ -9,7 +9,7 @@ export default function Page(){
  const [error,setError]=useState("");
  const [alerts,setAlerts]=useState<Alert[]>([]);
  useEffect(()=>{fetch("/api/hr/birthdays").then(async r=>{const x=await r.json();if(!r.ok)throw Error(x.error);setItems(x.birthdays||[]);setAlerts(x.hrAlerts||[])}).catch(e=>setError(e.message))},[]);
- return <main className="min-h-screen bg-slate-50 p-8">
+ return <section className="min-h-screen bg-slate-50 p-8">
  
  <h1 className="mt-5 text-3xl font-bold">Employee birthdays</h1><BirthdayTomorrow/>
  <p className="mt-2 text-slate-600">Birthdays from your employee records. Birth years stay private.</p>
@@ -18,5 +18,5 @@ export default function Page(){
  <div className="mt-6 grid gap-4 md:grid-cols-2">
  {items.map((b,i)=><article key={i} className="rounded-xl border bg-white p-5"><h2 className="font-bold">{b.first_name} {b.last_name}</h2><p>{b.department}</p><p className="mt-2 text-indigo-700">{b.birthday}</p></article>)}
  {items.length===0&&!error&&<p>No birthdays recorded yet.</p>}
- </div></main>;
+ </div></section>;
 }

@@ -94,3 +94,15 @@ svg { flex-shrink:0; }
 @media(max-width:640px){.workspace-content .aero-hero h1{font-size:1.65rem;line-height:1.25}.workspace-content .aero-hero{padding:22px;border-radius:20px}.meeting-stage{height:calc(100dvh - 245px);min-height:340px}}
 
 .skip-link{position:fixed;top:8px;left:8px;z-index:100;padding:12px;background:#07152c;color:white;transform:translateY(-160%)}.skip-link:focus{transform:none}input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid #2563eb;outline-offset:2px}body{overflow-wrap:break-word}main{min-width:0}
+
+/* Shared tokens: 8px spacing foundation, consistent surfaces and interaction states. */
+:root{--aero-space:8px;--aero-brand:#1d4ed8;--aero-ink:#07152c;--aero-muted:#475569;--aero-surface:#fff;--aero-radius:16px;--aero-shadow:0 8px 32px #07152c0a;--aero-text-sm:.875rem;--aero-text-base:1rem;--aero-text-lg:1.25rem}
+.portal-sidebar{transition:transform .2s ease}
+@media(max-width:1023px){.portal-sidebar:not(.is-open){visibility:hidden}}
+button:not([role="switch"]),select,summary{min-height:44px}
+button{min-width:44px}input:not([type="checkbox"]):not([type="radio"]){min-height:44px}
+input[type="checkbox"],input[type="radio"]{min-width:18px;min-height:18px;accent-color:var(--aero-brand)}
+:focus-visible{scroll-margin-top:100px;scroll-margin-bottom:24px}
+.text-slate-400{color:#64748b}.bg-\[\#07152c\] .text-slate-400{color:#cbd5e1}
+.aero-card{border-radius:var(--aero-radius);box-shadow:var(--aero-shadow)}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}

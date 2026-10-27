@@ -1,12 +1,12 @@
 "use client";
-import {useRouter} from "next/navigation";
+import {useRouter,usePathname} from "next/navigation";
 import {useCallback,useEffect,useState} from "react";
 import Link from "next/link";
 type Ticket={id:string;title:string;description?:string;status:string;resolution?:string;created_at:string;company_name?:string};
 type Grant={id:string;scopes:string[];approved_at:string;expires_at:string;revoked_at:string|null;active:boolean};
 type Event={id:string;actor_name:string;action:string;created_at:string;details:Record<string,unknown>};
 const scopes=[{id:"workforce",label:"Workforce record counts and invitation readiness"},{id:"recruitment",label:"Candidate counts and import date"},{id:"meetings",label:"Meeting counts and conferencing readiness"},{id:"payroll",label:"Payroll run counts and approval status"}];
-export default function SupportWorkspace({staff=false}:{staff?:boolean}){const router=useRouter();
+export default function SupportWorkspace({staff=false}:{staff?:boolean}){const router=useRouter(),path=usePathname();
  const base=staff?"/api/support-console/tickets":"/api/support/tickets";
  const [currentTime,setCurrentTime]=useState(()=>Date.now());useEffect(()=>{const timer=setInterval(()=>setCurrentTime(Date.now()),60000);return()=>clearInterval(timer)},[]);const [tickets,setTickets]=useState<Ticket[]>([]),[selected,setSelected]=useState<Ticket|null>(null),[grants,setGrants]=useState<Grant[]>([]),[events,setEvents]=useState<Event[]>([]);
  const [title,setTitle]=useState(""),[description,setDescription]=useState(""),[chosen,setChosen]=useState<string[]>([]),[minutes,setMinutes]=useState("30"),[summary,setSummary]=useState("");
@@ -19,7 +19,7 @@ export default function SupportWorkspace({staff=false}:{staff?:boolean}){const r
  async function action(body:unknown){if(!selected)return;setBusy(true);setMessage("");setDiagnostic(null);try{const d=await call(base+"/"+selected.id,body);setSelected(d.ticket);setGrants(d.grants);setEvents(d.events);await refresh();setMessage("Saved. The access history below has been updated.");}catch(e){setMessage(e instanceof Error?e.message:"Unable to save");}finally{setBusy(false);}}
  async function inspect(scope:string){if(!selected)return;setBusy(true);setMessage("");setDiagnostic(null);try{const d=await call(base+"/"+selected.id+"/diagnostics?scope="+scope);setDiagnostic(d);const history=await call(base+"/"+selected.id);setEvents(history.events);setGrants(history.grants);}catch(e){setMessage(e instanceof Error?e.message:"Diagnostics unavailable");}finally{setBusy(false);}}
  return <main className="min-h-screen bg-slate-50 px-4 py-8 text-slate-900"><div className="mx-auto max-w-6xl">
- <div className="flex flex-wrap items-center justify-between gap-4"><div><Link href={staff?"/":"/dashboard/employer"} className="text-sm text-indigo-700">{staff?"Aerotech":"Back to workspace"}</Link><h1 className="mt-3 text-3xl font-bold">{staff?"Aerotech Support Console":"Support tickets & access"}</h1></div><div className="flex gap-3"><button disabled={busy} onClick={refresh} className="rounded-lg border bg-white px-4 py-2">Refresh tickets</button>{staff&&<button onClick={async()=>{await call("/api/support-console/logout",{});router.replace("/support-console/login");}} className="rounded-lg bg-slate-900 px-4 py-2 text-white">Sign out</button>}</div></div>
+ <div className="flex flex-wrap items-center justify-between gap-4"><div><Link href={staff?(path.startsWith("/admin")?"/admin":"/support-console"):"/dashboard/employer"} className="text-sm text-indigo-700">{staff?"Aerotech":"Back to workspace"}</Link><h1 className="mt-3 text-3xl font-bold">{staff?"Aerotech Support Console":"Support tickets & access"}</h1></div><div className="flex gap-3"><button disabled={busy} onClick={refresh} className="rounded-lg border bg-white px-4 py-2">Refresh tickets</button>{staff&&<button onClick={async()=>{await call("/api/support-console/logout",{});router.replace("/support-console/login");}} className="rounded-lg bg-slate-900 px-4 py-2 text-white">Sign out</button>}</div></div>
  <p className="mt-3 max-w-3xl text-sm text-slate-600">{staff?"Customer diagnostics require active, scoped company approval. No impersonation or customer-record changes are available here. Staff sessions expire after 15 minutes.":"Tell us what went wrong. Creating a ticket shares its description with Aerotech support, but does not grant access to your company diagnostics. Never include passwords, API keys or bank details."}</p>
  {message&&<p role="status" className="mt-5 rounded-lg border border-indigo-200 bg-white p-4">{message}</p>}
  <div className="mt-7 grid gap-6 lg:grid-cols-[320px_1fr]"><aside className="space-y-5">

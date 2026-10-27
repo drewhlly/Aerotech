@@ -11,5 +11,5 @@ export async function POST() {
     finally { await pool.end(); }
   }
   jar.delete(SESSION_COOKIE);
-  return NextResponse.json({ ok: true });
+  jar.delete('aerotech_portal_role');return NextResponse.json({ ok: true });
 }

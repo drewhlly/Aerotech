@@ -3,7 +3,7 @@
 import Link from "next/link";
 import WorkspaceShell from "./workspace-shell";
 import BrandLogo from "./brand-logo";
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useState, useEffect } from "react";
 import {usePathname} from "next/navigation";
 import {Menu,X} from "lucide-react";
 
@@ -21,22 +21,13 @@ export function PublicNav() {
   const [open, setOpen] = useState(false);
   const path=usePathname();
   useEffect(()=>{Promise.resolve().then(()=>setOpen(false))},[path]);
-  const alreadyVisible=useContext(PublicNavigationContext);
-  if(alreadyVisible)return null;
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4">
         <Logo />
 
-        <nav className="hidden items-center gap-7 xl:flex">
-          <Link href="/careers" className="text-sm font-medium text-slate-600 hover:text-blue-700">Find jobs</Link>
-          <Link href="/auth/login?role=employee" className="text-sm font-medium text-slate-600 hover:text-blue-700">For employees</Link>
-          <Link href="/auth/signup/employer" className="text-sm font-medium text-slate-600 hover:text-blue-700">For companies</Link>
-          <Link href="/pricing" className="text-sm font-medium text-slate-600 hover:text-blue-700">Company plans</Link>
-          <Link href="/support" className="text-sm font-medium text-slate-600 hover:text-blue-700">Support</Link>
-          <Link href="/install" className="text-sm font-medium text-slate-600 hover:text-blue-700">Get the app</Link>
-        </nav>
+        <nav aria-label="Public navigation" className="hidden items-center gap-5 xl:flex">{[['/solutions','Solutions'],['/pricing','Pricing'],['/about','About'],['/contact','Contact'],['/careers','Find jobs']].map(([href,label])=><Link key={href} href={href} className="inline-flex min-h-11 items-center text-sm font-medium text-slate-600 hover:text-blue-700">{label}</Link>)}</nav>
 
         <div className="hidden items-center gap-3 sm:flex">
           <Link
@@ -49,13 +40,13 @@ export function PublicNav() {
             href="/#choose-your-path"
             className="rounded-xl bg-[#07152c] px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-[#183B56]"
           >
-            Choose your path
+            Get started
           </Link>
         </div>
 
         <button
           onClick={() => setOpen(!open)}
-          className="rounded-lg p-2 xl:hidden"
+          className="rounded-lg p-3 xl:hidden"
           aria-label={open?"Close navigation":"Open navigation"}
           aria-expanded={open} aria-controls="public-mobile-menu"
         >
@@ -71,7 +62,7 @@ export function PublicNav() {
             <Link href="/auth/signup/applicant" className="rounded-lg p-3 hover:bg-slate-50">Applicant signup</Link><Link href="/pricing" className="rounded-lg p-3 hover:bg-slate-50">Pricing</Link><Link href="/careers" className="rounded-lg p-3 hover:bg-slate-50">
               Find jobs
             </Link>
-            <Link href="/solutions" className="rounded-lg p-3 hover:bg-slate-50">
+            <Link href="/about" className="rounded-lg p-3 hover:bg-slate-50">About</Link><Link href="/contact" className="rounded-lg p-3 hover:bg-slate-50">Contact</Link><Link href="/solutions" className="rounded-lg p-3 hover:bg-slate-50">
               Solutions
             </Link>
             <Link href="/support" className="rounded-lg p-3 hover:bg-slate-50">Support</Link><Link href="/install" className="rounded-lg p-3 hover:bg-slate-50">Get the app</Link><Link href="/auth/signup/employer" className="rounded-lg p-3 hover:bg-slate-50">For companies</Link><Link href="/auth/login?role=employee" className="rounded-lg p-3 hover:bg-slate-50">Employee sign in</Link>
@@ -81,7 +72,7 @@ export function PublicNav() {
               href="/#choose-your-path"
               className="rounded-xl bg-[#07152c] p-3 text-center font-bold text-white"
             >
-              Choose your path
+              Get started
             </Link>
           </div>
         </div>

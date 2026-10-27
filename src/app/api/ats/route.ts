@@ -41,7 +41,7 @@ export async function POST(request:Request){
  }
  if(b.action==='jobstatus'){
  if(!employer)return bad('Employer access required',403);
- if(!['draft','open','closed'].includes(b.status))return bad('Invalid status');if(b.status==='open')return bad('Use the HR vacancy approval queue to approve and publish this role',403);
+ if(!['draft','open','closed'].includes(b.status))return bad('Invalid status');if(b.status==='open')return bad('Only an Aerotech administrator can approve publication',403);
  const changed=await c.query("UPDATE ats_jobs SET status=$1,approval_status=CASE WHEN $1='draft' THEN 'pending' ELSE approval_status END WHERE id=$2 AND employer_id=$3 RETURNING id",[b.status,b.id,employer]);
  if(!changed.rowCount)return bad('Vacancy not found',404);
  await c.query('COMMIT');return NextResponse.json({ok:true});

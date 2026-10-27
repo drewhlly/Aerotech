@@ -46,6 +46,7 @@ jobs:
           npm run start -- --hostname localhost --port 3010 > /tmp/aerotech-server.log 2>&1 &
           node scripts/verify-signed-in.mjs
           node scripts/verify-pwa.mjs
+          node scripts/verify-portal-isolation.mjs
           node scripts/verify-dashboard-states.mjs
           APP_BASE_URL=http://localhost:3012 npm run dev -- --hostname localhost --port 3012 > /tmp/aerotech-dev-server.log 2>&1 &
           APP_BASE_URL=http://localhost:3012 CRAWL_MODE=development node scripts/verify-route-crawl.mjs
@@ -55,7 +56,9 @@ jobs:
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:
           name: public-route-audit
-          path: /tmp/aerotech-public-audit
+          path: |
+            /tmp/aerotech-public-audit
+            /tmp/aerotech-portal-audit
           if-no-files-found: ignore
       - name: Server diagnostics
         if: failure()
