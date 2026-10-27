@@ -125,3 +125,4 @@ Production migration log: **none applied**. Migration 037 has run in disposable 
 | `tests/portal-isolation.test.mjs` | Verify publication, privacy, accessibility, portal isolation or existing signed-in journeys. |
 | `tsconfig.json` | Update shared types, routing, configuration or feature integration for Part 1. |
 | `src/app/dashboard/employer/payroll/page.tsx` | Add shared loading/retry states and a first-run setup action. |
+| `scripts/verify-portal-quality.mjs` | Measure actual authenticated portal pages; require 90 for performance, accessibility and best practices while retaining private noindex. |
