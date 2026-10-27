@@ -36,3 +36,9 @@ Audited baseline: `8a3e47924bfea7706fabbf51f2d4e82ba2551e49` (production main, 2
 - NDPC rights and implementation FAQs: https://ndpc.gov.ng/faqs/
 
 Drafts require a qualified Nigerian data-protection professional to validate entity/DPO contacts, lawful bases, subprocessors, transfer safeguards, retention schedules and adoption date. They are not a compliance certification.
+
+## Safe migration rollout
+
+The runner now records checksums in `schema_migrations` and applies each SQL file once under a transaction/advisory lock. An existing database without this ledger fails closed rather than replaying old migrations. After verifying production is at migration 036, adopt it with `node scripts/migrate.mjs --baseline-through=036_password_recovery.sql`; this records historical checksums without executing them and applies 037. A subsequent normal run skips all applied files. Do not baseline an unverified schema. Migration 037 is transaction-safe and handles an already-removed legacy approval column.
+
+Migration 037 has been exercised only against disposable CI PostgreSQL; no production migration has been applied yet. Release must coordinate the schema update and application version because retired columns are incompatible with the old recruitment API.

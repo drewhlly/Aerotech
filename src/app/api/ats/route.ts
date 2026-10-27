@@ -1,5 +1,5 @@
 import {publishJob,expireJobs} from '@/lib/job-publishing';
-import {jobStates,JobPolicyError} from '@/lib/job-policy';
+import {jobStates,JobPolicyError,JobRateLimitError} from '@/lib/job-policy';
 import {NextResponse} from 'next/server';
 import {randomUUID} from 'node:crypto';
 import {currentEmployer,db} from '@/lib/employer-session';
@@ -95,5 +95,5 @@ export async function POST(request:Request){
  await c.query('UPDATE ats_applications SET stage=$1 WHERE id=$2',[stage,a.id]);
  await c.query('INSERT INTO ats_events(id,application_id,stage,message) VALUES($1,$2,$3,$4)',[randomUUID(),a.id,stage,message]);
  await c.query('COMMIT');return NextResponse.json({ok:true});
- }catch(e){await c.query('ROLLBACK');if(e instanceof JobPolicyError)return bad(e.message,422);return bad((e as {code?:string}).code==='23505'?'You have already applied for this job.':'Unable to save recruitment changes',409)}finally{await c.query('ROLLBACK').catch(()=>{});c.release();await pool.end()}
+ }catch(e){await c.query('ROLLBACK');if(e instanceof JobRateLimitError)return bad(e.message,429);if(e instanceof JobPolicyError)return bad(e.message,422);return bad((e as {code?:string}).code==='23505'?'You have already applied for this job.':'Unable to save recruitment changes',409)}finally{await c.query('ROLLBACK').catch(()=>{});c.release();await pool.end()}
 }

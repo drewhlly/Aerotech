@@ -1,6 +1,12 @@
 -- Phase 2: replace pre-publication review with immediate publication and post-publication safeguards.
 ALTER TABLE ats_jobs DROP CONSTRAINT IF EXISTS ats_jobs_status_check;
-UPDATE ats_jobs SET status='published' WHERE status IN ('open','pending') OR approval_status='pending';
+DO $$ BEGIN
+ IF EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='ats_jobs' AND column_name='approval_status') THEN
+  EXECUTE 'UPDATE ats_jobs SET status=''published'' WHERE status IN (''open'',''pending'') OR approval_status=''pending''';
+ ELSE
+  UPDATE ats_jobs SET status='published' WHERE status IN ('open','pending');
+ END IF;
+END $$;
 ALTER TABLE ats_jobs ADD CONSTRAINT ats_jobs_status_check CHECK(status IN ('draft','published','closed','expired','archived'));
 ALTER TABLE ats_jobs DROP COLUMN IF EXISTS approval_status;
 ALTER TABLE ats_jobs DROP COLUMN IF EXISTS approval_note;
