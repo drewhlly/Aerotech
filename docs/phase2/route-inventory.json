@@ -1,73 +1,13 @@
 [
   {
-    "route": "/about",
-    "file": "src/app/(public)/about/page.tsx",
-    "portal": "public/auth",
-    "kind": "page"
-  },
-  {
-    "route": "/careers/[id]",
-    "file": "src/app/(public)/careers/[id]/page.tsx",
-    "portal": "public/auth",
-    "kind": "page"
-  },
-  {
-    "route": "/careers",
-    "file": "src/app/(public)/careers/page.tsx",
-    "portal": "public/auth",
-    "kind": "page"
-  },
-  {
-    "route": "/contact",
-    "file": "src/app/(public)/contact/page.tsx",
-    "portal": "public/auth",
-    "kind": "page"
-  },
-  {
-    "route": "/cookies",
-    "file": "src/app/(public)/cookies/page.tsx",
-    "portal": "public/auth",
-    "kind": "page"
-  },
-  {
-    "route": "/install",
-    "file": "src/app/(public)/install/page.tsx",
-    "portal": "public/auth",
-    "kind": "page"
-  },
-  {
     "route": "/",
     "file": "src/app/(public)/page.tsx",
     "portal": "public/auth",
     "kind": "page"
   },
   {
-    "route": "/pricing/checkout",
-    "file": "src/app/(public)/pricing/checkout/page.tsx",
-    "portal": "public/auth",
-    "kind": "page"
-  },
-  {
-    "route": "/pricing",
-    "file": "src/app/(public)/pricing/page.tsx",
-    "portal": "public/auth",
-    "kind": "page"
-  },
-  {
-    "route": "/privacy",
-    "file": "src/app/(public)/privacy/page.tsx",
-    "portal": "public/auth",
-    "kind": "page"
-  },
-  {
-    "route": "/solutions",
-    "file": "src/app/(public)/solutions/page.tsx",
-    "portal": "public/auth",
-    "kind": "page"
-  },
-  {
-    "route": "/terms",
-    "file": "src/app/(public)/terms/page.tsx",
+    "route": "/about",
+    "file": "src/app/(public)/about/page.tsx",
     "portal": "public/auth",
     "kind": "page"
   },
@@ -168,6 +108,12 @@
     "kind": "api"
   },
   {
+    "route": "/api/auth/logout",
+    "file": "src/app/api/auth/logout/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
     "route": "/api/auth/logout/applicant",
     "file": "src/app/api/auth/logout/applicant/route.ts",
     "portal": "api",
@@ -176,12 +122,6 @@
   {
     "route": "/api/auth/logout/employee",
     "file": "src/app/api/auth/logout/employee/route.ts",
-    "portal": "api",
-    "kind": "api"
-  },
-  {
-    "route": "/api/auth/logout",
-    "file": "src/app/api/auth/logout/route.ts",
     "portal": "api",
     "kind": "api"
   },
@@ -312,14 +252,20 @@
     "kind": "api"
   },
   {
-    "route": "/api/employees/[id]/profile",
-    "file": "src/app/api/employees/[id]/profile/route.ts",
+    "route": "/api/employees",
+    "file": "src/app/api/employees/route.ts",
     "portal": "api",
     "kind": "api"
   },
   {
     "route": "/api/employees/[id]",
     "file": "src/app/api/employees/[id]/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/employees/[id]/profile",
+    "file": "src/app/api/employees/[id]/profile/route.ts",
     "portal": "api",
     "kind": "api"
   },
@@ -332,12 +278,6 @@
   {
     "route": "/api/employees/invite",
     "file": "src/app/api/employees/invite/route.ts",
-    "portal": "api",
-    "kind": "api"
-  },
-  {
-    "route": "/api/employees",
-    "file": "src/app/api/employees/route.ts",
     "portal": "api",
     "kind": "api"
   },
@@ -378,6 +318,12 @@
     "kind": "api"
   },
   {
+    "route": "/api/hr/attendance",
+    "file": "src/app/api/hr/attendance/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
     "route": "/api/hr/attendance/assignments",
     "file": "src/app/api/hr/attendance/assignments/route.ts",
     "portal": "api",
@@ -392,12 +338,6 @@
   {
     "route": "/api/hr/attendance/faces",
     "file": "src/app/api/hr/attendance/faces/route.ts",
-    "portal": "api",
-    "kind": "api"
-  },
-  {
-    "route": "/api/hr/attendance",
-    "file": "src/app/api/hr/attendance/route.ts",
     "portal": "api",
     "kind": "api"
   },
@@ -444,14 +384,14 @@
     "kind": "api"
   },
   {
-    "route": "/api/hr/requests/[id]/review",
-    "file": "src/app/api/hr/requests/[id]/review/route.ts",
+    "route": "/api/hr/requests",
+    "file": "src/app/api/hr/requests/route.ts",
     "portal": "api",
     "kind": "api"
   },
   {
-    "route": "/api/hr/requests",
-    "file": "src/app/api/hr/requests/route.ts",
+    "route": "/api/hr/requests/[id]/review",
+    "file": "src/app/api/hr/requests/[id]/review/route.ts",
     "portal": "api",
     "kind": "api"
   },
@@ -474,14 +414,14 @@
     "kind": "api"
   },
   {
-    "route": "/api/meet/[id]/join",
-    "file": "src/app/api/meet/[id]/join/route.ts",
+    "route": "/api/meet",
+    "file": "src/app/api/meet/route.ts",
     "portal": "api",
     "kind": "api"
   },
   {
-    "route": "/api/meet",
-    "file": "src/app/api/meet/route.ts",
+    "route": "/api/meet/[id]/join",
+    "file": "src/app/api/meet/[id]/join/route.ts",
     "portal": "api",
     "kind": "api"
   },
@@ -506,6 +446,12 @@
   {
     "route": "/api/payroll/compensation",
     "file": "src/app/api/payroll/compensation/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/payroll/payments",
+    "file": "src/app/api/payroll/payments/route.ts",
     "portal": "api",
     "kind": "api"
   },
@@ -542,12 +488,6 @@
   {
     "route": "/api/payroll/payments/release",
     "file": "src/app/api/payroll/payments/release/route.ts",
-    "portal": "api",
-    "kind": "api"
-  },
-  {
-    "route": "/api/payroll/payments",
-    "file": "src/app/api/payroll/payments/route.ts",
     "portal": "api",
     "kind": "api"
   },
@@ -600,18 +540,6 @@
     "kind": "api"
   },
   {
-    "route": "/api/support/tickets/[id]",
-    "file": "src/app/api/support/tickets/[id]/route.ts",
-    "portal": "api",
-    "kind": "api"
-  },
-  {
-    "route": "/api/support/tickets",
-    "file": "src/app/api/support/tickets/route.ts",
-    "portal": "api",
-    "kind": "api"
-  },
-  {
     "route": "/api/support-console/enroll",
     "file": "src/app/api/support-console/enroll/route.ts",
     "portal": "api",
@@ -630,8 +558,8 @@
     "kind": "api"
   },
   {
-    "route": "/api/support-console/tickets/[id]/diagnostics",
-    "file": "src/app/api/support-console/tickets/[id]/diagnostics/route.ts",
+    "route": "/api/support-console/tickets",
+    "file": "src/app/api/support-console/tickets/route.ts",
     "portal": "api",
     "kind": "api"
   },
@@ -642,8 +570,20 @@
     "kind": "api"
   },
   {
-    "route": "/api/support-console/tickets",
-    "file": "src/app/api/support-console/tickets/route.ts",
+    "route": "/api/support-console/tickets/[id]/diagnostics",
+    "file": "src/app/api/support-console/tickets/[id]/diagnostics/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/support/tickets",
+    "file": "src/app/api/support/tickets/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/support/tickets/[id]",
+    "file": "src/app/api/support/tickets/[id]/route.ts",
     "portal": "api",
     "kind": "api"
   },
@@ -664,6 +604,12 @@
     "file": "src/app/api/workspace/attention/route.ts",
     "portal": "api",
     "kind": "api"
+  },
+  {
+    "route": "/applicant",
+    "file": "src/app/applicant/page.tsx",
+    "portal": "applicant",
+    "kind": "page"
   },
   {
     "route": "/applicant/applications",
@@ -690,20 +636,14 @@
     "kind": "page"
   },
   {
-    "route": "/applicant/meet/[id]",
-    "file": "src/app/applicant/meet/[id]/page.tsx",
-    "portal": "applicant",
-    "kind": "page"
-  },
-  {
     "route": "/applicant/meet",
     "file": "src/app/applicant/meet/page.tsx",
     "portal": "applicant",
     "kind": "page"
   },
   {
-    "route": "/applicant/opportunities/[id]",
-    "file": "src/app/applicant/opportunities/[id]/page.tsx",
+    "route": "/applicant/meet/[id]",
+    "file": "src/app/applicant/meet/[id]/page.tsx",
     "portal": "applicant",
     "kind": "page"
   },
@@ -714,8 +654,8 @@
     "kind": "page"
   },
   {
-    "route": "/applicant",
-    "file": "src/app/applicant/page.tsx",
+    "route": "/applicant/opportunities/[id]",
+    "file": "src/app/applicant/opportunities/[id]/page.tsx",
     "portal": "applicant",
     "kind": "page"
   },
@@ -756,6 +696,12 @@
     "kind": "page"
   },
   {
+    "route": "/auth/signup",
+    "file": "src/app/auth/signup/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
     "route": "/auth/signup/applicant",
     "file": "src/app/auth/signup/applicant/page.tsx",
     "portal": "public/auth",
@@ -774,15 +720,39 @@
     "kind": "page"
   },
   {
-    "route": "/auth/signup",
-    "file": "src/app/auth/signup/page.tsx",
+    "route": "/billing",
+    "file": "src/app/billing/page.tsx",
     "portal": "public/auth",
     "kind": "page"
   },
   {
-    "route": "/billing",
-    "file": "src/app/billing/page.tsx",
+    "route": "/careers",
+    "file": "src/app/(public)/careers/page.tsx",
     "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/careers/[id]",
+    "file": "src/app/(public)/careers/[id]/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/contact",
+    "file": "src/app/(public)/contact/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/cookies",
+    "file": "src/app/(public)/cookies/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer",
+    "file": "src/app/dashboard/employer/page.tsx",
+    "portal": "employer",
     "kind": "page"
   },
   {
@@ -804,14 +774,14 @@
     "kind": "page"
   },
   {
-    "route": "/dashboard/employer/attendance/leave",
-    "file": "src/app/dashboard/employer/attendance/leave/page.tsx",
+    "route": "/dashboard/employer/attendance",
+    "file": "src/app/dashboard/employer/attendance/page.tsx",
     "portal": "employer",
     "kind": "page"
   },
   {
-    "route": "/dashboard/employer/attendance",
-    "file": "src/app/dashboard/employer/attendance/page.tsx",
+    "route": "/dashboard/employer/attendance/leave",
+    "file": "src/app/dashboard/employer/attendance/leave/page.tsx",
     "portal": "employer",
     "kind": "page"
   },
@@ -834,14 +804,14 @@
     "kind": "page"
   },
   {
-    "route": "/dashboard/employer/compliance/expiring",
-    "file": "src/app/dashboard/employer/compliance/expiring/page.tsx",
+    "route": "/dashboard/employer/compliance",
+    "file": "src/app/dashboard/employer/compliance/page.tsx",
     "portal": "employer",
     "kind": "page"
   },
   {
-    "route": "/dashboard/employer/compliance",
-    "file": "src/app/dashboard/employer/compliance/page.tsx",
+    "route": "/dashboard/employer/compliance/expiring",
+    "file": "src/app/dashboard/employer/compliance/expiring/page.tsx",
     "portal": "employer",
     "kind": "page"
   },
@@ -864,6 +834,12 @@
     "kind": "page"
   },
   {
+    "route": "/dashboard/employer/documents",
+    "file": "src/app/dashboard/employer/documents/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
     "route": "/dashboard/employer/documents/[id]",
     "file": "src/app/dashboard/employer/documents/[id]/page.tsx",
     "portal": "employer",
@@ -876,8 +852,14 @@
     "kind": "page"
   },
   {
-    "route": "/dashboard/employer/documents",
-    "file": "src/app/dashboard/employer/documents/page.tsx",
+    "route": "/dashboard/employer/employees",
+    "file": "src/app/dashboard/employer/employees/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/employees/[id]",
+    "file": "src/app/dashboard/employer/employees/[id]/page.tsx",
     "portal": "employer",
     "kind": "page"
   },
@@ -890,12 +872,6 @@
   {
     "route": "/dashboard/employer/employees/[id]/documents",
     "file": "src/app/dashboard/employer/employees/[id]/documents/page.tsx",
-    "portal": "employer",
-    "kind": "page"
-  },
-  {
-    "route": "/dashboard/employer/employees/[id]",
-    "file": "src/app/dashboard/employer/employees/[id]/page.tsx",
     "portal": "employer",
     "kind": "page"
   },
@@ -930,14 +906,14 @@
     "kind": "page"
   },
   {
-    "route": "/dashboard/employer/employees",
-    "file": "src/app/dashboard/employer/employees/page.tsx",
+    "route": "/dashboard/employer/exits",
+    "file": "src/app/dashboard/employer/exits/page.tsx",
     "portal": "employer",
     "kind": "page"
   },
   {
-    "route": "/dashboard/employer/exits",
-    "file": "src/app/dashboard/employer/exits/page.tsx",
+    "route": "/dashboard/employer/hr",
+    "file": "src/app/dashboard/employer/hr/page.tsx",
     "portal": "employer",
     "kind": "page"
   },
@@ -948,14 +924,14 @@
     "kind": "page"
   },
   {
-    "route": "/dashboard/employer/hr/attendance/faces",
-    "file": "src/app/dashboard/employer/hr/attendance/faces/page.tsx",
+    "route": "/dashboard/employer/hr/attendance",
+    "file": "src/app/dashboard/employer/hr/attendance/page.tsx",
     "portal": "employer",
     "kind": "page"
   },
   {
-    "route": "/dashboard/employer/hr/attendance",
-    "file": "src/app/dashboard/employer/hr/attendance/page.tsx",
+    "route": "/dashboard/employer/hr/attendance/faces",
+    "file": "src/app/dashboard/employer/hr/attendance/faces/page.tsx",
     "portal": "employer",
     "kind": "page"
   },
@@ -1020,12 +996,6 @@
     "kind": "page"
   },
   {
-    "route": "/dashboard/employer/hr",
-    "file": "src/app/dashboard/employer/hr/page.tsx",
-    "portal": "employer",
-    "kind": "page"
-  },
-  {
     "route": "/dashboard/employer/hr/shifts",
     "file": "src/app/dashboard/employer/hr/shifts/page.tsx",
     "portal": "employer",
@@ -1056,14 +1026,14 @@
     "kind": "page"
   },
   {
-    "route": "/dashboard/employer/meet/[id]",
-    "file": "src/app/dashboard/employer/meet/[id]/page.tsx",
+    "route": "/dashboard/employer/meet",
+    "file": "src/app/dashboard/employer/meet/page.tsx",
     "portal": "employer",
     "kind": "page"
   },
   {
-    "route": "/dashboard/employer/meet",
-    "file": "src/app/dashboard/employer/meet/page.tsx",
+    "route": "/dashboard/employer/meet/[id]",
+    "file": "src/app/dashboard/employer/meet/[id]/page.tsx",
     "portal": "employer",
     "kind": "page"
   },
@@ -1074,32 +1044,26 @@
     "kind": "page"
   },
   {
-    "route": "/dashboard/employer/onboarding/[id]",
-    "file": "src/app/dashboard/employer/onboarding/[id]/page.tsx",
-    "portal": "employer",
-    "kind": "page"
-  },
-  {
     "route": "/dashboard/employer/onboarding",
     "file": "src/app/dashboard/employer/onboarding/page.tsx",
     "portal": "employer",
     "kind": "page"
   },
   {
-    "route": "/dashboard/employer",
-    "file": "src/app/dashboard/employer/page.tsx",
-    "portal": "employer",
-    "kind": "page"
-  },
-  {
-    "route": "/dashboard/employer/payroll/approvers",
-    "file": "src/app/dashboard/employer/payroll/approvers/page.tsx",
+    "route": "/dashboard/employer/onboarding/[id]",
+    "file": "src/app/dashboard/employer/onboarding/[id]/page.tsx",
     "portal": "employer",
     "kind": "page"
   },
   {
     "route": "/dashboard/employer/payroll",
     "file": "src/app/dashboard/employer/payroll/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/payroll/approvers",
+    "file": "src/app/dashboard/employer/payroll/approvers/page.tsx",
     "portal": "employer",
     "kind": "page"
   },
@@ -1152,8 +1116,20 @@
     "kind": "page"
   },
   {
-    "route": "/dashboard/employer/recruitment/approvals",
-    "file": "src/app/dashboard/employer/recruitment/approvals/page.tsx",
+    "route": "/dashboard/employer/recruitment",
+    "file": "src/app/dashboard/employer/recruitment/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/recruitment/candidates",
+    "file": "src/app/dashboard/employer/recruitment/candidates/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/recruitment/candidates/[id]",
+    "file": "src/app/dashboard/employer/recruitment/candidates/[id]/page.tsx",
     "portal": "employer",
     "kind": "page"
   },
@@ -1176,14 +1152,8 @@
     "kind": "page"
   },
   {
-    "route": "/dashboard/employer/recruitment/candidates/[id]",
-    "file": "src/app/dashboard/employer/recruitment/candidates/[id]/page.tsx",
-    "portal": "employer",
-    "kind": "page"
-  },
-  {
-    "route": "/dashboard/employer/recruitment/candidates",
-    "file": "src/app/dashboard/employer/recruitment/candidates/page.tsx",
+    "route": "/dashboard/employer/recruitment/jobs",
+    "file": "src/app/dashboard/employer/recruitment/jobs/page.tsx",
     "portal": "employer",
     "kind": "page"
   },
@@ -1200,20 +1170,8 @@
     "kind": "page"
   },
   {
-    "route": "/dashboard/employer/recruitment/jobs",
-    "file": "src/app/dashboard/employer/recruitment/jobs/page.tsx",
-    "portal": "employer",
-    "kind": "page"
-  },
-  {
     "route": "/dashboard/employer/recruitment/offers",
     "file": "src/app/dashboard/employer/recruitment/offers/page.tsx",
-    "portal": "employer",
-    "kind": "page"
-  },
-  {
-    "route": "/dashboard/employer/recruitment",
-    "file": "src/app/dashboard/employer/recruitment/page.tsx",
     "portal": "employer",
     "kind": "page"
   },
@@ -1242,14 +1200,14 @@
     "kind": "page"
   },
   {
-    "route": "/dashboard/employer/training/new",
-    "file": "src/app/dashboard/employer/training/new/page.tsx",
+    "route": "/dashboard/employer/training",
+    "file": "src/app/dashboard/employer/training/page.tsx",
     "portal": "employer",
     "kind": "page"
   },
   {
-    "route": "/dashboard/employer/training",
-    "file": "src/app/dashboard/employer/training/page.tsx",
+    "route": "/dashboard/employer/training/new",
+    "file": "src/app/dashboard/employer/training/new/page.tsx",
     "portal": "employer",
     "kind": "page"
   },
@@ -1257,6 +1215,12 @@
     "route": "/dashboard/employer/workforce",
     "file": "src/app/dashboard/employer/workforce/page.tsx",
     "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/employee",
+    "file": "src/app/employee/page.tsx",
+    "portal": "employee",
     "kind": "page"
   },
   {
@@ -1302,14 +1266,14 @@
     "kind": "page"
   },
   {
-    "route": "/employee/meet/[id]",
-    "file": "src/app/employee/meet/[id]/page.tsx",
+    "route": "/employee/meet",
+    "file": "src/app/employee/meet/page.tsx",
     "portal": "employee",
     "kind": "page"
   },
   {
-    "route": "/employee/meet",
-    "file": "src/app/employee/meet/page.tsx",
+    "route": "/employee/meet/[id]",
+    "file": "src/app/employee/meet/[id]/page.tsx",
     "portal": "employee",
     "kind": "page"
   },
@@ -1320,20 +1284,14 @@
     "kind": "page"
   },
   {
-    "route": "/employee/opportunities/[id]",
-    "file": "src/app/employee/opportunities/[id]/page.tsx",
-    "portal": "employee",
-    "kind": "page"
-  },
-  {
     "route": "/employee/opportunities",
     "file": "src/app/employee/opportunities/page.tsx",
     "portal": "employee",
     "kind": "page"
   },
   {
-    "route": "/employee",
-    "file": "src/app/employee/page.tsx",
+    "route": "/employee/opportunities/[id]",
+    "file": "src/app/employee/opportunities/[id]/page.tsx",
     "portal": "employee",
     "kind": "page"
   },
@@ -1410,8 +1368,8 @@
     "kind": "page"
   },
   {
-    "route": "/jobs/[id]",
-    "file": "src/app/jobs/[id]/page.tsx",
+    "route": "/install",
+    "file": "src/app/(public)/install/page.tsx",
     "portal": "public/auth",
     "kind": "page"
   },
@@ -1422,8 +1380,8 @@
     "kind": "page"
   },
   {
-    "route": "/meet/[id]",
-    "file": "src/app/meet/[id]/page.tsx",
+    "route": "/jobs/[id]",
+    "file": "src/app/jobs/[id]/page.tsx",
     "portal": "public/auth",
     "kind": "page"
   },
@@ -1434,8 +1392,38 @@
     "kind": "page"
   },
   {
+    "route": "/meet/[id]",
+    "file": "src/app/meet/[id]/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
     "route": "/onboarding/employer",
     "file": "src/app/onboarding/employer/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/pricing",
+    "file": "src/app/(public)/pricing/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/pricing/checkout",
+    "file": "src/app/(public)/pricing/checkout/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/privacy",
+    "file": "src/app/(public)/privacy/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/solutions",
+    "file": "src/app/(public)/solutions/page.tsx",
     "portal": "public/auth",
     "kind": "page"
   },
@@ -1446,8 +1434,8 @@
     "kind": "page"
   },
   {
-    "route": "/support/tickets",
-    "file": "src/app/support/tickets/page.tsx",
+    "route": "/support-console",
+    "file": "src/app/support-console/page.tsx",
     "portal": "public/auth",
     "kind": "page"
   },
@@ -1470,8 +1458,14 @@
     "kind": "page"
   },
   {
-    "route": "/support-console",
-    "file": "src/app/support-console/page.tsx",
+    "route": "/support/tickets",
+    "file": "src/app/support/tickets/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/terms",
+    "file": "src/app/(public)/terms/page.tsx",
     "portal": "public/auth",
     "kind": "page"
   }

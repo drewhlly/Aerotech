@@ -1,5 +1,5 @@
 'use client';
-import {useEffect,useRef,type ReactNode,type ButtonHTMLAttributes,type InputHTMLAttributes,type SelectHTMLAttributes} from 'react';
+import {useEffect,useRef,useId,type ReactNode,type ButtonHTMLAttributes,type InputHTMLAttributes,type SelectHTMLAttributes} from 'react';
 export function Button({className='',...props}:ButtonHTMLAttributes<HTMLButtonElement>){return <button {...props} className={'aero-button bg-blue-700 text-white '+className}/>}
 export function Input({className='',...props}:InputHTMLAttributes<HTMLInputElement>){return <input {...props} className={'aero-input '+className}/>}
 export function Select({className='',children,...props}:SelectHTMLAttributes<HTMLSelectElement>){return <select {...props} className={'aero-input '+className}>{children}</select>}
@@ -10,5 +10,5 @@ export function ErrorState({message,retry}:{message:string;retry:()=>void}){retu
 export function Toast({children}:{children:ReactNode}){return <p role="status" aria-live="polite" className="aero-card text-sm">{children}</p>}
 export function Modal({open,title,children,onClose}:{open:boolean;title:string;children:ReactNode;onClose:()=>void}){const ref=useRef<HTMLDialogElement>(null);useEffect(()=>{if(open)ref.current?.showModal();else ref.current?.close()},[open]);return <dialog ref={ref} onCancel={onClose} onClose={onClose} aria-label={title} className="m-auto w-[calc(100%-32px)] max-w-xl rounded-2xl border border-slate-200 bg-white p-6 text-slate-900 shadow-xl backdrop:bg-slate-950/50"><div className="flex items-center justify-between gap-4"><h2 className="text-xl font-bold">{title}</h2><button className="aero-button border" onClick={onClose}>Close</button></div>{children}</dialog>}
 export function Drawer(props:Parameters<typeof Modal>[0]){return <Modal {...props}/>}
-export function Tooltip({label,children}:{label:string;children:ReactNode}){return <span title={label} className="inline-flex">{children}</span>}
+export function Tooltip({label,children}:{label:string;children:ReactNode}){const id=useId();return <span className="group relative inline-flex" tabIndex={0} aria-describedby={id}>{children}<span id={id} role="tooltip" className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 hidden w-max max-w-64 -translate-x-1/2 rounded-lg bg-slate-900 px-3 py-2 text-xs text-white shadow-lg group-hover:block group-focus-within:block">{label}</span></span>}
 export function Tabs({items,selected,onSelect}:{items:string[];selected:string;onSelect:(s:string)=>void}){return <div aria-label="View options" className="flex flex-wrap gap-2">{items.map(x=><button aria-pressed={x===selected} key={x} onClick={()=>onSelect(x)} className={'aero-button '+(x===selected?'bg-blue-700 text-white':'border')}>{x}</button>)}</div>}
