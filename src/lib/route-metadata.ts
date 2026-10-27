@@ -77,7 +77,6 @@ const names:Record<string,string>={
   "/dashboard/employer/payroll/wallet": "Employer Payroll Wallet",
   "/dashboard/employer/performance": "Employer Performance",
   "/dashboard/employer/recruitment": "Employer Recruitment",
-  "/dashboard/employer/recruitment/approvals": "Employer Recruitment Approvals",
   "/dashboard/employer/recruitment/candidates": "Employer Recruitment Candidates",
   "/dashboard/employer/recruitment/candidates/[id]": "Employer Recruitment Candidates Details",
   "/dashboard/employer/recruitment/candidates/[id]/assessment": "Employer Recruitment Candidates Details Assessment",
