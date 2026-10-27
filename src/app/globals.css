@@ -106,3 +106,20 @@ input[type="checkbox"],input[type="radio"]{min-width:18px;min-height:18px;accent
 .text-slate-400{color:#64748b}.bg-\[\#07152c\] .text-slate-400{color:#cbd5e1}
 .aero-card{border-radius:var(--aero-radius);box-shadow:var(--aero-shadow)}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+
+/* Phase 2 shared visual tokens */
+:root{--aero-space-1:8px;--aero-space-2:16px;--aero-space-3:24px;--aero-space-4:32px;--aero-brand:#1d4ed8;--aero-radius:16px;--aero-border:#e2e8f0;--aero-canvas:#f8fafc;--aero-shadow:0 4px 16px #0f172a08;color-scheme:light;}
+.aero-hero{background:#0f172a;border-radius:var(--aero-radius);box-shadow:none}.aero-card{padding:24px;border-color:var(--aero-border)}
+.aero-button{border-radius:8px;padding:12px 16px}.aero-input{border-radius:8px}.workspace-content h1{letter-spacing:-.025em}.workspace-content table thead{position:sticky;top:0}
+@media(min-width:1024px){.sidebar-collapsed .portal-sidebar{transform:translateX(-100%)}.sidebar-collapsed>div{padding-left:0}}
+[data-theme="dark"]{color-scheme:dark;--aero-surface:#111827;--aero-ink:#f1f5f9;--aero-muted:#cbd5e1;--aero-border:#475569;--aero-canvas:#020617}
+[data-theme="dark"] body,[data-theme="dark"] .bg-slate-50,[data-theme="dark"] .bg-\[\#f4f6fc\]{background:#020617;color:#f1f5f9}
+[data-theme="dark"] .bg-white,[data-theme="dark"] .aero-card,[data-theme="dark"] dialog{background:#111827;color:#f1f5f9;border-color:#475569}
+[data-theme="dark"] .bg-slate-100,[data-theme="dark"] .bg-slate-200{background:#1e293b}
+[data-theme="dark"] .text-slate-900,[data-theme="dark"] .text-slate-950,[data-theme="dark"] .text-slate-800,[data-theme="dark"] .text-\[\#07152c\]{color:#f1f5f9}
+[data-theme="dark"] .text-slate-500,[data-theme="dark"] .text-slate-600,[data-theme="dark"] .text-slate-700{color:#cbd5e1}
+[data-theme="dark"] .aero-input,[data-theme="dark"] input,[data-theme="dark"] textarea,[data-theme="dark"] select{background:#0f172a;color:#f1f5f9;border-color:#64748b}
+[data-theme="dark"] .text-blue-700{color:#93c5fd}[data-theme="dark"] .bg-blue-50{background:#172554;color:#bfdbfe}
+@media(max-width:640px){.aero-card{padding:16px}.portal-frame header{gap:4px;padding-inline:8px}.portal-frame header button{padding:8px}.portal-frame header [aria-label="Aerotech home"] img{width:96px!important}}
+
+@media(max-width:640px){.portal-frame header [aria-label="Account menu"] svg:last-child{display:none}.portal-frame header [aria-label="Account menu"]{gap:0}}

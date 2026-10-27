@@ -1,4 +1,6 @@
 "use client";
+import PolicyAcceptance from '@/components/policy-acceptance';
+import {POLICY_VERSION} from '@/lib/policy';
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import PasswordInput from "@/components/password-input";
@@ -11,7 +13,7 @@ export default function ApplicantSignup() {
  async function submit(event:FormEvent<HTMLFormElement>) {
   event.preventDefault();setError("");setBusy(true);
   try {
-   const response=await fetch("/api/auth/signup/applicant",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(form)});
+   const response=await fetch("/api/auth/signup/applicant",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...form,acceptedPolicies:true,policyVersion:POLICY_VERSION})});
    const data=await response.json().catch(()=>({}));
    if(!response.ok){setError(data.error||"Registration failed.");return;}
    window.location.assign(safeReturnTo(new URLSearchParams(window.location.search).get('next'),'applicant'));
@@ -26,7 +28,7 @@ export default function ApplicantSignup() {
     <label className="block text-sm font-semibold text-slate-700">Country<CountrySelect required value={form.country} onChange={e=>setForm(v=>({...v,country:e.target.value}))} className="aero-input mt-2"/></label>
     {error&&<p role="alert" className="text-sm text-red-700">{error}</p>}
     <button type="submit" disabled={busy} className="w-full rounded-xl bg-[#07152c] p-4 font-bold text-white disabled:opacity-50">{busy?"Creating account...":"Create free account"}</button>
-   </form>
+   <PolicyAcceptance/></form>
    <Link href="/auth/login?role=applicant" className="mt-5 block text-center text-sm font-bold text-[#2563eb]">Already registered? Sign in</Link>
   </div></div>
  </main>;

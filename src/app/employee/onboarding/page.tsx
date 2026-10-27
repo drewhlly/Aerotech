@@ -1,1 +1,0 @@
-import Workflows from '@/components/workflow-workspace';import Learning from '@/components/employee-learning';export default function Page(){return <div className="space-y-6"><Workflows employee/><Learning module="onboarding"/></div>}

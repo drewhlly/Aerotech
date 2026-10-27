@@ -1,0 +1,38 @@
+# Phase 2 Part 1 — Audit and implementation plan
+
+Audited baseline: `8a3e47924bfea7706fabbf51f2d4e82ba2551e49` (production main, 27 October 2026).
+
+## Audit
+
+- New vacancies were forced to draft by `/api/ats`, and employer publication explicitly returned 403. Approval UI/API/metadata/schema remained.
+- Employee onboarding/agreement navigation, page, acknowledgement API branch, scheduled task creation and notification were connected; deleting the page alone would leave dependencies.
+- Phase 1 provides isolated role layouts, navigation and middleware; same-origin and tenant checks must be preserved.
+- App shell lacked desktop collapse, command navigation, themes and reusable table interactions. Employee directory used an unpaginated linked list.
+- Privacy and Terms were short notices, without rights handling, versioned registration acceptance or granular cookie logs.
+- About information supplied in this request was empty. Existing mission/story/values cannot be represented as approved facts under the new brief.
+- Baseline build, lint, TypeScript and all 33 tests passed.
+
+## Plan shown to owner before large changes
+
+1. Replace pre-publication approval with immediate publication, validation, screening, account rate limits, reports, expiry and public discovery.
+2. Retire Employee agreement/onboarding entry points without removing employer staff administration.
+3. Extend shared components, role shells, tables, fixed-value controls, loading/error states and dashboard attention widgets.
+4. Version policies and acceptance, add privacy settings/requests/export/cookies and admin audit workflow; mark unprovided facts `[EDIT]`.
+5. Verify in disposable PostgreSQL/Chromium, then build/lint/types, role crawl, axe and Lighthouse before release.
+
+## Deliberate boundaries
+
+- Historical migrations remain as migration history; the new forward migration removes obsolete runtime fields. Historical signed acknowledgement evidence is retained, inaccessible through the retired workflow, pending an approved retention policy.
+- Deletion is a tracked, confirmed request, not immediate erasure of employer-controlled payroll/legal records. It requires verified identity and a documented retention decision. Account export states its scope; additional records can be requested.
+- Company verification is distinct from vacancy review. Only an administrator can record independent company identity evidence; a verified email alone does not produce the badge.
+- Optional analytics and advertising are not installed or activated by the cookie UI. All optional categories default off.
+- No project/task functionality is introduced in Part 1; dashboard slots are explicitly reserved for Part 2.
+- No production domain/DNS changes are included.
+
+## Legal sources checked
+
+- NDPC NDP Act 2023 resource: https://ndpc.gov.ng/download/nigeria-data-protection-act-2023
+- NDPC 2026 journal explaining GAID 2025: https://ndpc.gov.ng/wp-content/uploads/2026/02/NDPC-Journal-2026-1.pdf
+- NDPC rights and implementation FAQs: https://ndpc.gov.ng/faqs/
+
+Drafts require a qualified Nigerian data-protection professional to validate entity/DPO contacts, lawful bases, subprocessors, transfer safeguards, retention schedules and adoption date. They are not a compliance certification.

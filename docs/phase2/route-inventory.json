@@ -1,0 +1,1478 @@
+[
+  {
+    "route": "/about",
+    "file": "src/app/(public)/about/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/careers/[id]",
+    "file": "src/app/(public)/careers/[id]/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/careers",
+    "file": "src/app/(public)/careers/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/contact",
+    "file": "src/app/(public)/contact/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/cookies",
+    "file": "src/app/(public)/cookies/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/install",
+    "file": "src/app/(public)/install/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/",
+    "file": "src/app/(public)/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/pricing/checkout",
+    "file": "src/app/(public)/pricing/checkout/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/pricing",
+    "file": "src/app/(public)/pricing/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/privacy",
+    "file": "src/app/(public)/privacy/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/solutions",
+    "file": "src/app/(public)/solutions/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/terms",
+    "file": "src/app/(public)/terms/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/admin",
+    "file": "src/app/admin/page.tsx",
+    "portal": "admin",
+    "kind": "page"
+  },
+  {
+    "route": "/admin/privacy",
+    "file": "src/app/admin/privacy/page.tsx",
+    "portal": "admin",
+    "kind": "page"
+  },
+  {
+    "route": "/admin/safeguards",
+    "file": "src/app/admin/safeguards/page.tsx",
+    "portal": "admin",
+    "kind": "page"
+  },
+  {
+    "route": "/admin/support",
+    "file": "src/app/admin/support/page.tsx",
+    "portal": "admin",
+    "kind": "page"
+  },
+  {
+    "route": "/admin/support-cases",
+    "file": "src/app/admin/support-cases/page.tsx",
+    "portal": "admin",
+    "kind": "page"
+  },
+  {
+    "route": "/aerochat",
+    "file": "src/app/aerochat/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/api/admin/job-safety",
+    "file": "src/app/api/admin/job-safety/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/admin/privacy-requests",
+    "file": "src/app/api/admin/privacy-requests/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/admin/readiness",
+    "file": "src/app/api/admin/readiness/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/aerochat",
+    "file": "src/app/api/aerochat/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/ai/ask",
+    "file": "src/app/api/ai/ask/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/ats",
+    "file": "src/app/api/ats/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/auth/activate/employee",
+    "file": "src/app/api/auth/activate/employee/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/auth/login/applicant",
+    "file": "src/app/api/auth/login/applicant/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/auth/login/employee",
+    "file": "src/app/api/auth/login/employee/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/auth/login/employer",
+    "file": "src/app/api/auth/login/employer/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/auth/logout/applicant",
+    "file": "src/app/api/auth/logout/applicant/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/auth/logout/employee",
+    "file": "src/app/api/auth/logout/employee/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/auth/logout",
+    "file": "src/app/api/auth/logout/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/auth/password",
+    "file": "src/app/api/auth/password/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/auth/signup/applicant",
+    "file": "src/app/api/auth/signup/applicant/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/auth/signup/employer",
+    "file": "src/app/api/auth/signup/employer/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/billing",
+    "file": "src/app/api/billing/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/billing/webhook",
+    "file": "src/app/api/billing/webhook/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/company-feedback",
+    "file": "src/app/api/company-feedback/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/cron/hr-birthdays",
+    "file": "src/app/api/cron/hr-birthdays/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/cron/payroll",
+    "file": "src/app/api/cron/payroll/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/cron/payslip-notices",
+    "file": "src/app/api/cron/payslip-notices/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/cron/workflows",
+    "file": "src/app/api/cron/workflows/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/employee/attendance",
+    "file": "src/app/api/employee/attendance/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/employee/birthdays",
+    "file": "src/app/api/employee/birthdays/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/employee/face",
+    "file": "src/app/api/employee/face/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/employee/learning",
+    "file": "src/app/api/employee/learning/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/employee/manager/leave",
+    "file": "src/app/api/employee/manager/leave/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/employee/notifications",
+    "file": "src/app/api/employee/notifications/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/employee/payroll/review",
+    "file": "src/app/api/employee/payroll/review/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/employee/payroll/statements",
+    "file": "src/app/api/employee/payroll/statements/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/employee/profile",
+    "file": "src/app/api/employee/profile/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/employee/surveys",
+    "file": "src/app/api/employee/surveys/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/employee/workspace",
+    "file": "src/app/api/employee/workspace/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/employees/[id]/profile",
+    "file": "src/app/api/employees/[id]/profile/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/employees/[id]",
+    "file": "src/app/api/employees/[id]/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/employees/import",
+    "file": "src/app/api/employees/import/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/employees/invite",
+    "file": "src/app/api/employees/invite/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/employees",
+    "file": "src/app/api/employees/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/employer/alerts",
+    "file": "src/app/api/employer/alerts/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/employer/overview",
+    "file": "src/app/api/employer/overview/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/employer/reports",
+    "file": "src/app/api/employer/reports/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/employer/verification",
+    "file": "src/app/api/employer/verification/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/help/tickets",
+    "file": "src/app/api/help/tickets/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/hr/[module]",
+    "file": "src/app/api/hr/[module]/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/hr/attendance/assignments",
+    "file": "src/app/api/hr/attendance/assignments/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/hr/attendance/check-in",
+    "file": "src/app/api/hr/attendance/check-in/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/hr/attendance/faces",
+    "file": "src/app/api/hr/attendance/faces/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/hr/attendance",
+    "file": "src/app/api/hr/attendance/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/hr/attendance/sites",
+    "file": "src/app/api/hr/attendance/sites/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/hr/attendance/summary",
+    "file": "src/app/api/hr/attendance/summary/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/hr/birthdays",
+    "file": "src/app/api/hr/birthdays/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/hr/departments",
+    "file": "src/app/api/hr/departments/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/hr/exits",
+    "file": "src/app/api/hr/exits/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/hr/goals",
+    "file": "src/app/api/hr/goals/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/hr/lifecycle/[module]",
+    "file": "src/app/api/hr/lifecycle/[module]/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/hr/requests/[id]/review",
+    "file": "src/app/api/hr/requests/[id]/review/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/hr/requests",
+    "file": "src/app/api/hr/requests/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/hr/shifts",
+    "file": "src/app/api/hr/shifts/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/hr/surveys",
+    "file": "src/app/api/hr/surveys/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/jobs/report",
+    "file": "src/app/api/jobs/report/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/meet/[id]/join",
+    "file": "src/app/api/meet/[id]/join/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/meet",
+    "file": "src/app/api/meet/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/payroll/approve",
+    "file": "src/app/api/payroll/approve/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/payroll/approvers",
+    "file": "src/app/api/payroll/approvers/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/payroll/bands",
+    "file": "src/app/api/payroll/bands/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/payroll/compensation",
+    "file": "src/app/api/payroll/compensation/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/payroll/payments/connection",
+    "file": "src/app/api/payroll/payments/connection/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/payroll/payments/finalize",
+    "file": "src/app/api/payroll/payments/finalize/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/payroll/payments/prepare",
+    "file": "src/app/api/payroll/payments/prepare/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/payroll/payments/recipients",
+    "file": "src/app/api/payroll/payments/recipients/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/payroll/payments/reconcile",
+    "file": "src/app/api/payroll/payments/reconcile/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/payroll/payments/release",
+    "file": "src/app/api/payroll/payments/release/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/payroll/payments",
+    "file": "src/app/api/payroll/payments/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/payroll/payments/webhook/[employerId]",
+    "file": "src/app/api/payroll/payments/webhook/[employerId]/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/payroll/payslips",
+    "file": "src/app/api/payroll/payslips/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/payroll/run",
+    "file": "src/app/api/payroll/run/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/privacy/cookies",
+    "file": "src/app/api/privacy/cookies/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/privacy/export",
+    "file": "src/app/api/privacy/export/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/privacy/requests",
+    "file": "src/app/api/privacy/requests/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/recruitment/import",
+    "file": "src/app/api/recruitment/import/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/staff-confirmations",
+    "file": "src/app/api/staff-confirmations/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/support/tickets/[id]",
+    "file": "src/app/api/support/tickets/[id]/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/support/tickets",
+    "file": "src/app/api/support/tickets/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/support-console/enroll",
+    "file": "src/app/api/support-console/enroll/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/support-console/login",
+    "file": "src/app/api/support-console/login/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/support-console/logout",
+    "file": "src/app/api/support-console/logout/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/support-console/tickets/[id]/diagnostics",
+    "file": "src/app/api/support-console/tickets/[id]/diagnostics/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/support-console/tickets/[id]",
+    "file": "src/app/api/support-console/tickets/[id]/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/support-console/tickets",
+    "file": "src/app/api/support-console/tickets/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/workflows",
+    "file": "src/app/api/workflows/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/workforce-documents",
+    "file": "src/app/api/workforce-documents/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/api/workspace/attention",
+    "file": "src/app/api/workspace/attention/route.ts",
+    "portal": "api",
+    "kind": "api"
+  },
+  {
+    "route": "/applicant/applications",
+    "file": "src/app/applicant/applications/page.tsx",
+    "portal": "applicant",
+    "kind": "page"
+  },
+  {
+    "route": "/applicant/assessments",
+    "file": "src/app/applicant/assessments/page.tsx",
+    "portal": "applicant",
+    "kind": "page"
+  },
+  {
+    "route": "/applicant/documents",
+    "file": "src/app/applicant/documents/page.tsx",
+    "portal": "applicant",
+    "kind": "page"
+  },
+  {
+    "route": "/applicant/interviews",
+    "file": "src/app/applicant/interviews/page.tsx",
+    "portal": "applicant",
+    "kind": "page"
+  },
+  {
+    "route": "/applicant/meet/[id]",
+    "file": "src/app/applicant/meet/[id]/page.tsx",
+    "portal": "applicant",
+    "kind": "page"
+  },
+  {
+    "route": "/applicant/meet",
+    "file": "src/app/applicant/meet/page.tsx",
+    "portal": "applicant",
+    "kind": "page"
+  },
+  {
+    "route": "/applicant/opportunities/[id]",
+    "file": "src/app/applicant/opportunities/[id]/page.tsx",
+    "portal": "applicant",
+    "kind": "page"
+  },
+  {
+    "route": "/applicant/opportunities",
+    "file": "src/app/applicant/opportunities/page.tsx",
+    "portal": "applicant",
+    "kind": "page"
+  },
+  {
+    "route": "/applicant",
+    "file": "src/app/applicant/page.tsx",
+    "portal": "applicant",
+    "kind": "page"
+  },
+  {
+    "route": "/applicant/privacy",
+    "file": "src/app/applicant/privacy/page.tsx",
+    "portal": "applicant",
+    "kind": "page"
+  },
+  {
+    "route": "/applicant/support",
+    "file": "src/app/applicant/support/page.tsx",
+    "portal": "applicant",
+    "kind": "page"
+  },
+  {
+    "route": "/auth/activate",
+    "file": "src/app/auth/activate/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/auth/forgot-password",
+    "file": "src/app/auth/forgot-password/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/auth/login",
+    "file": "src/app/auth/login/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/auth/reset-password",
+    "file": "src/app/auth/reset-password/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/auth/signup/applicant",
+    "file": "src/app/auth/signup/applicant/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/auth/signup/employee",
+    "file": "src/app/auth/signup/employee/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/auth/signup/employer",
+    "file": "src/app/auth/signup/employer/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/auth/signup",
+    "file": "src/app/auth/signup/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/billing",
+    "file": "src/app/billing/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/account",
+    "file": "src/app/dashboard/employer/account/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/aerochat",
+    "file": "src/app/dashboard/employer/aerochat/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/ai",
+    "file": "src/app/dashboard/employer/ai/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/attendance/leave",
+    "file": "src/app/dashboard/employer/attendance/leave/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/attendance",
+    "file": "src/app/dashboard/employer/attendance/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/attendance/shifts",
+    "file": "src/app/dashboard/employer/attendance/shifts/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/automation",
+    "file": "src/app/dashboard/employer/automation/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/billing/plans",
+    "file": "src/app/dashboard/employer/billing/plans/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/compliance/expiring",
+    "file": "src/app/dashboard/employer/compliance/expiring/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/compliance",
+    "file": "src/app/dashboard/employer/compliance/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/compliance/reports",
+    "file": "src/app/dashboard/employer/compliance/reports/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/compliance/requirements",
+    "file": "src/app/dashboard/employer/compliance/requirements/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/confirmations",
+    "file": "src/app/dashboard/employer/confirmations/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/documents/[id]",
+    "file": "src/app/dashboard/employer/documents/[id]/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/documents/new",
+    "file": "src/app/dashboard/employer/documents/new/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/documents",
+    "file": "src/app/dashboard/employer/documents/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/employees/[id]/compensation",
+    "file": "src/app/dashboard/employer/employees/[id]/compensation/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/employees/[id]/documents",
+    "file": "src/app/dashboard/employer/employees/[id]/documents/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/employees/[id]",
+    "file": "src/app/dashboard/employer/employees/[id]/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/employees/[id]/performance",
+    "file": "src/app/dashboard/employer/employees/[id]/performance/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/employees/[id]/profile",
+    "file": "src/app/dashboard/employer/employees/[id]/profile/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/employees/[id]/timeline",
+    "file": "src/app/dashboard/employer/employees/[id]/timeline/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/employees/import",
+    "file": "src/app/dashboard/employer/employees/import/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/employees/new",
+    "file": "src/app/dashboard/employer/employees/new/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/employees",
+    "file": "src/app/dashboard/employer/employees/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/exits",
+    "file": "src/app/dashboard/employer/exits/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/hr/assets",
+    "file": "src/app/dashboard/employer/hr/assets/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/hr/attendance/faces",
+    "file": "src/app/dashboard/employer/hr/attendance/faces/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/hr/attendance",
+    "file": "src/app/dashboard/employer/hr/attendance/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/hr/attendance/verification",
+    "file": "src/app/dashboard/employer/hr/attendance/verification/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/hr/birthdays",
+    "file": "src/app/dashboard/employer/hr/birthdays/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/hr/departments",
+    "file": "src/app/dashboard/employer/hr/departments/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/hr/disciplinary",
+    "file": "src/app/dashboard/employer/hr/disciplinary/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/hr/goals",
+    "file": "src/app/dashboard/employer/hr/goals/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/hr/lifecycle/documents",
+    "file": "src/app/dashboard/employer/hr/lifecycle/documents/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/hr/lifecycle/notifications",
+    "file": "src/app/dashboard/employer/hr/lifecycle/notifications/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/hr/lifecycle/onboarding",
+    "file": "src/app/dashboard/employer/hr/lifecycle/onboarding/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/hr/lifecycle/reviews",
+    "file": "src/app/dashboard/employer/hr/lifecycle/reviews/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/hr/lifecycle/training",
+    "file": "src/app/dashboard/employer/hr/lifecycle/training/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/hr",
+    "file": "src/app/dashboard/employer/hr/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/hr/shifts",
+    "file": "src/app/dashboard/employer/hr/shifts/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/hr/surveys",
+    "file": "src/app/dashboard/employer/hr/surveys/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/hr/tasks",
+    "file": "src/app/dashboard/employer/hr/tasks/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/jobs/new",
+    "file": "src/app/dashboard/employer/jobs/new/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/jobs/preview",
+    "file": "src/app/dashboard/employer/jobs/preview/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/meet/[id]",
+    "file": "src/app/dashboard/employer/meet/[id]/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/meet",
+    "file": "src/app/dashboard/employer/meet/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/notifications",
+    "file": "src/app/dashboard/employer/notifications/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/onboarding/[id]",
+    "file": "src/app/dashboard/employer/onboarding/[id]/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/onboarding",
+    "file": "src/app/dashboard/employer/onboarding/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer",
+    "file": "src/app/dashboard/employer/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/payroll/approvers",
+    "file": "src/app/dashboard/employer/payroll/approvers/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/payroll",
+    "file": "src/app/dashboard/employer/payroll/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/payroll/pay",
+    "file": "src/app/dashboard/employer/payroll/pay/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/payroll/payslips",
+    "file": "src/app/dashboard/employer/payroll/payslips/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/payroll/run",
+    "file": "src/app/dashboard/employer/payroll/run/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/payroll/settings",
+    "file": "src/app/dashboard/employer/payroll/settings/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/payroll/setup",
+    "file": "src/app/dashboard/employer/payroll/setup/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/payroll/wallet",
+    "file": "src/app/dashboard/employer/payroll/wallet/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/performance",
+    "file": "src/app/dashboard/employer/performance/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/privacy",
+    "file": "src/app/dashboard/employer/privacy/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/recruitment/approvals",
+    "file": "src/app/dashboard/employer/recruitment/approvals/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/recruitment/candidates/[id]/assessment",
+    "file": "src/app/dashboard/employer/recruitment/candidates/[id]/assessment/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/recruitment/candidates/[id]/interviews",
+    "file": "src/app/dashboard/employer/recruitment/candidates/[id]/interviews/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/recruitment/candidates/[id]/offer",
+    "file": "src/app/dashboard/employer/recruitment/candidates/[id]/offer/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/recruitment/candidates/[id]",
+    "file": "src/app/dashboard/employer/recruitment/candidates/[id]/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/recruitment/candidates",
+    "file": "src/app/dashboard/employer/recruitment/candidates/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/recruitment/jobs/[id]",
+    "file": "src/app/dashboard/employer/recruitment/jobs/[id]/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/recruitment/jobs/new",
+    "file": "src/app/dashboard/employer/recruitment/jobs/new/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/recruitment/jobs",
+    "file": "src/app/dashboard/employer/recruitment/jobs/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/recruitment/offers",
+    "file": "src/app/dashboard/employer/recruitment/offers/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/recruitment",
+    "file": "src/app/dashboard/employer/recruitment/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/reports",
+    "file": "src/app/dashboard/employer/reports/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/requests",
+    "file": "src/app/dashboard/employer/requests/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/support",
+    "file": "src/app/dashboard/employer/support/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/support-access",
+    "file": "src/app/dashboard/employer/support-access/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/training/new",
+    "file": "src/app/dashboard/employer/training/new/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/training",
+    "file": "src/app/dashboard/employer/training/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/dashboard/employer/workforce",
+    "file": "src/app/dashboard/employer/workforce/page.tsx",
+    "portal": "employer",
+    "kind": "page"
+  },
+  {
+    "route": "/employee/aerochat",
+    "file": "src/app/employee/aerochat/page.tsx",
+    "portal": "employee",
+    "kind": "page"
+  },
+  {
+    "route": "/employee/attendance",
+    "file": "src/app/employee/attendance/page.tsx",
+    "portal": "employee",
+    "kind": "page"
+  },
+  {
+    "route": "/employee/billing/plans",
+    "file": "src/app/employee/billing/plans/page.tsx",
+    "portal": "employee",
+    "kind": "page"
+  },
+  {
+    "route": "/employee/birthdays",
+    "file": "src/app/employee/birthdays/page.tsx",
+    "portal": "employee",
+    "kind": "page"
+  },
+  {
+    "route": "/employee/confirmation",
+    "file": "src/app/employee/confirmation/page.tsx",
+    "portal": "employee",
+    "kind": "page"
+  },
+  {
+    "route": "/employee/documents",
+    "file": "src/app/employee/documents/page.tsx",
+    "portal": "employee",
+    "kind": "page"
+  },
+  {
+    "route": "/employee/leave",
+    "file": "src/app/employee/leave/page.tsx",
+    "portal": "employee",
+    "kind": "page"
+  },
+  {
+    "route": "/employee/meet/[id]",
+    "file": "src/app/employee/meet/[id]/page.tsx",
+    "portal": "employee",
+    "kind": "page"
+  },
+  {
+    "route": "/employee/meet",
+    "file": "src/app/employee/meet/page.tsx",
+    "portal": "employee",
+    "kind": "page"
+  },
+  {
+    "route": "/employee/notifications",
+    "file": "src/app/employee/notifications/page.tsx",
+    "portal": "employee",
+    "kind": "page"
+  },
+  {
+    "route": "/employee/opportunities/[id]",
+    "file": "src/app/employee/opportunities/[id]/page.tsx",
+    "portal": "employee",
+    "kind": "page"
+  },
+  {
+    "route": "/employee/opportunities",
+    "file": "src/app/employee/opportunities/page.tsx",
+    "portal": "employee",
+    "kind": "page"
+  },
+  {
+    "route": "/employee",
+    "file": "src/app/employee/page.tsx",
+    "portal": "employee",
+    "kind": "page"
+  },
+  {
+    "route": "/employee/payroll/approvals",
+    "file": "src/app/employee/payroll/approvals/page.tsx",
+    "portal": "employee",
+    "kind": "page"
+  },
+  {
+    "route": "/employee/payroll/payments",
+    "file": "src/app/employee/payroll/payments/page.tsx",
+    "portal": "employee",
+    "kind": "page"
+  },
+  {
+    "route": "/employee/payroll/statements",
+    "file": "src/app/employee/payroll/statements/page.tsx",
+    "portal": "employee",
+    "kind": "page"
+  },
+  {
+    "route": "/employee/payslips",
+    "file": "src/app/employee/payslips/page.tsx",
+    "portal": "employee",
+    "kind": "page"
+  },
+  {
+    "route": "/employee/performance",
+    "file": "src/app/employee/performance/page.tsx",
+    "portal": "employee",
+    "kind": "page"
+  },
+  {
+    "route": "/employee/privacy",
+    "file": "src/app/employee/privacy/page.tsx",
+    "portal": "employee",
+    "kind": "page"
+  },
+  {
+    "route": "/employee/profile",
+    "file": "src/app/employee/profile/page.tsx",
+    "portal": "employee",
+    "kind": "page"
+  },
+  {
+    "route": "/employee/support",
+    "file": "src/app/employee/support/page.tsx",
+    "portal": "employee",
+    "kind": "page"
+  },
+  {
+    "route": "/employee/surveys",
+    "file": "src/app/employee/surveys/page.tsx",
+    "portal": "employee",
+    "kind": "page"
+  },
+  {
+    "route": "/employee/training",
+    "file": "src/app/employee/training/page.tsx",
+    "portal": "employee",
+    "kind": "page"
+  },
+  {
+    "route": "/forbidden",
+    "file": "src/app/forbidden/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/help",
+    "file": "src/app/help/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/jobs/[id]",
+    "file": "src/app/jobs/[id]/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/jobs",
+    "file": "src/app/jobs/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/meet/[id]",
+    "file": "src/app/meet/[id]/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/meet",
+    "file": "src/app/meet/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/onboarding/employer",
+    "file": "src/app/onboarding/employer/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/support",
+    "file": "src/app/support/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/support/tickets",
+    "file": "src/app/support/tickets/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/support-console/enroll",
+    "file": "src/app/support-console/enroll/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/support-console/help",
+    "file": "src/app/support-console/help/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/support-console/login",
+    "file": "src/app/support-console/login/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  },
+  {
+    "route": "/support-console",
+    "file": "src/app/support-console/page.tsx",
+    "portal": "public/auth",
+    "kind": "page"
+  }
+]

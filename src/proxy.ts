@@ -18,16 +18,15 @@ export async function proxy(req:NextRequest){
  const deny=()=>{url.pathname='/forbidden';url.search='';return NextResponse.rewrite(url,{status:403})};
  if(host&&destination&&destination!==host)return deny();
  if(path==='/support'||path==='/help')return forward(req);
- if(path==='/employee/vacancy-approvals'||path==='/dashboard/employer/recruitment/approvals')return deny();
  if(role&&home){
-  if(path==='/billing'||path==='/pricing/checkout'||path==='/support/tickets'||path==='/meet'||path.startsWith('/meet/')||path==='/aerochat'||path.startsWith('/careers/')){
+  if(path==='/billing'||path==='/pricing/checkout'||path==='/support/tickets'||path==='/meet'||path.startsWith('/meet/')||path==='/aerochat'){
    const target=role==='support'?home:path==='/support/tickets'&&role==='employer'?'/dashboard/employer/support-access':workspaceLink(role,path==='/pricing/checkout'?'/billing':path);
    url.pathname=target;return NextResponse.redirect(url);
   }
   if(destination&&destination!==role)return deny();
   if(path.startsWith('/support-console')&&role==='admin'){url.pathname='/admin';url.search='';return NextResponse.redirect(url)}
   if(path.startsWith('/support-console')&&role!=='support')return deny();
-  const publicPage=path==='/'||['/pricing','/solutions','/careers','/about','/contact','/install','/privacy','/terms'].includes(path)||path.startsWith('/auth/');
+  const publicPage=path==='/'||['/pricing','/solutions','/careers','/about','/contact','/install','/privacy','/terms'].includes(path)||path.startsWith('/auth/')||path.startsWith('/careers/')||path==='/cookies';
   if(publicPage){url.pathname=home;url.search='';return NextResponse.redirect(url)}
  }else{
   if(destination==='admin'){url.pathname='/support-console/login';url.search='?next='+encodeURIComponent(path+url.search);return NextResponse.redirect(url)}

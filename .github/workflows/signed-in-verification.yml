@@ -45,6 +45,7 @@ jobs:
         run: |
           npm run start -- --hostname localhost --port 3010 > /tmp/aerotech-server.log 2>&1 &
           node scripts/verify-signed-in.mjs
+          node scripts/verify-phase2.mjs
           node scripts/verify-pwa.mjs
           node scripts/verify-portal-isolation.mjs
           node scripts/verify-dashboard-states.mjs
