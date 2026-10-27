@@ -64,3 +64,5 @@ All sampled performance, accessibility and best-practice scores exceed 90. Porta
 - [ ] All-route Lighthouse ≥90 on every category and full manual WCAG review complete.
 
 These unchecked items prevent declaring the full Phase 2 specification complete.
+
+Hosting check: the initial automatic Vercel preview was rejected before build because the project is on Hobby and the new cron ran every five minutes. The unsupported Vercel entry was removed. The supplied GitHub schedule is opt-in and unconfigured; production automation is not active.

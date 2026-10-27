@@ -4,6 +4,7 @@ Inventory of 100 files in this review change. Local dependency installation arti
 
 | File | Purpose |
 | --- | --- |
+| `.github/workflows/collaboration-scheduler.yml` | Adds an opt-in authenticated worker trigger compatible with the current hosting-plan constraint; inactive until configured. |
 | `database/037_collaboration.sql` | Adds tenant-scoped collaboration, document, notification and queue tables/indexes. |
 | `docs/phase2/changed-files.md` | Documents the model plan, implementation, verification, migration runs or changed-file inventory. |
 | `docs/phase2/evidence/api-tests.txt` | Records a test run or condensed automated audit result; synthetic fixtures only. |
@@ -103,4 +104,3 @@ Inventory of 100 files in this review change. Local dependency installation arti
 | `tests/collaboration.test.mjs` | Adds isolated policy, crypto, provider-adapter, SQL or API regression verification. |
 | `tests/helpers/ts-loader.mjs` | Adds isolated policy, crypto, provider-adapter, SQL or API regression verification. |
 | `tests/meeting-provider.test.mjs` | Adds isolated policy, crypto, provider-adapter, SQL or API regression verification. |
-| `vercel.json` | Registers the collaboration scheduler. |
