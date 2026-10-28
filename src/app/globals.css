@@ -1,0 +1,139 @@
+@import "tailwindcss";
+
+:root {
+  --aero-cyan: #00d4ff;
+  --aero-blue: #6366f1;
+  --aero-purple: #9d4edd;
+  --aero-navy: #07111f;
+  --aero-white: #f8fafc;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: #f6f8fc;
+  color: #0f172a;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+::selection {
+  background: rgba(99, 102, 241, 0.2);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #cbd5e1;
+}
+
+.aerotech-gradient {
+  background:
+    linear-gradient(
+      135deg,
+      var(--aero-cyan) 0%,
+      var(--aero-blue) 50%,
+      var(--aero-purple) 100%
+    );
+}
+
+.aerotech-gradient-text {
+  background: linear-gradient(
+    135deg,
+    var(--aero-cyan),
+    var(--aero-blue),
+    var(--aero-purple)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.aero-hero { position:relative; overflow:hidden; border-radius:24px; padding:32px; color:white; background:radial-gradient(ellipse at 95% 0%,#6366f1 0%,transparent 55%),linear-gradient(125deg,#0b1832,#262264); box-shadow:0 14px 40px #312e811c; }
+.aero-card { min-width:0; border:1px solid #e2e8f0; border-radius:20px; padding:24px; background:white; box-shadow:0 4px 16px #0f172a04; }
+.aero-button { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:44px; border-radius:12px; padding:12px 18px; font-size:14px; font-weight:650; cursor:pointer; }
+.aero-button:disabled { opacity:.5; cursor:wait; }
+.aero-input { display:block; width:100%; min-width:0; border:1px solid #cbd5e1; border-radius:12px; padding:12px; background:white; color:#0f172a; font-size:14px; }
+.aero-input:focus { outline:2px solid #818cf8; outline-offset:2px; }
+button,a,input,select,textarea { -webkit-tap-highlight-color:transparent; }
+button:focus-visible,a:focus-visible { outline:2px solid #6366f1; outline-offset:3px; }
+svg { flex-shrink:0; }
+@media(max-width:640px){.aero-hero{padding:24px}.aero-card{padding:18px} }
+
+.workspace-content > main {min-height:0;background:transparent;padding:0;}
+.workspace-content main > main {min-height:0;background:transparent;}
+
+.workspace-content {overflow-wrap:anywhere;}
+.workspace-content input,.workspace-content select,.workspace-content textarea {max-width:100%;min-width:0;}
+.meeting-stage {height:calc(100dvh - 240px);min-height:380px;max-height:820px;}
+.meeting-stage iframe {display:block;width:100%;height:100%;border:0;}
+@media(max-width:640px){.workspace-content .aero-hero h1{font-size:1.65rem;line-height:1.25}.workspace-content .aero-hero{padding:22px;border-radius:20px}.meeting-stage{height:calc(100dvh - 245px);min-height:340px}}
+
+.skip-link{position:fixed;top:8px;left:8px;z-index:100;padding:12px;background:#07152c;color:white;transform:translateY(-160%)}.skip-link:focus{transform:none}input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid #2563eb;outline-offset:2px}body{overflow-wrap:break-word}main{min-width:0}
+
+/* Shared tokens: 8px spacing foundation, consistent surfaces and interaction states. */
+:root{--aero-space:8px;--aero-brand:#1d4ed8;--aero-ink:#07152c;--aero-muted:#475569;--aero-surface:#fff;--aero-radius:16px;--aero-shadow:0 8px 32px #07152c0a;--aero-text-sm:.875rem;--aero-text-base:1rem;--aero-text-lg:1.25rem}
+.portal-sidebar{transition:transform .2s ease}
+@media(max-width:1023px){.portal-sidebar:not(.is-open){visibility:hidden}}
+button:not([role="switch"]),select,summary{min-height:44px}
+button{min-width:44px}input:not([type="checkbox"]):not([type="radio"]){min-height:44px}
+input[type="checkbox"],input[type="radio"]{min-width:18px;min-height:18px;accent-color:var(--aero-brand)}
+:focus-visible{scroll-margin-top:100px;scroll-margin-bottom:24px}
+.text-slate-400{color:#64748b}.bg-\[\#07152c\] .text-slate-400{color:#cbd5e1}
+.aero-card{border-radius:var(--aero-radius);box-shadow:var(--aero-shadow)}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+
+/* Phase 2 shared visual tokens */
+:root{--aero-space-1:8px;--aero-space-2:16px;--aero-space-3:24px;--aero-space-4:32px;--aero-brand:#1d4ed8;--aero-radius:16px;--aero-border:#e2e8f0;--aero-canvas:#f8fafc;--aero-shadow:0 4px 16px #0f172a08;color-scheme:light;}
+.aero-hero{background:#0f172a;border-radius:var(--aero-radius);box-shadow:none}.aero-card{padding:24px;border-color:var(--aero-border)}
+.aero-button{border-radius:8px;padding:12px 16px}.aero-input{border-radius:8px}.workspace-content h1{letter-spacing:-.025em}.workspace-content table thead{position:sticky;top:0}
+@media(min-width:1024px){.sidebar-collapsed .portal-sidebar{transform:translateX(-100%)}.sidebar-collapsed>div{padding-left:0}}
+[data-theme="dark"]{color-scheme:dark;--aero-surface:#111827;--aero-ink:#f1f5f9;--aero-muted:#cbd5e1;--aero-border:#475569;--aero-canvas:#020617}
+[data-theme="dark"] body,[data-theme="dark"] .bg-slate-50,[data-theme="dark"] .bg-\[\#f4f6fc\]{background:#020617;color:#f1f5f9}
+[data-theme="dark"] .bg-white,[data-theme="dark"] .aero-card,[data-theme="dark"] dialog{background:#111827;color:#f1f5f9;border-color:#475569}
+[data-theme="dark"] .bg-slate-100,[data-theme="dark"] .bg-slate-200{background:#1e293b}
+[data-theme="dark"] .text-slate-900,[data-theme="dark"] .text-slate-950,[data-theme="dark"] .text-slate-800,[data-theme="dark"] .text-\[\#07152c\]{color:#f1f5f9}
+[data-theme="dark"] .text-slate-500,[data-theme="dark"] .text-slate-600,[data-theme="dark"] .text-slate-700{color:#cbd5e1}
+[data-theme="dark"] .aero-input,[data-theme="dark"] input,[data-theme="dark"] textarea,[data-theme="dark"] select{background:#0f172a;color:#f1f5f9;border-color:#64748b}
+[data-theme="dark"] .text-blue-700{color:#93c5fd}[data-theme="dark"] .bg-blue-50{background:#172554;color:#bfdbfe}
+@media(max-width:640px){.aero-card{padding:16px}.portal-frame header{gap:4px;padding-inline:8px}.portal-frame header button{padding:8px}.portal-frame header [aria-label="Aerotech home"] img{width:96px!important}}
+
+@media(max-width:640px){.portal-frame header [data-account-menu] svg:last-child{display:none}.portal-frame header [data-account-menu]{gap:0}}
+
+progress::-webkit-progress-bar{background:#e2e8f0;border-radius:8px}progress::-webkit-progress-value{background:var(--aero-brand);border-radius:8px}progress::-moz-progress-bar{background:var(--aero-brand);border-radius:8px}
+
+/* Portal theme parity: accents, status surfaces and hover states retain contrast. */
+[data-theme="dark"] .text-slate-400{color:#cbd5e1}
+[data-theme="dark"] .text-blue-500,[data-theme="dark"] .text-blue-600,[data-theme="dark"] .text-indigo-500,[data-theme="dark"] .text-indigo-600,[data-theme="dark"] .text-indigo-700,[data-theme="dark"] .text-indigo-900,[data-theme="dark"] .text-\[\#2563eb\]{color:#a5b4fc}
+[data-theme="dark"] .bg-indigo-50,[data-theme="dark"] .bg-indigo-100{background:#172554;color:#c7d2fe}
+[data-theme="dark"] .bg-red-50{background:#450a0a}[data-theme="dark"] .text-red-600,[data-theme="dark"] .text-red-700{color:#fca5a5}
+[data-theme="dark"] .bg-green-50,[data-theme="dark"] .bg-emerald-50{background:#022c22}[data-theme="dark"] .text-green-700,[data-theme="dark"] .text-emerald-600,[data-theme="dark"] .text-emerald-700{color:#6ee7b7}
+[data-theme="dark"] .bg-\[\#f6f8fc\]{background:#020617;color:#f1f5f9}[data-theme="dark"] .bg-\[\#fbfcfe\]{background:#111827}[data-theme="dark"] .text-\[\#14263c\]{color:#f1f5f9}[data-theme="dark"] .bg-\[\#e3f3f3\]{background:#123844}
+[data-theme="dark"] .hover\:bg-slate-50:hover{background:#1e293b}[data-theme="dark"] .hover\:bg-blue-50:hover,[data-theme="dark"] .hover\:bg-blue-50\/40:hover{background:#172554}
+
+[data-theme="dark"] .bg-cyan-50{background:#083344;color:#cffafe}[data-theme="dark"] .text-cyan-700{color:#67e8f9}
+[data-theme="dark"] .bg-amber-50{background:#451a03;color:#fef3c7}[data-theme="dark"] .text-amber-700{color:#fcd34d}

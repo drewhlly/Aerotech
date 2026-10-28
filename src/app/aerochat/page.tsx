@@ -1,0 +1,2 @@
+import {redirect} from 'next/navigation';import {activePortal} from '@/lib/active-portal';import {workspaceLink} from '@/lib/portal-policy';
+export default async function Page(){const role=await activePortal();if(!role)redirect('/auth/login?role=employee');if(role==='support')redirect('/support-console');redirect(workspaceLink(role,'/aerochat'))}

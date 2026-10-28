@@ -1,0 +1,1 @@
+import DocumentLibrary from '@/components/document-library';import Learning from '@/components/employee-learning';import Submissions from '@/components/document-submissions';export default function Page(){return <div className="space-y-6"><DocumentLibrary/><Submissions role="employee"/><Learning module="documents"/></div>}

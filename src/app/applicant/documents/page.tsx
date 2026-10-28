@@ -1,0 +1,1 @@
+import Submissions from '@/components/document-submissions';export default function Page(){return <Submissions role="applicant"/>}

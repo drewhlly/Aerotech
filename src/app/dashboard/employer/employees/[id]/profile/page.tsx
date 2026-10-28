@@ -1,0 +1,1 @@
+"use client";import {useParams} from "next/navigation";import ProfileWorkspace from "@/components/employee-profile-workspace";export default function Page(){const {id}=useParams<{id:string}>();return <ProfileWorkspace mode="employer" id={id}/>;}

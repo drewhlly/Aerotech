@@ -1,0 +1,1 @@
+export function allocateGross(gross:number){if(!Number.isFinite(gross)||gross<0)throw Error('Invalid gross salary');const total=Math.round(gross*100),basic=Math.round(total*.5),housing=Math.round(total*.3);return {basic:basic/100,housing:housing/100,transport:(total-basic-housing)/100}}

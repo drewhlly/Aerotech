@@ -1,0 +1,1 @@
+import Workflows from '@/components/workflow-workspace';import Confirmations from '@/components/staff-confirmations';export default function Page(){return <div className="space-y-6"><Workflows mode="confirmations"/><Confirmations/></div>}

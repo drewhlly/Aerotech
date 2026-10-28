@@ -1,0 +1,1 @@
+import JobCatalogue from '@/components/job-catalogue';export default async function Page({searchParams}:{searchParams:Promise<Record<string,string>>}){return <JobCatalogue params={await searchParams} base="/employee/opportunities"/>}

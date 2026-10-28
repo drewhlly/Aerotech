@@ -1,0 +1,66 @@
+name: Signed-in verification
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  journeys:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: aerotech_test
+          POSTGRES_PASSWORD: disposable_ci_only
+          POSTGRES_DB: aerotech_verify
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U aerotech_test -d aerotech_verify"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://aerotech_test:disposable_ci_only@localhost:5432/aerotech_verify
+      APP_BASE_URL: http://localhost:3010
+      SUPPORT_INITIAL_AGENT_EMAIL: owner-fixture@example.invalid
+      PAYOUT_ENCRYPTION_KEY: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+      JITSI_DOMAIN: meeting-fixture.example.invalid
+      JITSI_APP_ID: fixture
+      JITSI_APP_SECRET: only_for_disposable_integration_tests_1234567890
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24'
+      - run: npm install --no-audit --no-fund
+      - run: npm install --no-save --package-lock=false lighthouse @axe-core/playwright
+      - run: npx playwright install --with-deps chromium --only-shell
+      - run: npm run db:migrate
+      - run: npm run build
+      - name: Verify browser, API and database journeys
+        run: |
+          npm run start -- --hostname localhost --port 3010 > /tmp/aerotech-server.log 2>&1 &
+          node scripts/verify-signed-in.mjs
+          node scripts/verify-phase2.mjs
+          node scripts/verify-pwa.mjs
+          node scripts/verify-portal-isolation.mjs
+          node scripts/verify-dashboard-states.mjs
+          node scripts/verify-portal-quality.mjs
+          node scripts/verify-public-routes.mjs
+          CRAWL_MODE=production node scripts/verify-route-crawl.mjs
+      - name: Upload route and Lighthouse evidence
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: public-route-audit
+          path: |
+            /tmp/aerotech-public-audit
+            /tmp/aerotech-portal-audit
+          if-no-files-found: ignore
+      - name: Server diagnostics
+        if: failure()
+        run: cat /tmp/aerotech-server.log

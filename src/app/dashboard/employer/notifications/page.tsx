@@ -1,0 +1,1 @@
+import CollaborationNotifications from '@/components/collaboration-notifications';import Legacy from './legacy-notifications';export default function Page(){return <><Legacy/><CollaborationNotifications/></>}

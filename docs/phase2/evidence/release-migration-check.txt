@@ -1,0 +1,1 @@
+PASS combined release migration: legacy notes archived; closed jobs stay closed; open jobs published; 39 ledger entries; replay preserves reported drafts. Disposable database only.
