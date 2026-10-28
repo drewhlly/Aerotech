@@ -26,9 +26,10 @@ try{
    const result=await lighthouse(base+path,{port:9223,disableStorageReset:true,output:'json',onlyCategories:['performance','accessibility','best-practices'],logLevel:'error'});
    assert.equal(new URL(result.lhr.finalDisplayedUrl).pathname,path,'Lighthouse must measure the signed-in portal, not its sign-in page');
    const metrics=Object.fromEntries(Object.entries(result.lhr.categories).map(([key,v])=>[key,Math.round(v.score*100)]));
-   scores.push({role,path,...metrics});await writeFile(out+'/lighthouse-'+role+'.json',result.report);console.log('PORTAL LIGHTHOUSE '+JSON.stringify({role,path,...metrics}));
+   scores.push({role,path,...metrics,cls:result.lhr.audits['cumulative-layout-shift'].numericValue});await writeFile(out+'/lighthouse-'+role+'.json',result.report);console.log('PORTAL LIGHTHOUSE '+JSON.stringify({role,path,...metrics}));
   }finally{await browser.close();await p.query(`DELETE FROM ${table}_sessions WHERE token_hash=$1`,[createHash('sha256').update(token).digest('hex')])}
  }
  await writeFile(out+'/lighthouse-scores.json',JSON.stringify(scores,null,2));
- assert.deepEqual(scores.filter(row=>Object.entries(row).some(([key,value])=>!['role','path'].includes(key)&&value<90)),[],'Signed-in performance, accessibility and best-practices must score at least 90. SEO indexability is intentionally disabled for private portals.');
+ assert.deepEqual(scores.filter(row=>Object.entries(row).some(([key,value])=>['performance','accessibility','best-practices'].includes(key)&&value<90)),[],'Signed-in performance, accessibility and best-practices must score at least 90. SEO indexability is intentionally disabled for private portals.');
+ assert.ok(scores.every(row=>row.cls<=0.1),'Dashboard layout shift must remain at or below 0.1');
 }finally{await p.end()}

@@ -2,7 +2,7 @@
 ALTER TABLE ats_jobs DROP CONSTRAINT IF EXISTS ats_jobs_status_check;
 DO $$ BEGIN
  IF EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='ats_jobs' AND column_name='approval_status') THEN
-  EXECUTE 'UPDATE ats_jobs SET status=''published'' WHERE status IN (''open'',''pending'') OR approval_status=''pending''';
+  EXECUTE 'UPDATE ats_jobs SET status=''published'' WHERE status IN (''open'',''pending'') OR (status=''draft'' AND approval_status=''pending'')';
  ELSE
   UPDATE ats_jobs SET status='published' WHERE status IN ('open','pending');
  END IF;

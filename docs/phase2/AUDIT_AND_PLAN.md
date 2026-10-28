@@ -42,3 +42,9 @@ Drafts require a qualified Nigerian data-protection professional to validate ent
 The runner now records checksums in `schema_migrations` and applies each SQL file once under a transaction/advisory lock. An existing database without this ledger fails closed rather than replaying old migrations. After verifying production is at migration 036, adopt it with `node scripts/migrate.mjs --baseline-through=036_password_recovery.sql`; this records historical checksums without executing them and applies 037. A subsequent normal run skips all applied files. Do not baseline an unverified schema. Migration 037 is transaction-safe and handles an already-removed legacy approval column.
 
 Migration 037 has been exercised only against disposable CI PostgreSQL; no production migration has been applied yet. Release must coordinate the schema update and application version because retired columns are incompatible with the old recruitment API.
+
+## Verification refinement
+
+Public pages passed Lighthouse with performance 96–100 and 100 for accessibility, best practices and SEO. Authenticated checks found Employee dashboard layout shift of 0.449 despite a 0.7s LCP and no blocking time. Attention panels now preserve their loading/loaded geometry; the Employee heading also stays stable. The private quality gate retains the 90-point budget and adds CLS <=0.1. The full route crawl now exercises the already-built production server rather than a separate development server, covering the deployment runtime directly.
+
+Migration review also preserves already-closed vacancies even if an obsolete approval flag says pending. Only pending drafts and legacy open/pending lifecycle values are published.
