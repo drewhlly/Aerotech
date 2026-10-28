@@ -59,9 +59,9 @@ test("employee directory and profile use matching IDs and source", () => {
  const profile=read("src/app/dashboard/employer/employees/[id]/page.tsx");
  const directoryApi=read("src/app/api/employees/route.ts");
  const profileApi=read("src/app/api/employees/[id]/route.ts");
- assert.match(directory, /fetch\("\/api\/employees"\)/);
+ assert.ok(directory.includes("fetch('/api/employees'"));
  assert.match(directory, /setEmployees\(d\.employees\)/);
- assert.ok(directory.includes('href={`/dashboard/employer/employees/${e.id}`}'));
+ assert.ok(directory.includes("href={'/dashboard/employer/employees/'+e.id}"));
  assert.match(profile, /const id=params\.id/);
  assert.ok(profile.includes('fetch(`/api/employees/${encodeURIComponent(id)}`)'));
  assert.match(profile, /setEmployee\(d\.employee\)/);

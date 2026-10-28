@@ -9,7 +9,7 @@ permissions:
 jobs:
   journeys:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 60
     services:
       postgres:
         image: postgres:16
@@ -45,12 +45,13 @@ jobs:
         run: |
           npm run start -- --hostname localhost --port 3010 > /tmp/aerotech-server.log 2>&1 &
           node scripts/verify-signed-in.mjs
+          node scripts/verify-phase2.mjs
           node scripts/verify-pwa.mjs
           node scripts/verify-portal-isolation.mjs
           node scripts/verify-dashboard-states.mjs
-          APP_BASE_URL=http://localhost:3012 npm run dev -- --hostname localhost --port 3012 > /tmp/aerotech-dev-server.log 2>&1 &
-          APP_BASE_URL=http://localhost:3012 CRAWL_MODE=development node scripts/verify-route-crawl.mjs
+          node scripts/verify-portal-quality.mjs
           node scripts/verify-public-routes.mjs
+          CRAWL_MODE=production node scripts/verify-route-crawl.mjs
       - name: Upload route and Lighthouse evidence
         if: always()
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f

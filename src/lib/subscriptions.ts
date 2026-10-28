@@ -52,7 +52,7 @@ export const EMPLOYER_PLANS: Record<
     },
     features: [
       "Employee directory and staff profiles",
-      "Job drafts and HR vacancy approvals",
+      "Job drafts and immediate publication",
       "Applicant pipeline and CV review",
       "Role assessments and interview planner",
     ],
@@ -95,7 +95,7 @@ export const EMPLOYER_PLANS: Record<
     },
     features: [
       "Everything in Professional",
-      "Workflow automation and confidentiality tracking",
+      "Workflow automation and document tracking",
       "Monthly workforce report generation",
       "Document expiry alerts and review queues",
       "Company workflow configuration",

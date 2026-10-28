@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {workspaceHomes,workspaceLink,linkAllowed,routeRole} from '../src/lib/portal-policy.ts';
 test('portal links cannot escape the current role and legacy tool links are internalised',()=>{
  for(const role of Object.keys(workspaceHomes)){
-  for(const target of ['/','/pricing','/auth/login','//evil.example','https://evil.example','/employee','/admin/vacancy-approvals','/dashboard/employer/employees']){
+  for(const target of ['/','/pricing','/auth/login','//evil.example','https://evil.example','/employee','/admin/safeguards','/dashboard/employer/employees']){
    const resolved=workspaceLink(role,target);assert.equal(routeRole(resolved.split('?')[0]),role);
   }
   assert.equal(linkAllowed(role,workspaceHomes[role]),true);

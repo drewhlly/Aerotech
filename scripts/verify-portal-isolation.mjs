@@ -22,9 +22,8 @@ try{
   const c=await session(role,ids[role]),page=await c.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
   const home=workspaceHomes[role];
   for(const other of Object.keys(ids).filter(r=>r!==role)){const r=await c.request.get(workspaceHomes[other],{maxRedirects:0});assert.equal(r.status(),403,role+' typed '+other+' URL')}
-  if(role!=='admin')for(const method of ['get','post']){const r=await c.request[method]('/api/vacancy-approvals',{data:method==='post'?{id:randomUUID(),decision:'approved',note:'Denied request'}:undefined,headers:{Origin:base}});assert.equal(r.status(),403,role+' approval '+method)}
-  else assert.equal((await c.request.get('/api/vacancy-approvals')).status(),200);
-  const routes=[home,home+'/support',...(role==='employer'?[home+'/billing/plans',home+'/employees',home+'/recruitment']:role==='employee'?[home+'/profile',home+'/attendance']:role==='applicant'?[home+'/opportunities',home+'/applications']:[home+'/vacancy-approvals',home+'/support-cases'])];
+  assert.equal((await c.request.get('/api/admin/job-safety')).status(),role==='admin'?200:403);
+  const routes=[home,home+'/support',...(role==='employer'?[home+'/billing/plans',home+'/employees',home+'/recruitment']:role==='employee'?[home+'/profile',home+'/attendance']:role==='applicant'?[home+'/opportunities',home+'/applications']:[home+'/safeguards',home+'/support-cases'])];
   for(const width of [360,768,1280,1920])for(const path of routes){
    await page.setViewportSize({width,height:1000});const r=await page.goto(path,{waitUntil:'networkidle'});assert.equal(r.status(),200,path);
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,path+' overflow '+width);
