@@ -2,7 +2,7 @@
 
 Review branch: `feat/phase2-part1`, PR #27.
 
-Production migration log: **none applied**. Migration 037 has run in disposable CI only; production remains on the previous schema.
+Production ledger verified on 28 October 2026: `037_phase2_legacy_archive.sql`, `037_phase2_jobs_privacy.sql` and `037_collaboration.sql` are applied (`baselined=false`). This repair introduces no database migration.
 
 | File | Change |
 | --- | --- |
