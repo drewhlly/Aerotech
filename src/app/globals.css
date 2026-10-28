@@ -125,3 +125,12 @@ input[type="checkbox"],input[type="radio"]{min-width:18px;min-height:18px;accent
 @media(max-width:640px){.portal-frame header [aria-label="Account menu"] svg:last-child{display:none}.portal-frame header [aria-label="Account menu"]{gap:0}}
 
 progress::-webkit-progress-bar{background:#e2e8f0;border-radius:8px}progress::-webkit-progress-value{background:var(--aero-brand);border-radius:8px}progress::-moz-progress-bar{background:var(--aero-brand);border-radius:8px}
+
+/* Portal theme parity: accents, status surfaces and hover states retain contrast. */
+[data-theme="dark"] .text-slate-400{color:#cbd5e1}
+[data-theme="dark"] .text-blue-500,[data-theme="dark"] .text-blue-600,[data-theme="dark"] .text-indigo-500,[data-theme="dark"] .text-indigo-600,[data-theme="dark"] .text-indigo-700,[data-theme="dark"] .text-indigo-900,[data-theme="dark"] .text-\[\#2563eb\]{color:#a5b4fc}
+[data-theme="dark"] .bg-indigo-50,[data-theme="dark"] .bg-indigo-100{background:#172554;color:#c7d2fe}
+[data-theme="dark"] .bg-red-50{background:#450a0a}[data-theme="dark"] .text-red-600,[data-theme="dark"] .text-red-700{color:#fca5a5}
+[data-theme="dark"] .bg-green-50,[data-theme="dark"] .bg-emerald-50{background:#022c22}[data-theme="dark"] .text-green-700,[data-theme="dark"] .text-emerald-600,[data-theme="dark"] .text-emerald-700{color:#6ee7b7}
+[data-theme="dark"] .bg-\[\#f6f8fc\]{background:#020617;color:#f1f5f9}[data-theme="dark"] .bg-\[\#fbfcfe\]{background:#111827}[data-theme="dark"] .text-\[\#14263c\]{color:#f1f5f9}[data-theme="dark"] .bg-\[\#e3f3f3\]{background:#123844}
+[data-theme="dark"] .hover\:bg-slate-50:hover{background:#1e293b}[data-theme="dark"] .hover\:bg-blue-50:hover,[data-theme="dark"] .hover\:bg-blue-50\/40:hover{background:#172554}
