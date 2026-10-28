@@ -1,1 +1,0 @@
-import Workflows from '@/components/workflow-workspace';import Reports from '@/components/live-reports';export default function Page(){return <div className="space-y-6"><Workflows mode="compliance"/><Reports compliance/></div>}

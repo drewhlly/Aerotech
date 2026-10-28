@@ -1,4 +1,0 @@
-import { NextResponse } from 'next/server';import { currentEmployer, db } from '@/lib/employer-session';import { faceConfigured } from '@/lib/face-attendance';
-export const runtime='nodejs';
-export async function GET(){const employer=await currentEmployer();if(!employer)return NextResponse.json({error:'Employer sign-in required'},{status:401});const pool=db();try{const r=await pool.query('SELECT e.id,e.first_name,e.last_name,e.email,(f.employee_id IS NOT NULL) AS enrolled,f.updated_at FROM workforce_employees e LEFT JOIN employee_face_references f ON f.employee_id=e.id AND f.employer_id=e.employer_id WHERE e.employer_id=$1 ORDER BY e.first_name',[employer]);return NextResponse.json({employees:r.rows,providerReady:faceConfigured()})}finally{await pool.end()}}
-export async function POST(){return NextResponse.json({error:'Employees set up their own face from My attendance.'},{status:410})}

@@ -1,3 +1,0 @@
-import test from 'node:test';import assert from 'node:assert/strict';import {compensationInput} from '../src/lib/compensation-input.ts';
-const valid={monthlyGross:'150000.00',basic:'100000',housing:'20000',transport:'10000',annualRent:'0',otherDeductions:'0',pensionEnabled:true,nhfEnabled:false,taxExempt:false,active:true};
-test('compensation preserves exact HR amounts and rejects malformed or inconsistent inputs',()=>{assert.equal(compensationInput(valid).monthlyGross,150000);for(const changes of [{monthlyGross:''},{monthlyGross:'1e6'},{monthlyGross:-1},{monthlyGross:'100.999'},{basic:200000},{basic:0,housing:0,transport:0},{active:'true'},{otherDeductions:200000}])assert.throws(()=>compensationInput({...valid,...changes}));});

@@ -1,4 +1,0 @@
-import {createHash} from 'node:crypto';
-import type {Pool} from 'pg';
-// Durable, role-namespaced counters; never store email addresses or passwords in this table.
-export async function authAttempt(pool:Pool,role:string,email:string){const hash=createHash('sha256').update('customer:'+role+':'+email.trim().toLowerCase()).digest('hex');const r=await pool.query("INSERT INTO support_login_limits(email_hash,attempts,reset_at) VALUES($1,1,NOW()+INTERVAL '15 minutes') ON CONFLICT(email_hash) DO UPDATE SET attempts=CASE WHEN support_login_limits.reset_at<NOW() THEN 1 ELSE support_login_limits.attempts+1 END,reset_at=CASE WHEN support_login_limits.reset_at<NOW() THEN NOW()+INTERVAL '15 minutes' ELSE support_login_limits.reset_at END RETURNING attempts",[hash]);return Number(r.rows[0].attempts)<=10}

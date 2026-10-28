@@ -360,7 +360,7 @@ export default function DocumentLibrary() {
           title="Upload documents"
           close={() => setUpload(false)}
         >
-          <form
+          <form method="post"
             className="space-y-4"
             onSubmit={(e) => {
               e.preventDefault();
@@ -572,7 +572,7 @@ function DocumentDetails({
               >
                 Restore selected version as a new version
               </button>
-              <form
+              <form method="post"
                 onSubmit={async (e) => {
                   e.preventDefault();
                   const f = new FormData(e.currentTarget);
@@ -601,7 +601,7 @@ function DocumentDetails({
                 <button className="aero-button border">Upload version</button>
               </form>
               <PeoplePicker value={people} onChange={setPeople} />
-              <form
+              <form method="post"
                 className="space-y-3"
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -654,7 +654,7 @@ function DocumentDetails({
                 a.version === d.current_version &&
                 ["Sent", "Viewed"].includes(a.status) &&
                 data.downloadUrl && (
-                  <form
+                  <form method="post"
                     className="mt-3 space-y-3"
                     onSubmit={async (e) => {
                       e.preventDefault();
@@ -741,7 +741,7 @@ function Templates({ close }: { close: () => void }) {
   return (
     <CollaborationDialog title="Company templates" close={close}>
       {message && <p role="status">{message}</p>}
-      <form className="space-y-3" onSubmit={create}>
+      <form method="post" className="space-y-3" onSubmit={create}>
         <label className="block">
           Template name
           <input

@@ -182,7 +182,7 @@ export default function Meetings() {
         </p>
       )}
       {employer && (
-        <form onSubmit={create} className="aero-card space-y-5">
+        <form method="post" onSubmit={create} className="aero-card space-y-5">
           <h2 className="text-lg font-bold">Schedule a meeting</h2>
           <label className="block">
             Title
@@ -687,7 +687,7 @@ function MeetingDetails({
       </button>
       {employer && (
         <>
-          <form
+          <form method="post"
             onSubmit={(e) => void save(e, "notes")}
             className="mt-5 space-y-3"
           >
@@ -702,7 +702,7 @@ function MeetingDetails({
             </label>
             <button className="aero-button border">Save notes</button>
           </form>
-          <form
+          <form method="post"
             onSubmit={(e) => void save(e, "task")}
             className="mt-5 space-y-3"
           >

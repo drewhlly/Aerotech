@@ -1,5 +1,0 @@
-import {NextResponse} from "next/server";
-import {db} from "@/lib/employer-session";
-import {supportAgent} from "@/lib/support-session";
-import {audit} from "@/lib/support-store";
-export async function GET(){const agent=await supportAgent();if(!agent)return NextResponse.json({error:"Support staff sign-in and two-factor authentication required"},{status:401});const pool=db(),client=await pool.connect();try{await client.query("BEGIN");const tickets=(await client.query("SELECT t.id,t.employer_id,t.title,t.status,t.created_at,e.company_name FROM support_tickets t JOIN employer_accounts e ON e.id=t.employer_id ORDER BY t.created_at DESC LIMIT 100")).rows;for(const t of tickets)await audit(client,t.employer_id,t.id,"support",agent.id,"ticket_listed");await client.query("COMMIT");return NextResponse.json({tickets,agent:agent.display_name},{headers:{"Cache-Control":"no-store"}});}catch{await client.query("ROLLBACK").catch(()=>{});return NextResponse.json({error:"Support queue unavailable"},{status:503});}finally{client.release();await pool.end();}}

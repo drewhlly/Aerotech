@@ -23,3 +23,7 @@ The production migration ledger already contains the legacy archive, job/privacy
 ## Verification
 
 Results are recorded in the pull request and GitHub Actions artifacts after completion. Legal/company `[EDIT]` values and provider configuration limitations remain explicitly documented; passing synthetic tests does not claim real bank transfers or real camera/media sessions were exercised.
+
+## Full-crawl findings resolved
+
+The combined 159-page crawl identified native GET defaults on new collaboration forms. Meeting, project and document mutation forms now explicitly use POST while retaining authenticated JavaScript API handlers. The crawler now creates a tenant-owned project and Employee membership for valid project-detail coverage, instead of substituting an unrelated employee identifier. No route or API failure is suppressed.

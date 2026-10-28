@@ -776,7 +776,7 @@ export default function ProjectsWorkspace({
           }
           close={() => setModal("")}
         >
-          <form onSubmit={submit} className="space-y-4">
+          <form method="post" onSubmit={submit} className="space-y-4">
             {modal === "member" ? (
               <>
                 <PeoplePicker
@@ -1071,7 +1071,7 @@ function TaskDetail({
             </label>
           )}
           {write && (
-            <form
+            <form method="post"
               className="space-y-3"
               onSubmit={(e) => {
                 e.preventDefault();
@@ -1118,7 +1118,7 @@ function TaskDetail({
             </form>
           )}
           {manager && (
-            <form
+            <form method="post"
               className="space-y-3"
               onSubmit={(e) => {
                 e.preventDefault();
@@ -1160,7 +1160,7 @@ function TaskDetail({
             ))}
           </ul>
           {manager && (
-            <form
+            <form method="post"
               className="flex gap-2"
               onSubmit={(e) => {
                 e.preventDefault();
@@ -1195,7 +1195,7 @@ function TaskDetail({
             </label>
           ))}
           {write && (
-            <form
+            <form method="post"
               className="flex gap-2"
               onSubmit={(e) => {
                 e.preventDefault();
@@ -1232,7 +1232,7 @@ function TaskDetail({
             </article>
           ))}
           {write && (
-            <form
+            <form method="post"
               className="space-y-3"
               onSubmit={(e) => {
                 e.preventDefault();
@@ -1265,7 +1265,7 @@ function TaskDetail({
             </form>
           )}
           {manager && (
-            <form
+            <form method="post"
               className="space-y-2"
               onSubmit={(e) => {
                 e.preventDefault();
@@ -1288,7 +1288,7 @@ function TaskDetail({
             {data.dependencies.map((d) => d.depends_on).join(", ") || "None"}
           </p>
           {write && (
-            <form
+            <form method="post"
               onSubmit={(e) => {
                 e.preventDefault();
                 void send("attachments", {

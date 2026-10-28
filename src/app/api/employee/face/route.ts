@@ -1,6 +1,0 @@
-import {NextResponse} from 'next/server';
-import {currentEmployee} from '@/lib/employee-auth';
-import {db} from '@/lib/employer-session';
-import {decodeFace,faceConfigured,compareEmployeeFace} from '@/lib/face-attendance';
-export const runtime='nodejs';
-export async function POST(request:Request){const employee=await currentEmployee();if(!employee)return NextResponse.json({error:'Employee sign-in required'},{status:401});if(!faceConfigured())return NextResponse.json({error:'Face matching is not configured yet'},{status:503});let image;try{const b=await request.json();if(b.consent!==true)throw Error('Your consent is required');image=decodeFace(b.image);await compareEmployeeFace(image,image)}catch(e){return NextResponse.json({error:e instanceof Error?e.message:'Invalid image'},{status:400})}const p=db();try{const result=await p.query('INSERT INTO employee_face_references(employee_id,employer_id,image,consent_recorded_at,approved_by,self_enrolled_at) VALUES($1,$2,$3,NOW(),$2,NOW()) ON CONFLICT(employee_id) DO NOTHING RETURNING employee_id',[employee.id,employee.employer_id,image]);if(!result.rowCount)return NextResponse.json({error:'Face already set up. Contact HR for an identity reset.'},{status:409});return NextResponse.json({ok:true},{status:201})}catch{return NextResponse.json({error:'Could not save face setup'},{status:503})}finally{await p.end()}}

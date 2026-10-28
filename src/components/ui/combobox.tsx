@@ -1,2 +1,0 @@
-'use client';import {useId,type InputHTMLAttributes} from 'react';
-export default function Combobox({options,...props}:InputHTMLAttributes<HTMLInputElement>&{options:readonly string[]}){const id=useId();return <><input {...props} list={id} className={props.className||'aero-input'} onChange={e=>{e.currentTarget.setCustomValidity(e.currentTarget.value&&!options.includes(e.currentTarget.value)?'Select a value from the available options.':'');props.onChange?.(e)}}/><datalist id={id}>{options.map(x=><option key={x} value={x}/>)}</datalist></>}

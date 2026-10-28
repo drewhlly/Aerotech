@@ -1,1 +1,0 @@
-import DocumentLibrary from '@/components/document-library';import Lifecycle from '@/components/employee-lifecycle';import Submissions from '@/components/document-submissions';export default function Page(){return <div className="space-y-6"><DocumentLibrary/><Submissions role="employer"/><Lifecycle module="documents"/></div>}

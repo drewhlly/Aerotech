@@ -1,2 +1,0 @@
-'use client';
-export default function RouteError({reset}:{error:Error&{digest?:string};reset:()=>void}){return <section role="alert" className="aero-card"><h1 className="text-2xl font-bold">We couldn’t load this view</h1><p className="mt-3 text-slate-600">Your workspace is still available. Try again, or contact support through your navigation.</p><button onClick={reset} className="aero-button mt-4 bg-blue-700 text-white">Try again</button></section>}
