@@ -1,0 +1,62 @@
+[
+  {
+    "path": "/",
+    "status": 200,
+    "brandCopy": null,
+    "noEditMarkers": null
+  },
+  {
+    "path": "/about",
+    "status": 200,
+    "brandCopy": true,
+    "noEditMarkers": true
+  },
+  {
+    "path": "/privacy",
+    "status": 200,
+    "brandCopy": null,
+    "noEditMarkers": true
+  },
+  {
+    "path": "/terms",
+    "status": 200,
+    "brandCopy": null,
+    "noEditMarkers": true
+  },
+  {
+    "path": "/cookies",
+    "status": 200,
+    "brandCopy": null,
+    "noEditMarkers": true
+  },
+  {
+    "path": "/auth/login?role=employee",
+    "status": 200,
+    "brandCopy": null,
+    "noEditMarkers": null
+  },
+  {
+    "path": "/api/projects",
+    "status": 401,
+    "brandCopy": null,
+    "noEditMarkers": null
+  },
+  {
+    "path": "/api/document-library",
+    "status": 401,
+    "brandCopy": null,
+    "noEditMarkers": null
+  },
+  {
+    "path": "/api/cron/collaboration",
+    "status": 401,
+    "brandCopy": null,
+    "noEditMarkers": null
+  },
+  {
+    "path": "/guest/meet/00000000-0000-0000-0000-000000000000",
+    "status": 200,
+    "brandCopy": null,
+    "noEditMarkers": null
+  }
+]

@@ -39,3 +39,11 @@ Technical identity reference: https://docs.github.com/en/actions/reference/secur
 PDF font reference: https://pdf-lib.js.org/docs/api/classes/pdfdocument
 
 Data-rights reference: https://ndpc.gov.ng/faqs/
+
+## Production verification
+
+Deployment `dpl_44varTDW1wSQXwiVSRZKV5jS5L67` reached READY and was promoted. The public alias https://aerotech-psi.vercel.app was read back against that exact deployment. Main now contains commit `973c36d8a300a64573339f6870938c41bedf38cd`. Public home, About, privacy, terms, cookies, employee sign-in and guest page returned 200; unauthenticated project, document and scheduler APIs returned 401. About/notice pages contain no edit markers. The final isolated browser run passed all 18 checks after integrating the parallel release fixes. Dedicated test ports avoided collisions with concurrent test processes.
+
+The first production GitHub scheduler run successfully authenticated with its OIDC token and reached the worker. It reported one failure: 8x8 JaaS rejected an expired-room termination command. That job remains queued for bounded retries; other jobs can continue. Application join-window expiry still denies expired access. Provider-side conference termination must be resolved before claiming complete live conferencing acceptance. The request format matches the current official 8x8 endpoint documentation; no provider credentials were printed or changed.
+
+A pg SSL-mode compatibility warning appeared in the sampled runtime log; it was not an application exception. No live payment, email invitation or new employee was created for the synthetic test suite.

@@ -1,0 +1,19 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+PASS Public homepage and real logo render, employee and applicant sign-ins remain visible
+PASS Sign-in refresh keeps separate roles and password visibility
+PASS axe WCAG 2.2 AA /
+PASS axe WCAG 2.2 AA /auth/login?role=applicant
+PASS Employer project create and Kanban task flow persists through API and database
+PASS Meeting picker pages a thousand staff and group chips stay bounded
+PASS Employer uploads an encrypted document and the browser shows quarantine status
+PASS Employer isolation and axe /dashboard/employer/projects
+PASS Employer isolation and axe /dashboard/employer/meet
+PASS Employer isolation and axe /dashboard/employer/documents
+PASS Combined command palette retains privacy navigation and permission-aware search
+PASS Employee sees shared project only and is blocked from employer portal
+PASS Mobile employee tasks page has no horizontal overflow
+PASS Viewed notices leave active inbox and remain in history
+PASS Employee recruitment stays local and saved settings close
+PASS Expired birthday notice is absent from active employer inbox
+PASS Applicant cannot access collaboration API or employer pages
+PASS Admin audit renders and employee cannot call its API
