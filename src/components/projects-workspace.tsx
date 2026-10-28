@@ -9,6 +9,7 @@ import {
   type FormEvent,
 } from "react";
 import Link from "next/link";
+import ProjectFiles from "./project-files";
 import TaskCalendar from "./task-calendar";
 import ResourcePicker from "./resource-picker";
 import { WorkspaceRoleContext } from "./workspace-shell";
@@ -134,7 +135,7 @@ export default function ProjectsWorkspace({
     } finally {
       setLoading(false);
     }
-  }, [projectId, myTasks, q, filter, offset]);
+  }, [projectId, myTasks, q, filter, offset, setMessage]);
   useEffect(() => {
     const t = setTimeout(() => void refresh(), 200);
     return () => clearTimeout(t);
@@ -240,6 +241,7 @@ export default function ProjectsWorkspace({
         </p>
       )}
       {loading && <p role="status">Loading work…</p>}
+      {details&&projectId&&<ProjectFiles projectId={projectId} base={base}/>}
       {details && (
         <section className="aero-card space-y-4">
           <div className="flex flex-wrap gap-5">
@@ -1029,7 +1031,7 @@ function TaskDetail({
     } catch (e) {
       setMessage((e as Error).message);
     }
-  }, [endpoint]);
+  }, [endpoint, setMessage]);
   useEffect(() => {
     void Promise.resolve().then(load);
   }, [load]);

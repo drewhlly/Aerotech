@@ -25,6 +25,9 @@ await db.exec(
 );
 await db.exec(readFileSync("database/018_aerotech_meet.sql", "utf8"));
 await db.exec(readFileSync("database/037_collaboration.sql", "utf8"));
+await db.exec("CREATE TABLE IF NOT EXISTS workflow_alerts(employer_id UUID,alert_key TEXT,title TEXT,created_at TIMESTAMPTZ DEFAULT NOW(),read_at TIMESTAMPTZ);CREATE TABLE IF NOT EXISTS employee_notifications(employer_id UUID,employee_id UUID,title TEXT,created_at TIMESTAMPTZ DEFAULT NOW(),read_at TIMESTAMPTZ)");
+await db.exec(readFileSync("database/038_notification_lifecycle.sql","utf8"));
+await db.exec(readFileSync("database/039_guest_meetings.sql","utf8"));
 await db.exec(readFileSync("database/037_collaboration.sql", "utf8"));
 const tenant = randomUUID(),
   other = randomUUID();

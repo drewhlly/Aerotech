@@ -47,7 +47,7 @@ export async function GET(req: Request, ctx: C) {
           folder = u.searchParams.get("folder");
         if (folder) id(folder);
         const r = await c.query(
-          `SELECT d.id,d.title,d.folder_id,d.category,d.owner,d.employee_id,d.department,d.tags,d.expiry_date,d.current_version,d.visibility,d.created_at,v.filename,v.mime,v.size_bytes,v.scan_status FROM library_documents d JOIN library_document_versions v ON v.document_id=d.id AND v.version=d.current_version WHERE d.employer_id=$1 AND ($2::uuid IS NULL OR d.owner=$3 OR d.visibility='company' OR d.visibility='department' AND d.department=$4 OR EXISTS(SELECT 1 FROM document_grants g WHERE g.document_id=d.id AND g.employee_id=$2)) AND (d.retention_until IS NULL OR d.retention_until>=CURRENT_DATE) AND d.title ILIKE $5 AND ($6='' OR d.category=$6) AND ($7::uuid IS NULL OR d.folder_id=$7) AND ($10='' OR d.owner=$10) AND ($11::uuid IS NULL OR d.employee_id=$11) AND ($12='' OR v.mime=$12) AND ($13='' OR v.scan_status=$13) AND ($14::date IS NULL OR d.created_at>=$14::date) ORDER BY d.created_at DESC,d.id LIMIT $8 OFFSET $9`,
+          `SELECT d.id,d.title,d.folder_id,d.category,d.owner,d.employee_id,d.department,d.tags,d.expiry_date,d.current_version,d.visibility,d.created_at,v.filename,v.mime,v.size_bytes,v.scan_status FROM library_documents d JOIN library_document_versions v ON v.document_id=d.id AND v.version=d.current_version WHERE d.employer_id=$1 AND ($2::uuid IS NULL OR d.owner=$3 OR d.visibility='company' OR d.visibility='department' AND d.department=$4 OR EXISTS(SELECT 1 FROM document_grants g WHERE g.document_id=d.id AND g.employee_id=$2)) AND (d.retention_until IS NULL OR d.retention_until>=CURRENT_DATE) AND d.title ILIKE $5 AND ($6='' OR d.category=$6) AND ($7::uuid IS NULL OR d.folder_id=$7) AND ($10='' OR d.owner=$10) AND ($11::uuid IS NULL OR d.employee_id=$11) AND ($12='' OR v.mime=$12) AND ($13='' OR v.scan_status=$13) AND ($14::date IS NULL OR d.created_at>=$14::date) ORDER BY ${u.searchParams.get('sort')==='name'?'d.title ASC,d.id':'d.created_at DESC,d.id'} LIMIT $8 OFFSET $9`,
           [
             a.tenant,
             a.employee,
@@ -58,7 +58,7 @@ export async function GET(req: Request, ctx: C) {
             folder || null,
             limit,
             offset,
-            text(u.searchParams.get("owner"), 100),
+            u.searchParams.get("owner")==="company"?"employer:"+a.tenant:u.searchParams.get("owner")==="me"?a.id:text(u.searchParams.get("owner"),100),
             u.searchParams.get("employee")
               ? id(u.searchParams.get("employee"))
               : null,
@@ -150,7 +150,7 @@ export async function GET(req: Request, ctx: C) {
         await audit(c, a, "document.receipt", d.id, { version });
         return new Response(
           new Uint8Array(
-            textPDF("Acknowledgement receipt: " + d.title, [
+            await textPDF("Acknowledgement receipt: " + d.title, [
               "Document: " + d.id,
               "Version: " + version,
               "Original SHA256: " + v.content_hash,
@@ -190,7 +190,7 @@ export async function GET(req: Request, ctx: C) {
       );
       await audit(c, a, "document.viewed", d.id, { version });
       return respond({
-        document: d,
+        document:{...d,filename:v.filename,mime:v.mime,scan_status:v.scan_status},
         versions,
         acknowledgements,
         downloadUrl:
@@ -332,7 +332,7 @@ export async function POST(req: Request, ctx: C) {
           body = body.replaceAll("{{" + k + "}}", text(b[k], 300));
         await audit(c, a, "document.generated", template.id);
         return new Response(
-          new Uint8Array(textPDF(template.title, body.split("\n"))),
+          new Uint8Array(await textPDF(template.title, body.split("\n"))),
           {
             headers: {
               "Content-Type": "application/pdf",
@@ -344,6 +344,13 @@ export async function POST(req: Request, ctx: C) {
         );
       }
       const d = await documentAccess(c, a, s[0], true);
+      if(b.action==="metadata"){
+        const category=text(b.category,30,true);if(!categories.includes(category))throw new AccessError("Invalid category",400);
+        const employee=b.employeeId?id(b.employeeId):null;
+        if(employee&&!(await c.query("SELECT 1 FROM workforce_employees WHERE employer_id=$1 AND id=$2",[a.tenant,employee])).rowCount)throw new AccessError("Employee not found",404);
+        await c.query("UPDATE library_documents SET title=$1,category=$2,expiry_date=$3,retention_until=$4,employee_id=$5,department=$6,tags=$7,updated_at=NOW() WHERE employer_id=$8 AND id=$9",[text(b.title,200,true),category,date(b.expiryDate),date(b.retentionUntil),employee,text(b.department,100),text(b.tags,500).split(",").map(x=>x.trim()).filter(Boolean).slice(0,20),a.tenant,d.id]);
+        await audit(c,a,"document.metadata",d.id);return respond({ok:true});
+      }
       if (b.action === "restore") {
         const v = (
           await c.query(

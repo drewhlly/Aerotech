@@ -13,8 +13,10 @@ type JitsiWindow = Window & {
 };
 export default function JoinMeeting({
   params,
+  guestToken,
 }: {
   params: Promise<{ id: string }>;
+  guestToken?:string;
 }) {
   const role = useContext(WorkspaceRoleContext) || "employee",
     meetBase = workspaceHomes[role] + "/meet";
@@ -31,7 +33,7 @@ export default function JoinMeeting({
         const { id } = await params;
         const response = await fetch(
           "/api/meet/" + encodeURIComponent(id) + "/join",
-          { cache: "no-store" },
+          { cache: "no-store",headers:guestToken?{Authorization:"Bearer "+guestToken}:undefined },
         );
         const result = await response.json();
         if (!response.ok) throw Error(result.error || "Unable to join");
@@ -54,7 +56,7 @@ export default function JoinMeeting({
           try {
             const check = await fetch(
               "/api/meet/" + encodeURIComponent(id) + "/join?status=1",
-              { cache: "no-store" },
+              { cache: "no-store",headers:guestToken?{Authorization:"Bearer "+guestToken}:undefined },
             );
             if (!check.ok)
               stop(
@@ -112,7 +114,7 @@ export default function JoinMeeting({
       instance?.dispose();
       script?.remove();
     };
-  }, [params]);
+  }, [params,guestToken]);
   return (
     <div className="space-y-4">
       <section className="aero-card flex flex-wrap items-center justify-between gap-3">
@@ -122,9 +124,9 @@ export default function JoinMeeting({
             Use the call controls to turn on your microphone or camera.
           </p>
         </div>
-        <Link href={meetBase} className="aero-button bg-blue-50 text-blue-700">
+        {!guestToken&&<Link href={meetBase} className="aero-button bg-blue-50 text-blue-700">
           All meetings
-        </Link>
+        </Link>}
       </section>
       {message && (
         <p role="status" className="text-sm text-slate-600">

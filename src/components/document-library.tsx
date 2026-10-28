@@ -7,6 +7,7 @@ import {
   useState,
   type FormEvent,
 } from "react";
+import {useSearchParams} from "next/navigation";
 import { WorkspaceRoleContext } from "./workspace-shell";
 import CollaborationDialog from "./collaboration-dialog";
 import PeoplePicker, { type Person } from "./people-picker";
@@ -24,6 +25,7 @@ type Doc = {
   scan_status: string;
   expiry_date: string;
   folder_id: string | null;
+  employee_id?:string; department?:string; tags?:string[]; retention_until?:string;
 };
 type Folder = { id: string; name: string; parent_id: string | null };
 type Version = {
@@ -51,6 +53,7 @@ const categories = [
   "Templates",
 ];
 export default function DocumentLibrary() {
+  const documentId=useSearchParams().get("document");
   const role = useContext(WorkspaceRoleContext),
     employer = role === "employer";
   const [records, setRecords] = useState<Doc[]>([]),
@@ -58,6 +61,7 @@ export default function DocumentLibrary() {
     [folders, setFolders] = useState<Folder[]>([]),
     [folder, setFolder] = useState(""),
     [q, setQ] = useState(""),
+    [ownerFilter,setOwnerFilter]=useState(""),[employeeFilter,setEmployeeFilter]=useState<Person[]>([]),[fromDate,setFromDate]=useState(""),
     [category, setCategory] = useState(""),
     [status, setStatus] = useState(""),
     [type, setType] = useState(""),
@@ -70,13 +74,14 @@ export default function DocumentLibrary() {
     [templates, setTemplates] = useState(false),
     [busy, setBusy] = useState(false),
     [progress, setProgress] = useState(0);
+  useEffect(()=>{if(!documentId)return;let active=true;void api<{document:Doc}>("/api/document-library/"+encodeURIComponent(documentId)).then(d=>{if(active)setDoc(d.document)}).catch(e=>{if(active)setMessage(e.message)});return()=>{active=false}},[documentId,setMessage]);
   const refresh = useCallback(async () => {
     const params = new URLSearchParams({
       q,
       category,
       folder,
       status,
-      type,
+      type,owner:ownerFilter,employee:employeeFilter[0]?.id||"",from:fromDate,sort,
       offset: String(offset),
     });
     try {
@@ -89,7 +94,7 @@ export default function DocumentLibrary() {
     } catch (e) {
       setMessage((e as Error).message);
     }
-  }, [q, category, folder, status, type, offset]);
+  }, [q, category, folder, status, type, offset, ownerFilter, employeeFilter, fromDate,sort, setMessage]);
   useEffect(() => {
     const t = setTimeout(() => void refresh(), 200);
     return () => clearTimeout(t);
@@ -258,7 +263,7 @@ export default function DocumentLibrary() {
             Scan status
             <select
               value={status}
-              onChange={(e) => setStatus(e.target.value)}
+              onChange={(e)=>{setStatus(e.target.value);setOffset(0)}}
               className="aero-input"
             >
               <option value="">All</option>
@@ -271,7 +276,7 @@ export default function DocumentLibrary() {
             File type
             <select
               value={type}
-              onChange={(e) => setType(e.target.value)}
+              onChange={(e)=>{setType(e.target.value);setOffset(0)}}
               className="aero-input"
             >
               <option value="">All</option>
@@ -286,11 +291,14 @@ export default function DocumentLibrary() {
               </option>
             </select>
           </label>
+          <label>Created from<input type="date" className="aero-input" value={fromDate} onChange={e=>{setFromDate(e.target.value);setOffset(0)}}/></label>
+          <label>Owner<select className="aero-input" value={ownerFilter} onChange={e=>{setOwnerFilter(e.target.value);setOffset(0)}}><option value="">All owners</option><option value="company">Company administrator</option><option value="me">My uploads</option></select></label>
+          {employer&&<div><p className="text-sm">Filter by employee</p><PeoplePicker value={employeeFilter} onChange={v=>{setEmployeeFilter(v.slice(-1));setOffset(0)}}/>{employeeFilter[0]&&<button className="aero-button border" onClick={()=>{setEmployeeFilter([]);setOffset(0)}}>Clear {employeeFilter[0].name}</button>}</div>}
           <label>
             Sort
             <select
               value={sort}
-              onChange={(e) => setSort(e.target.value)}
+              onChange={(e)=>{setSort(e.target.value);setOffset(0)}}
               className="aero-input"
             >
               <option value="date">Newest</option>
@@ -474,16 +482,16 @@ function DocumentDetails({
     [message, setMessage] = useFeedback(),
     [people, setPeople] = useState<Person[]>([]),
     [preview, setPreview] = useState(false),
-    [version, setVersion] = useState(d.current_version);
+    [version, setVersion] = useState(d.current_version),[versionOffset,setVersionOffset]=useState(0);
   const load = useCallback(async () => {
     try {
       setData(
-        await api("/api/document-library/" + d.id + "?version=" + version),
+        await api("/api/document-library/" + d.id + "?version=" + version+"&limit=20&offset="+versionOffset),
       );
     } catch (e) {
       setMessage((e as Error).message);
     }
-  }, [d.id, version]);
+  }, [d.id, version, versionOffset, setMessage]);
   useEffect(() => {
     void Promise.resolve().then(load);
   }, [load]);
@@ -493,6 +501,7 @@ function DocumentDetails({
       setMessage("Saved.");
       await load();
       await refresh();
+      close();
     } catch (e) {
       setMessage((e as Error).message);
     }
@@ -502,6 +511,7 @@ function DocumentDetails({
       {message && <p role="status">{message}</p>}
       <p className="text-sm">{d.category} · Company-managed record</p>
 
+      {employer&&<details className="mt-4"><summary className="cursor-pointer font-semibold">Edit document details</summary><form className="mt-4 grid gap-3" onSubmit={async e=>{e.preventDefault();await action({action:"metadata",...Object.fromEntries(new FormData(e.currentTarget))})}}><label>Title<input name="title" required defaultValue={d.title} className="aero-input"/></label><label>Category<select name="category" defaultValue={d.category} className="aero-input">{categories.map(x=><option key={x}>{x}</option>)}</select></label><label>Expiry<input name="expiryDate" type="date" defaultValue={d.expiry_date?.slice(0,10)||""} className="aero-input"/></label><label>Retention until<input name="retentionUntil" type="date" defaultValue={d.retention_until?.slice(0,10)||""} className="aero-input"/></label><input type="hidden" name="employeeId" value={d.employee_id||""}/><label>Department<input name="department" defaultValue={d.department||""} className="aero-input"/></label><label>Tags<input name="tags" defaultValue={d.tags?.join(", ")||""} className="aero-input"/></label><button className="aero-button bg-blue-700 text-white">Save details</button></form></details>}
       {data && (
         <div className="mt-5 space-y-5">
           <label className="block">
@@ -521,6 +531,7 @@ function DocumentDetails({
               ))}
             </select>
           </label>
+          <div className="flex gap-3"><button className="aero-button border" disabled={!versionOffset} onClick={()=>setVersionOffset(n=>Math.max(0,n-20))}>Newer versions</button><button className="aero-button border" disabled={data.versions.length<20} onClick={()=>setVersionOffset(n=>n+20)}>Older versions</button></div>
           {data.downloadUrl ? (
             <div className="flex flex-wrap gap-3">
               <a
@@ -724,7 +735,7 @@ function Templates({ close }: { close: () => void }) {
     void Promise.resolve()
       .then(load)
       .catch((e) => setMessage(e.message));
-  }, [load]);
+  }, [load, setMessage]);
   async function create(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     try {

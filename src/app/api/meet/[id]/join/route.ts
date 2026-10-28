@@ -1,3 +1,4 @@
+import {guestEmail,validGuestInvitation} from "@/lib/meeting-guest";
 import { NextResponse } from "next/server";
 import { createHmac, createSign } from "node:crypto";
 import { currentApplicant } from "@/lib/applicant-session";
@@ -30,11 +31,14 @@ export async function GET(
       await p.end();
     }
   }
+  let guest:{employer_id:string;email:string;join_generation:number;[key:string]:unknown}|undefined;
+  const guestToken=_request.headers.get("authorization")?.replace(/^Bearer /,"")||"";
+  if(!employee&&!applicant&&!employerId&&guestToken){const email=guestEmail(guestToken);if(email){const p=db();try{const row=(await p.query("SELECT m.*,g.email FROM meet_rooms m JOIN meeting_guests g ON g.room_id=m.id AND g.employer_id=m.employer_id WHERE m.id=$1 AND g.email=$2",[id,email])).rows[0];if(row&&validGuestInvitation(id,email,row.join_generation,guestToken)){guest=row;employerId=row.employer_id}}finally{await p.end()}}}
   if (!employerId)
     return NextResponse.json({ error: "Sign in required" }, { status: 401 });
   const pool = db();
   try {
-    const access = applicant
+    const access = guest ? {rowCount:1,rows:[guest]} : applicant
       ? await pool.query(
           "SELECT m.* FROM meet_rooms m JOIN ats_applications a ON a.interview_room_id=m.id JOIN ats_jobs j ON j.id=a.job_id AND j.employer_id=m.employer_id WHERE m.id=$1 AND a.applicant_id=$2 AND a.stage='interview'",
           [id, applicant],
@@ -126,14 +130,14 @@ export async function GET(
         exp: Math.min(now + 60, Math.floor(window.expiresAt / 1000)),
         context: {
           user: {
-            id: employee?.id || applicant || employerId,
-            name: employee
+            id: employee?.id || applicant || (guest ? "guest:"+guest.email : employerId),
+            name: guest ? "Invited guest" : employee
               ? employee.first_name + " " + employee.last_name
               : applicant
                 ? "Candidate"
                 : "Employer host",
-            email: employee?.email || "",
-            moderator: employee || applicant ? "false" : "true",
+            email: guest?.email || employee?.email || "",
+            moderator: employee || applicant || guest ? "false" : "true",
           },
           features: {
             recording: false,
@@ -166,13 +170,13 @@ export async function GET(
         exp: Math.min(now + 60, Math.floor(window.expiresAt / 1000)),
         context: {
           user: {
-            name: employee
+            name: guest ? "Invited guest" : employee
               ? employee.first_name + " " + employee.last_name
               : applicant
                 ? "Candidate"
                 : "Employer host",
-            email: employee?.email || undefined,
-            moderator: !employee && !applicant,
+            email: guest?.email || employee?.email || undefined,
+            moderator: !employee && !applicant && !guest,
           },
         },
       });
@@ -187,6 +191,7 @@ export async function GET(
         "UPDATE meet_participants SET joined_at=COALESCE(joined_at,NOW()) WHERE room_id=$1 AND employee_id=$2",
         [id, employee.id],
       );
+    if(guest)await pool.query("UPDATE meeting_guests SET joined_at=COALESCE(joined_at,NOW()) WHERE room_id=$1 AND email=$2",[id,guest.email]);
     return NextResponse.json(
       {
         domain,

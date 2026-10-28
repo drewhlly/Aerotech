@@ -4,6 +4,7 @@ import { transaction, enqueue, notify, type Actor } from "./collaboration";
 import { decryptDocument } from "./document-crypto";
 import { createTask } from "./project-service";
 import { terminateConference } from "./meeting-provider";
+import {guestInvitation} from "./meeting-guest";
 import { randomUUID } from "node:crypto";
 type Job = {
   id: string;
@@ -68,6 +69,7 @@ export async function sweep(c: PoolClient) {
   await c.query(
     "UPDATE ats_jobs SET status='expired' WHERE status='published' AND expires_at<=NOW()",
   );
+  await c.query(`INSERT INTO collaboration_jobs(employer_id,kind,dedupe_key,payload) SELECT g.employer_id,'guest_invite','guest:'||g.room_id||':'||g.email,jsonb_build_object('meeting',g.room_id,'email',g.email) FROM meeting_guests g JOIN meet_rooms m ON m.id=g.room_id WHERE g.invited_at IS NULL AND m.status='scheduled' AND m.starts_at+duration_minutes*INTERVAL '1 minute'>NOW() ON CONFLICT DO NOTHING`);
   await c.query(
     `INSERT INTO collaboration_jobs(employer_id,kind,dedupe_key,payload,run_at) SELECT employer_id,'task_overdue','overdue:'||id||':'||revision,jsonb_build_object('task',id,'revision',revision),NOW() FROM project_tasks WHERE status NOT IN ('Done','Cancelled') AND due_at<NOW() ON CONFLICT DO NOTHING`,
   );
@@ -102,6 +104,13 @@ async function perform(c: PoolClient, job: Job) {
       role: "employer",
     },
     b = job.payload;
+  if(job.kind==="guest_invite"){
+    const row=(await c.query("SELECT m.*,g.email FROM meeting_guests g JOIN meet_rooms m ON m.id=g.room_id AND m.employer_id=g.employer_id WHERE m.employer_id=$1 AND m.id=$2 AND g.email=$3",[a.tenant,b.meeting,b.email])).rows[0];
+    if(!row||row.status!=="scheduled"||row.revoked_at||new Date(row.starts_at).getTime()+row.duration_minutes*60000<=Date.now())return;
+    const token=guestInvitation(row.id,row.email,row.join_generation),origin=process.env.NEXT_PUBLIC_SITE_URL||"https://aerotech-psi.vercel.app";
+    await email(row.email,"Meeting invitation: "+row.title,row.title+"\n"+new Date(row.starts_at).toISOString()+" · "+row.timezone+"\n\nAccess your personal invitation: "+origin+"/guest/meet/"+row.id+"#invite="+token+"\nAccess opens 15 minutes before the meeting and expires when it ends. Do not forward this invitation.",job.id);
+    await c.query("UPDATE meeting_guests SET invited_at=NOW() WHERE room_id=$1 AND email=$2",[row.id,row.email]);return;
+  }
   if (job.kind === "meeting_terminate") {
     await terminateConference(
       a.tenant,
@@ -155,7 +164,7 @@ async function perform(c: PoolClient, job: Job) {
     const origin =
       process.env.APP_BASE_URL ||
       process.env.NEXT_PUBLIC_SITE_URL ||
-      "https://aerotechhr.app";
+      "https://aerotech-psi.vercel.app";
     const href = String(b.href || "");
     if (!/^\/(employee|dashboard\/employer)\//.test(href))
       throw Error("Unsafe notification link");
@@ -346,6 +355,7 @@ async function perform(c: PoolClient, job: Job) {
       "INSERT INTO meet_participants(employer_id,room_id,employee_id,required) SELECT employer_id,$1,employee_id,required FROM meet_participants WHERE room_id=$2",
       [id, m.id],
     );
+    await c.query("INSERT INTO meeting_guests(employer_id,room_id,email,required) SELECT employer_id,$1,email,required FROM meeting_guests WHERE room_id=$2",[id,m.id]);
     return;
   }
   throw Error("Unknown job kind");
@@ -359,7 +369,8 @@ export async function runCollaborationJobs() {
   try {
     for (let i = 0; i < 200 && Date.now() - started < 50000; i++) {
       const claim = await p.query(
-        `WITH candidate AS (SELECT id FROM collaboration_jobs WHERE (status='pending' AND run_at<=NOW() OR status='running' AND lease_until<NOW()) AND attempts<5 ORDER BY run_at FOR UPDATE SKIP LOCKED LIMIT 1) UPDATE collaboration_jobs j SET status='running',attempts=attempts+1,lease_until=NOW()+INTERVAL '2 minutes' FROM candidate WHERE j.id=candidate.id RETURNING j.*`,
+        `WITH candidate AS (SELECT id FROM collaboration_jobs WHERE (status='pending' AND run_at<=NOW() OR status='running' AND lease_until<NOW()) AND attempts<5 AND (kind<>'virus_scan' OR $1::boolean) ORDER BY run_at FOR UPDATE SKIP LOCKED LIMIT 1) UPDATE collaboration_jobs j SET status='running',attempts=attempts+1,lease_until=NOW()+INTERVAL '2 minutes' FROM candidate WHERE j.id=candidate.id RETURNING j.*`,
+        [Boolean(process.env.DOCUMENT_SCAN_URL?.startsWith("https://")&&process.env.DOCUMENT_SCAN_TOKEN)],
       );
       const job = claim.rows[0] as Job | undefined;
       if (!job) break;

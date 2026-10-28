@@ -68,6 +68,8 @@ await db.query(
   "INSERT INTO project_tasks(employer_id,project_id,title,created_by,due_at) VALUES($1,$2,'Review launch tasks',$3,NOW()+INTERVAL '1 day')",
   [employer, project, "employer:" + employer],
 );
+await db.query("INSERT INTO employee_notifications(id,employer_id,employee_id,title,body) VALUES(gen_random_uuid(),$1,$2,'Lifecycle test notice','This should move to history after viewing.')",[employer,employee]);
+await db.query("INSERT INTO workflow_alerts(employer_id,alert_key,title,details,expires_at) VALUES($1,'birthday:test:2000-01-01','Expired birthday fixture','Must never appear in the active inbox',NOW()-INTERVAL '1 day')",[employer]);
 writeFileSync(
   "/tmp/phase2-fixture.json",
   JSON.stringify({ employer, employee, nonmember, admin, applicant, project }),

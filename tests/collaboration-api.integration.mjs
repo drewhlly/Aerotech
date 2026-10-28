@@ -32,6 +32,9 @@ await database.exec(
 );
 await database.exec(readFileSync("database/018_aerotech_meet.sql", "utf8"));
 await database.exec(readFileSync("database/037_collaboration.sql", "utf8"));
+await database.exec("CREATE TABLE IF NOT EXISTS workflow_alerts(employer_id UUID,alert_key TEXT,title TEXT,created_at TIMESTAMPTZ DEFAULT NOW(),read_at TIMESTAMPTZ);CREATE TABLE IF NOT EXISTS employee_notifications(employer_id UUID,employee_id UUID,title TEXT,created_at TIMESTAMPTZ DEFAULT NOW(),read_at TIMESTAMPTZ)");
+await database.exec(readFileSync("database/038_notification_lifecycle.sql","utf8"));
+await database.exec(readFileSync("database/039_guest_meetings.sql","utf8"));
 const owner = randomUUID(),
   other = randomUUID(),
   employee = randomUUID(),
@@ -574,6 +577,22 @@ await check(
     assert.ok(sent >= 0);
   },
 );
+await check("read and expired notices leave active inbox but remain in history",async()=>{
+ jar={aerotech_employee_session:"employee"};const active=randomUUID(),expired=randomUUID(),read=randomUUID();
+ await query("INSERT INTO collaboration_notifications(id,employer_id,actor,event,title,body,href,source_key,read_at,expires_at) VALUES($1,$4,$5,'meeting','Active','','/employee/meet','completion-active',NULL,NULL),($2,$4,$5,'meeting','Expired','','/employee/meet','completion-expired',NULL,NOW()-INTERVAL '1 second'),($3,$4,$5,'meeting','Read','','/employee/meet','completion-read',NOW(),NULL)",[active,expired,read,owner,"employee:"+employee]);
+ let d=await(await notices.GET(req("/api/collaboration/notifications"))).json();assert.ok(d.records.some(x=>x.id===active));assert.ok(!d.records.some(x=>[expired,read].includes(x.id)));
+ assert.equal((await notices.PATCH(req("/api/collaboration/notifications","PATCH",{id:active}))).status,200);
+ d=await(await notices.GET(req("/api/collaboration/notifications?history=1&limit=100"))).json();for(const id of [active,expired,read])assert.ok(d.records.some(x=>x.id===id));
+ jar={aerotech_employee_session:"nonmember"};d=await(await notices.GET(req("/api/collaboration/notifications?history=1"))).json();assert.ok(!d.records.some(x=>[active,expired,read].includes(x.id)));
+});
+await check("metadata updates reject foreign employee references",async()=>{
+ jar={aerotech_employer_session:"owner"};let r=await docs.POST(req("/api/document-library/"+uploaded.id,"POST",{action:"metadata",title:"Updated document",category:"Contracts",employeeId:employee,tags:"contract, reviewed"}),ctx(uploaded.id));assert.equal(r.status,200);
+ r=await docs.POST(req("/api/document-library/"+uploaded.id,"POST",{action:"metadata",title:"Wrong",category:"Contracts",employeeId:randomUUID()}),ctx(uploaded.id));assert.equal(r.status,404);
+});
+await check("guest bearer access is meeting scoped and expired server-side",async()=>{
+ jar={};const room=randomUUID();await query("INSERT INTO meet_rooms(id,employer_id,title,starts_at,duration_minutes) VALUES($1,$2,'Guest',NOW()+INTERVAL '1 hour',30)",[room,owner]);await query("INSERT INTO meeting_guests(employer_id,room_id,email) VALUES($1,$2,'guest@example.test')",[owner,room]);
+ const {guestInvitation}=await import("../src/lib/meeting-guest.ts"),token=guestInvitation(room,"guest@example.test",1),request=t=>new Request("https://aerotech.test/api/meet/"+room+"/join",{headers:{Authorization:"Bearer "+t}}),context={params:Promise.resolve({id:room})};assert.equal((await join.GET(request(token),context)).status,425);assert.equal((await join.GET(request(token+'forged'),context)).status,401);assert.equal((await projects.GET(req('/api/projects'),ctx())).status,401);await query("UPDATE meet_rooms SET starts_at=NOW()-INTERVAL '2 hours' WHERE id=$1",[room]);assert.equal((await join.GET(request(token),context)).status,410);
+});
 console.log(
   count +
     " actual API-handler integration checks passed using isolated PostgreSQL and mocked session/provider boundaries. No production database, emails or external service calls.",

@@ -69,7 +69,7 @@ export default function Meetings() {
       .catch((e) => setMessage(e.message));
     const t = setInterval(() => void reload().catch(() => {}), 30000);
     return () => clearInterval(t);
-  }, [reload]);
+  }, [reload, setMessage]);
   useEffect(() => {
     if (!employer) return;
     const c = new AbortController(),
@@ -91,7 +91,7 @@ export default function Meetings() {
       clearTimeout(t);
       c.abort();
     };
-  }, [q, employer]);
+  }, [q, employer, setMessage]);
   useEffect(() => {
     if (!employer) return;
     const c = new AbortController(),
@@ -123,7 +123,7 @@ export default function Meetings() {
       clearTimeout(t);
       c.abort();
     };
-  }, [employer, chosen, people, exclude, search, allOffset]);
+  }, [employer, chosen, people, exclude, search, allOffset, setMessage]);
   async function create(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setBusy(true);
@@ -633,7 +633,7 @@ function MeetingDetails({
       clearTimeout(t);
       c.abort();
     };
-  }, [meeting.id, q, offset]);
+  }, [meeting.id, q, offset, setMessage]);
   async function save(e: FormEvent<HTMLFormElement>, action: string) {
     e.preventDefault();
     try {

@@ -1,0 +1,4 @@
+import {createHmac,timingSafeEqual} from "node:crypto";
+export function guestInvitation(room:string,email:string,generation:number){const key=process.env.DOCUMENT_ENCRYPTION_KEY;if(!key)throw Error("Guest invitations are not configured");const identity=Buffer.from(email.toLowerCase()).toString("base64url");return identity+"."+createHmac("sha256",Buffer.from(key,"base64")).update("guest-meeting:"+room+":"+identity+":"+generation).digest("base64url")}
+export function guestEmail(token:string){if(token.length>1024||token.split(".").length!==2)return null;const email=Buffer.from(token.split(".")[0],"base64url").toString();return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)&&email.length<=254?email:null}
+export function validGuestInvitation(room:string,email:string,generation:number,token:string){const expected=Buffer.from(guestInvitation(room,email,generation)),actual=Buffer.from(token);return actual.length===expected.length&&timingSafeEqual(actual,expected)}

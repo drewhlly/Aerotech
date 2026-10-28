@@ -6,6 +6,7 @@ import {
   text,
   notify,
   audit,
+  enqueue,
   type Actor,
 } from "./collaboration";
 import { randomUUID } from "node:crypto";
@@ -170,6 +171,7 @@ export async function scheduleMeeting(
       "INSERT INTO meeting_guests(employer_id,room_id,email) VALUES($1,$2,$3) ON CONFLICT DO NOTHING",
       [a.tenant, room, email.toLowerCase()],
     );
+  for(const guest of (await c.query("SELECT email FROM meeting_guests WHERE room_id=$1",[room])).rows)await enqueue(c,a.tenant,"guest_invite","guest:"+room+":"+guest.email,{meeting:room,email:guest.email});
   await notify(
     c,
     a,

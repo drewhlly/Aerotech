@@ -159,7 +159,7 @@ export async function GET(req: Request, ctx: Context) {
         return new Response(
           new Uint8Array(
             pdf
-              ? textPDF(
+              ? await textPDF(
                   p.name + " - tasks (first 1000)",
                   values.map((r) => r.join(" | ")),
                 )
@@ -176,6 +176,8 @@ export async function GET(req: Request, ctx: Context) {
           },
         );
       }
+      if(s[1]==="members")return respond({records:(await c.query("SELECT m.employee_id id,m.role,e.first_name||' '||e.last_name name FROM project_members m JOIN workforce_employees e ON e.id=m.employee_id AND e.employer_id=m.employer_id WHERE m.employer_id=$1 AND m.project_id=$2 ORDER BY e.first_name,e.id LIMIT $3 OFFSET $4",[a.tenant,p.id,limit,offset])).rows,limit,offset});
+      if(s[1]==="files")return respond({records:(await c.query(`SELECT DISTINCT d.id,d.title,d.category FROM task_attachments x JOIN project_tasks t ON t.id=x.task_id AND t.employer_id=x.employer_id JOIN library_documents d ON d.id=x.document_id AND d.employer_id=x.employer_id WHERE x.employer_id=$1 AND t.project_id=$2 AND (d.retention_until IS NULL OR d.retention_until>=CURRENT_DATE) AND ($3::uuid IS NULL OR d.owner=$4 OR d.visibility='company' OR d.visibility='department' AND d.department=$5 OR EXISTS(SELECT 1 FROM document_grants g WHERE g.document_id=d.id AND g.employee_id=$3)) ORDER BY d.title,d.id LIMIT $6 OFFSET $7`,[a.tenant,p.id,a.employee,a.id,a.department,limit,offset])).rows,limit,offset});
       const members = (
         await c.query(
           `SELECT m.employee_id id,m.role,e.first_name||' '||e.last_name name FROM project_members m JOIN workforce_employees e ON e.id=m.employee_id WHERE m.project_id=$1 ORDER BY e.first_name LIMIT 100`,

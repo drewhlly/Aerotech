@@ -1,0 +1,3 @@
+"use client";
+import {useEffect,useState} from "react";import JoinMeeting from "@/components/meeting-room";
+export default function Page({params}:{params:Promise<{id:string}>}){const [token,setToken]=useState("");useEffect(()=>{const value=new URLSearchParams(window.location.hash.slice(1)).get("invite");if(value)queueMicrotask(()=>setToken(value))},[]);return <main className="mx-auto max-w-6xl p-5"><p className="mb-5 font-bold">Aerotech · Guest invitation</p>{token?<JoinMeeting params={params} guestToken={token}/>:<p role="alert">Open the personal invitation sent to your email to access this meeting.</p>}</main>}

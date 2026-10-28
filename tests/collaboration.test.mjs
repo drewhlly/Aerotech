@@ -83,12 +83,13 @@ test("encrypted versions cannot be decrypted across companies; signed grants bin
   assert.equal(verifyDownload("a:doc:2:employee1", expiry, sig, now), false);
   assert.equal(verifyDownload("a:doc:1:employee1", expiry, sig, expiry), false);
 });
-test("safe exports neutralise formula injection and escape PDF syntax", () => {
+test("safe exports neutralise formula injection and escape PDF syntax", async () => {
   assert.ok(csv(["title"], [['=IMPORTXML("x")']]).includes("'=IMPORTXML"));
-  const pdf = textPDF("A (B)", ["evil ) Tj (" + "x".repeat(300)]).toString();
-  assert.ok(pdf.startsWith("%PDF-1.4"));
+  const pdf = (await textPDF("A (B)", ["evil ) Tj (" + "x".repeat(300)])).toString();
+  assert.ok(pdf.startsWith("%PDF-1."));
   assert.ok(pdf.endsWith("%%EOF"));
-  assert.ok(pdf.includes("A \\(B\\)"));
+  const {PDFDocument}=await import("pdf-lib");
+  assert.equal((await PDFDocument.load(await textPDF("A (B)",["evil ) Tj ("]))).getTitle(),"A (B)");
   assert.equal(documentMime(Buffer.from("<html>"), "fake.pdf"), null);
 });
 

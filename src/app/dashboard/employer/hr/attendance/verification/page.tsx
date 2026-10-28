@@ -9,7 +9,7 @@ export default function AttendanceVerification(){
  const [site,setSite]=useState({name:"",latitude:"",longitude:"",radiusMeters:"150"});
  const [employeeId,setEmployeeId]=useState(""),[siteId,setSiteId]=useState(""),[message,setMessage]=useFeedback(),[busy,setBusy]=useState(false);
  async function reload(){const [a,b]=await Promise.all([fetch("/api/hr/attendance/sites"),fetch("/api/employees")]);const x=await a.json(),y=await b.json();if(!a.ok||!b.ok)throw Error(x.error||y.error||"Unable to load attendance setup");setSites(x.sites||[]);setEmployees(y.employees||[]);}
- useEffect(()=>{void Promise.resolve().then(()=>{reload().catch(e=>setMessage(e.message));});},[]);
+ useEffect(()=>{void Promise.resolve().then(()=>{reload().catch(e=>setMessage(e.message));});},[setMessage]);
  async function createSite(e:FormEvent){e.preventDefault();setBusy(true);setMessage("");
  try{const response=await fetch("/api/hr/attendance/sites",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:site.name,latitude:Number(site.latitude),longitude:Number(site.longitude),radiusMeters:Number(site.radiusMeters)})});const data=await response.json();if(!response.ok)throw Error(data.error||"Unable to create location");setMessage("Approved workplace saved.");await reload();}catch(e){setMessage(e instanceof Error?e.message:"Unable to create location");}finally{setBusy(false);}}
  async function record(eventType:"clock_in"|"clock_out"){if(!siteId||!employeeId){setMessage("Select an employee and approved workplace.");return;}if(!navigator.geolocation){setMessage("GPS is not supported on this device.");return;}

@@ -320,6 +320,23 @@ await check(
     });
   },
 );
+await check("Viewed notices leave active inbox and remain in history",async()=>{
+ await ep.goto(origin+'/employee/notifications',{waitUntil:'networkidle'});
+ await ep.getByRole('article').filter({hasText:'Lifecycle test notice'}).getByRole('button',{name:'View notice',exact:true}).click();
+ const d=ep.getByRole('dialog',{name:'Lifecycle test notice',exact:true});await d.waitFor();await d.getByRole('button',{name:'Close',exact:true}).click();
+ assert.equal(await ep.getByRole('article').filter({hasText:'Lifecycle test notice'}).count(),0);
+ await ep.getByRole('button',{name:'History',exact:true}).click();await ep.getByRole('article').filter({hasText:'Lifecycle test notice'}).waitFor();
+});
+await check("Employee recruitment stays local and saved settings close",async()=>{
+ await ep.setViewportSize({width:1440,height:1100});await ep.goto(origin+'/employee/privacy',{waitUntil:'networkidle'});
+ assert.equal(await ep.getByRole('link',{name:'Recruitment',exact:true}).getAttribute('href'),'/employee/opportunities');
+ await ep.getByRole('button',{name:'Save choices',exact:true}).click();await ep.getByRole('button',{name:'Edit cookie preferences',exact:true}).waitFor();
+ await ep.getByRole('button',{name:'New privacy request',exact:true}).click();await ep.getByLabel('Request details',{exact:true}).fill('Please provide my additional account records for this isolated test.');await ep.getByRole('button',{name:'Submit privacy request',exact:true}).click();await ep.getByRole('button',{name:'New privacy request',exact:true}).waitFor();assert.equal(await ep.getByRole('button',{name:'Submit privacy request',exact:true}).count(),0);
+});
+await check("Expired birthday notice is absent from active employer inbox",async()=>{
+ await page.goto(origin+'/dashboard/employer/notifications',{waitUntil:'networkidle'});assert.equal(await page.getByRole('heading',{name:'Expired birthday fixture',exact:true}).count(),0);
+ await page.getByRole('button',{name:'History',exact:true}).click();await page.getByRole('heading',{name:'Expired birthday fixture',exact:true}).waitFor();
+});
 const applicant = await roleContext("applicant"),
   ap = await applicant.newPage();
 await check(
