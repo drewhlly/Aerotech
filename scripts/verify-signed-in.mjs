@@ -1,3 +1,4 @@
+import { POLICY_VERSION } from '../src/lib/policy.ts';
 import assert from 'node:assert/strict';
 import { randomUUID, randomBytes, createHash, createHmac } from 'node:crypto';
 import { setTimeout as pause } from 'node:timers/promises';
@@ -13,7 +14,7 @@ const results=[];const passed=s=>{results.push(s);console.log('PASS '+s)};
 for(let i=0;i<60;i++){try{if((await fetch(base+'/auth/login')).ok)break}catch{}await pause(1000);if(i===59)throw Error('Server did not start')}
 const browser=await chromium.launch(process.env.QA_CHROME?{executablePath:process.env.QA_CHROME,args:['--no-sandbox','--disable-dev-shm-usage']}:{});const contexts=[];
 async function context(){const c=await browser.newContext({baseURL:base});contexts.push(c);return c}
-async function call(c,path,body,expected=200,method='post'){if(body&&(/\/api\/auth\/(signup|activate)\//).test(path))body={...body,acceptedPolicies:true,policyVersion:'2026-10-27.1'};const r=await c.request[method](path,body===undefined?{}:{data:body,headers:{Origin:base}});let d;try{d=await r.json()}catch{d={}}assert.equal(r.status(),expected,path+' '+JSON.stringify(d));return d}
+async function call(c,path,body,expected=200,method='post'){if(body&&(/\/api\/auth\/(signup|activate)\//).test(path))body={...body,acceptedPolicies:true,policyVersion:POLICY_VERSION};const r=await c.request[method](path,body===undefined?{}:{data:body,headers:{Origin:base}});let d;try{d=await r.json()}catch{d={}}assert.equal(r.status(),expected,path+' '+JSON.stringify(d));return d}
 async function get(c,path){return call(c,path,undefined,200,'get')}
 try{
  for(const viewport of [{width:390,height:844},{width:1280,height:900}]){const publicContext=await browser.newContext({baseURL:base,viewport});contexts.push(publicContext);const page=await publicContext.newPage();await page.goto('/');const navigation=page.getByRole('navigation',{name:'Portal sign in'});for(const role of ['employer','employee','applicant']){const link=navigation.getByRole('link',{name:new RegExp(role+' sign in','i')});assert.ok(await link.isVisible());assert.equal(await link.getAttribute('href'),'/auth/login?role='+role)}}passed('Landing page shows all three dedicated sign-in entries on mobile and desktop');
