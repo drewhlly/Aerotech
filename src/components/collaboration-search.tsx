@@ -1,10 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import {Search} from "lucide-react";
 import CollaborationDialog from "./collaboration-dialog";
 import { api } from "./collaboration-client";
 import { linkAllowed, type WorkspaceRole } from "@/lib/portal-policy";
-export default function CollaborationSearch({ role }: { role: WorkspaceRole }) {
+export default function CollaborationSearch({ role,navigation=[] }: { role: WorkspaceRole;navigation?:{href:string;label:string}[] }) {
   const [open, setOpen] = useState(false),
     [q, setQ] = useState(""),
     [records, setRecords] = useState<
@@ -54,7 +55,7 @@ export default function CollaborationSearch({ role }: { role: WorkspaceRole }) {
         onClick={() => setOpen(true)}
         aria-label="Search workspace, Control or Command K"
       >
-        Search{" "}
+        <Search aria-hidden="true" size={20} className="sm:hidden"/><span className="hidden sm:inline">Search</span>{" "}
         <kbd aria-hidden="true" className="hidden sm:inline">
           ⌘K
         </kbd>
@@ -75,6 +76,7 @@ export default function CollaborationSearch({ role }: { role: WorkspaceRole }) {
           </label>
           {message && <p role="alert">{message}</p>}
           <ul className="mt-4 space-y-2">
+            {navigation.filter(n=>n.label.toLowerCase().includes(q.toLowerCase())&&linkAllowed(role,n.href)).map(n=><li key={n.href}><Link className="block rounded-xl border p-3 text-sm hover:bg-blue-50" href={n.href} onClick={()=>setOpen(false)}>{n.label}</Link></li>)}
             {records.map((r) => (
               <li key={r.kind + r.id}>
                 <Link

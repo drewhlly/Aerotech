@@ -1,0 +1,58 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> aerotech@1.0.0 test
+> node --test tests/*.test.mjs
+
+✔ assessment grades exact answers and does not award points for missing answers (0.976165ms)
+✔ assessment scores round consistently across uneven question counts (0.196266ms)
+✔ meeting window closes server-side at exact expiry and cancellation takes precedence (1.295779ms)
+✔ viewer cannot mutate; only project owners/managers maintain structure (0.186302ms)
+✔ project health, progress and cancellation are computed from actual task state (1.012039ms)
+✔ 1000 employee group selection deduplicates and honors exclusions within a bounded CPU budget (1.38309ms)
+✔ encrypted versions cannot be decrypted across companies; signed grants bind user version and expiry (5.029242ms)
+✔ safe exports neutralise formula injection and escape PDF syntax (0.742001ms)
+✔ mutation origin comparison uses requested authority and rejects foreign hosts, schemes and ports (0.52893ms)
+✔ compensation preserves exact HR amounts and rejects malformed or inconsistent inputs (1.775323ms)
+✔ comprehensive employee records preserve national identifiers as text and expose only allowed fields (1.560168ms)
+✔ camera verification rejects missing, non-JPEG and oversized input (3.191744ms)
+✔ face comparison fails closed when provider is not configured (0.614759ms)
+✔ publication validates quality and rejects contact details and recruitment fees (3.25556ms)
+✔ normalization catches duplicates and public slugs retain the stable job identifier (0.547888ms)
+✔ job structured data cannot close its containing script tag (0.255836ms)
+✔ employer signup is reachable from the home page (1.485555ms)
+✔ job seekers can reach the jobs page (0.356509ms)
+✔ home links to dedicated solutions and the shared navigation serves every audience (0.581418ms)
+✔ unknown job IDs do not display another vacancy (0.288806ms)
+✔ job details require a registered applicant session (0.23134ms)
+✔ applicant registration is free and submits to backend (0.419033ms)
+✔ Aerotech AI screens use the real API rather than canned replies (0.308116ms)
+✔ employee directory and profile use matching IDs and source (0.919109ms)
+✔ meeting room references preserve company, meeting and generation boundaries (1.678247ms)
+✔ JaaS termination uses a short-lived signed admin token and retries provider failures (56.098969ms)
+✔ payout keys are encrypted and cryptographically bound to their company (2.787654ms)
+✔ webhooks require an exact signed body (0.704545ms)
+✔ terminal bank statuses do not regress and amounts use valid integer kobo (0.998089ms)
+✔ Paystack client checks API success and uses server authorization (5.502276ms)
+✔ bank discovery follows cursors, deduplicates codes and detects stuck pagination (11.222731ms)
+✔ assessments reflect job families and are automatically gradable (2.58ms)
+✔ host routing only activates on exact configured portal hosts (0.675321ms)
+✔ portal links cannot escape the current role and legacy tool links are internalised (1.553738ms)
+✔ Aerotech has a Next.js application (1.622282ms)
+✔ TOTP matches RFC 6238 SHA1 test vectors (1.612667ms)
+✔ used authenticator codes cannot be replayed (0.403991ms)
+✔ authenticator window is bounded and malformed codes fail (0.331061ms)
+✔ MFA secrets are encrypted and authenticated at rest (1.279624ms)
+✔ consent is limited to explicit supported scopes and at most one hour (0.186181ms)
+✔ new staff MFA encryption is password-bound and needs no server master key (161.432898ms)
+✔ generated authenticator secrets have 160 bits and independent values (0.903666ms)
+✔ rejection feedback requires employer evidence and constructive next steps (1.609663ms)
+✔ gross allocation preserves the exact total including decimal rounding (0.242186ms)
+✔ plan authorization separates recruiting, payroll and automation services (0.445533ms)
+ℹ tests 45
+ℹ suites 0
+ℹ pass 45
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 607.209016

@@ -66,7 +66,7 @@ export async function sweep(c: PoolClient) {
       { meeting: meeting.id, generation: meeting.generation },
     );
   await c.query(
-    "UPDATE ats_jobs SET status='closed' WHERE status='open' AND expires_at<=NOW()",
+    "UPDATE ats_jobs SET status='expired' WHERE status='published' AND expires_at<=NOW()",
   );
   await c.query(
     `INSERT INTO collaboration_jobs(employer_id,kind,dedupe_key,payload,run_at) SELECT employer_id,'task_overdue','overdue:'||id||':'||revision,jsonb_build_object('task',id,'revision',revision),NOW() FROM project_tasks WHERE status NOT IN ('Done','Cancelled') AND due_at<NOW() ON CONFLICT DO NOTHING`,

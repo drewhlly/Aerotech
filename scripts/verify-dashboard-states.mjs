@@ -45,7 +45,7 @@ try{
  await page.getByText('Disposable audit asset',{exact:true}).waitFor();
  results.push({route:'/dashboard/employer/hr/assets',role:'employer',success:await page.getByRole('status').filter({hasText:/saved|success|created/i}).count()>0});
  await page.goto('/dashboard/employer/reports',{waitUntil:'networkidle'});
- const exportButton=page.getByRole('button',{name:'Download CSV',exact:true}).first();
+ const exportButton=page.getByRole('button',{name:/Export (filtered|\d+ selected) CSV/}).first();
  if(await exportButton.isEnabled()){const [download]=await Promise.all([page.waitForEvent('download'),exportButton.click()]);assert.ok(download.suggestedFilename().endsWith('.csv'));console.log('PASS CSV export')}
  await writeFile(out+'/dashboard-states.json',JSON.stringify(results,null,2));
  console.log('DASHBOARD STATE SUMMARY '+JSON.stringify(results));

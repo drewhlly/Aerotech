@@ -1,0 +1,3 @@
+import {currentEmployer} from './employer-session';import {currentEmployee} from './employee-auth';import {currentApplicant} from './applicant-session';import {superAdmin} from './super-admin';
+export async function privacyActor(){const employer=await currentEmployer(false);if(employer)return {role:'employer',id:employer,employer};const e=await currentEmployee();if(e)return {role:'employee',id:e.id,employer:e.employer_id};const a=await currentApplicant();if(a)return {role:'applicant',id:a,employer:null};const admin=await superAdmin();return admin?{role:'admin',id:admin.id,employer:null}:null;}
+export const privacyRequestTypes=['access','rectification','erasure','restriction','portability','objection','withdrawal','automated_decision_review'] as const;

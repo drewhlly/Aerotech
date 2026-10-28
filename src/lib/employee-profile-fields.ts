@@ -15,5 +15,8 @@ export const profileOptions:Record<string,string[]>={
  'personal.gender':['Female','Male','Self-described','Prefer not to say'],
  'personal.maritalStatus':['Single','Married','Separated','Divorced','Widowed','Prefer not to say'],
  'employment.employmentType':['Full-time','Part-time','Contract','Temporary','Internship'],
+ 'tax.taxState':['Abia','Adamawa','Akwa Ibom','Anambra','Bauchi','Bayelsa','Benue','Borno','Cross River','Delta','Ebonyi','Edo','Ekiti','Enugu','Federal Capital Territory','Gombe','Imo','Jigawa','Kaduna','Kano','Katsina','Kebbi','Kogi','Kwara','Lagos','Nasarawa','Niger','Ogun','Ondo','Osun','Oyo','Plateau','Rivers','Sokoto','Taraba','Yobe','Zamfara'],
+ 'nextOfKin.relationship':['Spouse','Parent','Child','Sibling','Guardian','Other'],
+ 'emergency.relationship':['Spouse','Parent','Child','Sibling','Guardian','Colleague','Other'],
  'rentRelief.eligible':['Pending HR review','Verified eligible','Not eligible','Not applicable']
 };

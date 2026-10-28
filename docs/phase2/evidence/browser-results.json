@@ -2,7 +2,7 @@
   "origin": "http://127.0.0.1:3100",
   "fixtureType": "Throwaway database, mock employees; no production services",
   "staffCount": 1000,
-  "projectFixture": "b43cd093-bd5a-4929-a861-944feb6a231c",
+  "projectFixture": "b245125a-4f49-4781-a16a-9993f8c97f9d",
   "results": [
     {
       "name": "Public homepage and real logo render, employee and applicant sign-ins remain visible",
@@ -42,6 +42,10 @@
     },
     {
       "name": "Employer isolation and axe /dashboard/employer/documents",
+      "status": "pass"
+    },
+    {
+      "name": "Combined command palette retains privacy navigation and permission-aware search",
       "status": "pass"
     },
     {

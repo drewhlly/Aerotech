@@ -72,7 +72,7 @@ try {
     throw Error(
       "Local application did not start. See /tmp/phase2-server-suite.log",
     );
-  process.exitCode = await run("node", ["scripts/verify-phase2.mjs"]);
+  process.exitCode = await run("node", ["scripts/verify-collaboration.mjs"]);
   if (process.env.PHASE2_LIGHTHOUSE === "1")
     process.exitCode =
       (await run("node", ["scripts/phase2-lighthouse.mjs"])) ||

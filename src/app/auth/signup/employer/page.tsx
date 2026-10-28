@@ -1,4 +1,6 @@
 "use client";
+import PolicyAcceptance from '@/components/policy-acceptance';
+import {POLICY_VERSION} from '@/lib/policy';
 import {useRouter} from 'next/navigation';
 
 
@@ -44,7 +46,7 @@ export default function EmployerSignupPage() {const router=useRouter();
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...values,
+          ...values,acceptedPolicies:true,policyVersion:POLICY_VERSION,
           companyName: values.companyName.trim(),
           companyEmail: values.companyEmail.trim().toLowerCase(),
           firstName: values.firstName.trim(),
@@ -111,7 +113,7 @@ export default function EmployerSignupPage() {const router=useRouter();
             <button type="submit" disabled={busy} className="mt-7 flex w-full items-center justify-center gap-2 rounded-xl bg-[#07152c] px-5 py-4 font-black text-white disabled:opacity-60">
               {busy ? "Creating workspace..." : "Create employer workspace"} <ArrowRight size={18} />
             </button>
-          </form>
+          <PolicyAcceptance/></form>
           <div className="mt-5 text-center text-sm text-slate-500">
             Already have an account?{" "}
             <Link onClick={e=>{const next=new URLSearchParams(window.location.search).get("next");if(next){e.preventDefault();router.replace("/auth/login?"+new URLSearchParams({role:"employer",next:safeReturnTo(next,"employer")}))}}} href="/auth/login?role=employer" className="font-bold text-[#2563eb]">Sign in</Link>
