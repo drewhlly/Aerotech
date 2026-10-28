@@ -369,7 +369,7 @@ export default function DocumentLibrary() {
           title="Upload documents"
           close={() => setUpload(false)}
         >
-          <form
+          <form method="post"
             className="space-y-4"
             onSubmit={(e) => {
               e.preventDefault();
@@ -511,7 +511,7 @@ function DocumentDetails({
       {message && <p role="status">{message}</p>}
       <p className="text-sm">{d.category} · Company-managed record</p>
 
-      {employer&&<details className="mt-4"><summary className="cursor-pointer font-semibold">Edit document details</summary><form className="mt-4 grid gap-3" onSubmit={async e=>{e.preventDefault();await action({action:"metadata",...Object.fromEntries(new FormData(e.currentTarget))})}}><label>Title<input name="title" required defaultValue={d.title} className="aero-input"/></label><label>Category<select name="category" defaultValue={d.category} className="aero-input">{categories.map(x=><option key={x}>{x}</option>)}</select></label><label>Expiry<input name="expiryDate" type="date" defaultValue={d.expiry_date?.slice(0,10)||""} className="aero-input"/></label><label>Retention until<input name="retentionUntil" type="date" defaultValue={d.retention_until?.slice(0,10)||""} className="aero-input"/></label><input type="hidden" name="employeeId" value={d.employee_id||""}/><label>Department<input name="department" defaultValue={d.department||""} className="aero-input"/></label><label>Tags<input name="tags" defaultValue={d.tags?.join(", ")||""} className="aero-input"/></label><button className="aero-button bg-blue-700 text-white">Save details</button></form></details>}
+      {employer&&<details className="mt-4"><summary className="cursor-pointer font-semibold">Edit document details</summary><form method="post" className="mt-4 grid gap-3" onSubmit={async e=>{e.preventDefault();await action({action:"metadata",...Object.fromEntries(new FormData(e.currentTarget))})}}><label>Title<input name="title" required defaultValue={d.title} className="aero-input"/></label><label>Category<select name="category" defaultValue={d.category} className="aero-input">{categories.map(x=><option key={x}>{x}</option>)}</select></label><label>Expiry<input name="expiryDate" type="date" defaultValue={d.expiry_date?.slice(0,10)||""} className="aero-input"/></label><label>Retention until<input name="retentionUntil" type="date" defaultValue={d.retention_until?.slice(0,10)||""} className="aero-input"/></label><input type="hidden" name="employeeId" value={d.employee_id||""}/><label>Department<input name="department" defaultValue={d.department||""} className="aero-input"/></label><label>Tags<input name="tags" defaultValue={d.tags?.join(", ")||""} className="aero-input"/></label><button className="aero-button bg-blue-700 text-white">Save details</button></form></details>}
       {data && (
         <div className="mt-5 space-y-5">
           <label className="block">
@@ -584,7 +584,7 @@ function DocumentDetails({
               >
                 Restore selected version as a new version
               </button>
-              <form
+              <form method="post"
                 onSubmit={async (e) => {
                   e.preventDefault();
                   const f = new FormData(e.currentTarget);
@@ -613,7 +613,7 @@ function DocumentDetails({
                 <button className="aero-button border">Upload version</button>
               </form>
               <PeoplePicker value={people} onChange={setPeople} />
-              <form
+              <form method="post"
                 className="space-y-3"
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -666,7 +666,7 @@ function DocumentDetails({
                 a.version === d.current_version &&
                 ["Sent", "Viewed"].includes(a.status) &&
                 data.downloadUrl && (
-                  <form
+                  <form method="post"
                     className="mt-3 space-y-3"
                     onSubmit={async (e) => {
                       e.preventDefault();
@@ -753,7 +753,7 @@ function Templates({ close }: { close: () => void }) {
   return (
     <CollaborationDialog title="Company templates" close={close}>
       {message && <p role="status">{message}</p>}
-      <form className="space-y-3" onSubmit={create}>
+      <form method="post" className="space-y-3" onSubmit={create}>
         <label className="block">
           Template name
           <input

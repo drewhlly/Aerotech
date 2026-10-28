@@ -1,0 +1,20 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> aerotech@1.0.0 test:collaboration:db
+> node --import ./tests/helpers/ts-loader.mjs tests/collaboration-db.integration.mjs
+
+PASS migration applies twice without destructive changes
+PASS cross-tenant and nonmember project access denied at database service boundary
+PASS Viewer denied mutation and Contributor denied structure
+PASS assignment persisted and notification queued atomically
+PASS cross-project task assignment and tenant keys enforced
+PASS dependency cycle and premature completion blocked
+PASS contributor completes task; project auto-completes; stale revision rejected
+PASS paginated project and task query preserves member restriction
+Group scheduling milliseconds: 136
+PASS 1000 staff server-side group invite resolves 999 deduplicated people and excludes one
+PASS cross-company group references never resolve foreign employees
+PASS private documents denied to employees and another company
+PASS explicit sharing allows only intended recipient; management remains employer-only
+PASS document grant tenant mismatch is rejected by foreign key
+13 isolated PostgreSQL integration checks passed. No production database connected.

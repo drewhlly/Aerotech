@@ -2,7 +2,7 @@
   "origin": "http://127.0.0.1:3100",
   "fixtureType": "Throwaway database, mock employees; no production services",
   "staffCount": 1000,
-  "projectFixture": "b245125a-4f49-4781-a16a-9993f8c97f9d",
+  "projectFixture": "7582928b-3587-4f4e-aea5-88db1ea24be5",
   "results": [
     {
       "name": "Public homepage and real logo render, employee and applicant sign-ins remain visible",
@@ -54,6 +54,18 @@
     },
     {
       "name": "Mobile employee tasks page has no horizontal overflow",
+      "status": "pass"
+    },
+    {
+      "name": "Viewed notices leave active inbox and remain in history",
+      "status": "pass"
+    },
+    {
+      "name": "Employee recruitment stays local and saved settings close",
+      "status": "pass"
+    },
+    {
+      "name": "Expired birthday notice is absent from active employer inbox",
       "status": "pass"
     },
     {

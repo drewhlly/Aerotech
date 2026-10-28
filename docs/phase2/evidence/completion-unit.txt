@@ -1,0 +1,63 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> aerotech@1.0.0 test
+> node --test tests/*.test.mjs
+
+✔ assessment grades exact answers and does not award points for missing answers (1.082657ms)
+✔ assessment scores round consistently across uneven question counts (0.240625ms)
+✔ meeting window closes server-side at exact expiry and cancellation takes precedence (1.099703ms)
+✔ viewer cannot mutate; only project owners/managers maintain structure (0.178032ms)
+✔ project health, progress and cancellation are computed from actual task state (1.028678ms)
+✔ 1000 employee group selection deduplicates and honors exclusions within a bounded CPU budget (1.030791ms)
+✔ encrypted versions cannot be decrypted across companies; signed grants bind user version and expiry (3.981175ms)
+✔ safe exports neutralise formula injection and escape PDF syntax (221.172882ms)
+✔ mutation origin comparison uses requested authority and rejects foreign hosts, schemes and ports (0.502782ms)
+✔ compensation preserves exact HR amounts and rejects malformed or inconsistent inputs (1.885622ms)
+✔ completed feedback fades; errors and instructions remain (2.011668ms)
+✔ scheduler identity requires exact repository, workflow, branch and fresh token (0.5079ms)
+✔ scheduler verifies RSA signature and rejects forgery (50.41837ms)
+✔ guest invitations are email, meeting and generation scoped (0.98292ms)
+✔ PDF preserves supported Unicode names and currency (342.801147ms)
+✔ comprehensive employee records preserve national identifiers as text and expose only allowed fields (1.486543ms)
+✔ camera verification rejects missing, non-JPEG and oversized input (2.149271ms)
+✔ face comparison fails closed when provider is not configured (1.066283ms)
+✔ publication validates quality and rejects contact details and recruitment fees (3.136468ms)
+✔ normalization catches duplicates and public slugs retain the stable job identifier (0.431667ms)
+✔ job structured data cannot close its containing script tag (0.254456ms)
+✔ employer signup is reachable from the home page (1.250375ms)
+✔ job seekers can reach the jobs page (0.345961ms)
+✔ home links to dedicated solutions and the shared navigation serves every audience (0.693343ms)
+✔ unknown job IDs do not display another vacancy (0.263619ms)
+✔ job details require a registered applicant session (0.194477ms)
+✔ applicant registration is free and submits to backend (0.390717ms)
+✔ Aerotech AI screens use the real API rather than canned replies (0.298871ms)
+✔ employee directory and profile use matching IDs and source (0.371078ms)
+✔ meeting room references preserve company, meeting and generation boundaries (2.747495ms)
+✔ JaaS termination uses a short-lived signed admin token and retries provider failures (57.271602ms)
+✔ payout keys are encrypted and cryptographically bound to their company (2.456986ms)
+✔ webhooks require an exact signed body (0.662748ms)
+✔ terminal bank statuses do not regress and amounts use valid integer kobo (1.029148ms)
+✔ Paystack client checks API success and uses server authorization (11.920891ms)
+✔ bank discovery follows cursors, deduplicates codes and detects stuck pagination (14.739686ms)
+✔ assessments reflect job families and are automatically gradable (2.786431ms)
+✔ host routing only activates on exact configured portal hosts (0.653535ms)
+✔ portal links cannot escape the current role and legacy tool links are internalised (1.708231ms)
+✔ Aerotech has a Next.js application (1.099322ms)
+✔ TOTP matches RFC 6238 SHA1 test vectors (1.860405ms)
+✔ used authenticator codes cannot be replayed (0.442874ms)
+✔ authenticator window is bounded and malformed codes fail (0.238622ms)
+✔ MFA secrets are encrypted and authenticated at rest (1.080855ms)
+✔ consent is limited to explicit supported scopes and at most one hour (0.184622ms)
+✔ new staff MFA encryption is password-bound and needs no server master key (158.051532ms)
+✔ generated authenticator secrets have 160 bits and independent values (0.779901ms)
+✔ rejection feedback requires employer evidence and constructive next steps (1.360277ms)
+✔ gross allocation preserves the exact total including decimal rounding (0.322165ms)
+✔ plan authorization separates recruiting, payroll and automation services (0.494931ms)
+ℹ tests 50
+ℹ suites 0
+ℹ pass 50
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 704.525046
