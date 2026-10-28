@@ -1,3 +1,4 @@
+import {sameOrigin} from "@/lib/collaboration-policy";
 import {NextResponse} from 'next/server';
 import {randomUUID} from 'node:crypto';
 import {currentEmployer,db} from '@/lib/employer-session';
@@ -5,7 +6,7 @@ import {salaryBandInput,salaryBands,syncSalaryBands} from '@/lib/salary-bands';
 export async function GET(){const employer=await currentEmployer();if(!employer)return NextResponse.json({error:'HR sign-in required'},{status:401});const p=db();try{const r=await p.query('SELECT band,monthly_gross,basic,housing,transport FROM salary_bands WHERE employer_id=$1',[employer]);return NextResponse.json({bands:r.rows})}finally{await p.end()}}
 export async function POST(req:Request){
  const employer=await currentEmployer();if(!employer)return NextResponse.json({error:'HR sign-in required'},{status:401});
- if(req.headers.get('origin')!==new URL(req.url).origin)return NextResponse.json({error:'Invalid origin'},{status:403});
+ if(!sameOrigin(req.headers.get('origin')||'',req.headers.get('host'),new URL(req.url).protocol))return NextResponse.json({error:'Invalid origin'},{status:403});
  let b:Record<string,unknown>;try{b=await req.json();if(!b||typeof b!=='object'||Array.isArray(b))throw Error()}catch{return NextResponse.json({error:'Invalid request'},{status:400})}
  const p=db(),c=await p.connect();try{
  await c.query('BEGIN');await c.query('SELECT id FROM employer_accounts WHERE id=$1 FOR UPDATE',[employer]);

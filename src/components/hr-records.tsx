@@ -1,4 +1,5 @@
 "use client";
+import {useFeedback} from "@/components/use-feedback";
 import {DashboardShell,PageHeader} from "@/components/aerotech-ui";
 import {useCallback,useEffect,useState,type FormEvent} from "react";
 
@@ -12,7 +13,7 @@ const configs={
 export default function Records({module}:{module:keyof typeof configs}){
  const c=configs[module];const [employees,setEmployees]=useState<Array<{id:string;first_name:string;last_name:string}>>([]);
  const [rows,setRows]=useState<Array<Record<string,unknown>>>([]),[values,setValues]=useState<Record<string,string>>({});
- const [error,setError]=useState(""),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[message,setMessage]=useState("");
+ const [error,setError]=useState(""),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[message,setMessage]=useFeedback();
  const load=useCallback(async()=>{setLoading(true);setError("");try{const [records,people]=await Promise.all([fetch('/api/hr/'+c.api),fetch('/api/employees')]);const data=await records.json(),staff=await people.json();if(!records.ok||!people.ok)throw Error(data.error||staff.error||'Unable to load records');setRows(data.records||[]);setEmployees(staff.employees||[])}catch(e){setError(e instanceof Error?e.message:'Unable to load records')}finally{setLoading(false)}},[c.api]);
  useEffect(()=>{void Promise.resolve().then(load)},[load]);
  async function submit(e:FormEvent){e.preventDefault();setBusy(true);setError("");setMessage("");try{

@@ -1,4 +1,5 @@
 "use client";
+import {useFeedback} from "@/components/use-feedback";
 import {useCallback,useEffect,useState,type FormEvent} from "react";
 import {DashboardShell,PageHeader} from "@/components/aerotech-ui";
 type Employee={id:string;first_name:string;last_name:string};
@@ -11,7 +12,7 @@ const defs={
 } as const;
 export default function Lifecycle({module}:{module:keyof typeof defs}){
  const def=defs[module], [employees,setEmployees]=useState<Employee[]>([]),[records,setRecords]=useState<Record<string,unknown>[]>([]);
- const [v,setV]=useState<Record<string,string>>({}),[message,setMessage]=useState(""),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true);
+ const [v,setV]=useState<Record<string,string>>({}),[message,setMessage]=useFeedback(),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true);
  const load=useCallback(async()=>{setLoading(true);try{const [a,b]=await Promise.all([fetch("/api/employees"),fetch("/api/hr/lifecycle/"+module)]);const x=await a.json(),y=await b.json();if(!a.ok||!b.ok)throw Error(x.error||y.error||"Unable to load");setEmployees(x.employees||[]);setRecords(y.records||[]);}finally{setLoading(false)}},[module]);
  useEffect(()=>{void Promise.resolve().then(()=>{void load().catch(e=>setMessage(e.message));});},[load]);
  async function submit(e:FormEvent){e.preventDefault();setBusy(true);setMessage("");try{const body:Record<string,unknown>={...v};if(v.rating)body.rating=Number(v.rating);const r=await fetch("/api/hr/lifecycle/"+module,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});const d=await r.json();if(!r.ok)throw Error(d.error||"Save failed");setV({});setMessage("Record saved.");await load();}catch(e){setMessage(e instanceof Error?e.message:"Save failed");}finally{setBusy(false);}}

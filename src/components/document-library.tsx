@@ -1,4 +1,5 @@
 "use client";
+import {useFeedback} from "@/components/use-feedback";
 import {
   useCallback,
   useContext,
@@ -63,7 +64,7 @@ export default function DocumentLibrary() {
     [offset, setOffset] = useState(0),
     [grid, setGrid] = useState(false),
     [sort, setSort] = useState("date"),
-    [message, setMessage] = useState(""),
+    [message, setMessage] = useFeedback(),
     [doc, setDoc] = useState<Doc | null>(null),
     [upload, setUpload] = useState(false),
     [templates, setTemplates] = useState(false),
@@ -470,7 +471,7 @@ function DocumentDetails({
       acknowledgements: Ack[];
       downloadUrl: string | null;
     } | null>(null),
-    [message, setMessage] = useState(""),
+    [message, setMessage] = useFeedback(),
     [people, setPeople] = useState<Person[]>([]),
     [preview, setPreview] = useState(false),
     [version, setVersion] = useState(d.current_version);
@@ -707,7 +708,7 @@ function Templates({ close }: { close: () => void }) {
   const [records, setRecords] = useState<
       { id: string; title: string; body: string }[]
     >([]),
-    [message, setMessage] = useState("");
+    [message, setMessage] = useFeedback();
   const load = useCallback(
     async () =>
       setRecords(

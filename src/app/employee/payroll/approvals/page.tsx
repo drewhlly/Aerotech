@@ -1,9 +1,10 @@
 "use client";
+import {useFeedback} from "@/components/use-feedback";
 import { useEffect, useState } from "react";
 
 type Run={id:string;payroll_month:string;stage:string;status:string;gross_total:string;net_total:string};
 export default function PayrollReviewPage(){
- const [runs,setRuns]=useState<Run[]>([]),[message,setMessage]=useState(""),[busy,setBusy]=useState(false);
+ const [runs,setRuns]=useState<Run[]>([]),[message,setMessage]=useFeedback(),[busy,setBusy]=useState(false);
  async function load(){const r=await fetch("/api/employee/payroll/review");const data=await r.json();if(!r.ok)throw Error(data.error||"Unavailable");setRuns(data.awaitingReview||[]);}
  useEffect(()=>{void Promise.resolve().then(()=>{void load().catch(e=>setMessage(e.message));});},[]);
  async function review(runId:string,decision:"approved"|"rejected"){const note=window.prompt("Add your decision note:");if(note===null)return;setBusy(true);setMessage("");try{const r=await fetch("/api/employee/payroll/review",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({runId,decision,note})});const data=await r.json();if(!r.ok)throw Error(data.error||"Review failed");setMessage("Payroll "+decision+" for your assigned stage.");await load();}catch(e){setMessage(e instanceof Error?e.message:"Unable to review");}finally{setBusy(false);}}

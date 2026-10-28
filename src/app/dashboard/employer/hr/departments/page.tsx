@@ -1,11 +1,12 @@
 "use client";
+import {useFeedback} from "@/components/use-feedback";
 import {useEffect,useState,type FormEvent} from "react";
 import {DashboardShell,PageHeader} from "@/components/aerotech-ui";
 type Employee={id:string;first_name:string;last_name:string;department:string};
 type Department={id:string;name:string;manager_first_name:string|null;manager_last_name:string|null};
 export default function ReportingLines(){
  const [employees,setEmployees]=useState<Employee[]>([]),[departments,setDepartments]=useState<Department[]>([]);
- const [name,setName]=useState(""),[managerId,setManagerId]=useState(""),[error,setError]=useState(""),[message,setMessage]=useState("");
+ const [name,setName]=useState(""),[managerId,setManagerId]=useState(""),[error,setError]=useState(""),[message,setMessage]=useFeedback();
  async function load(){const [a,b]=await Promise.all([fetch("/api/employees"),fetch("/api/hr/departments")]);const x=await a.json(),y=await b.json();if(!a.ok||!b.ok)throw Error(x.error||y.error||"Unable to load");setEmployees(x.employees||[]);setDepartments(y.departments||[]);}
  useEffect(()=>{void Promise.resolve().then(()=>{load().catch(e=>setError(e.message));});},[]);
  async function save(event:FormEvent){event.preventDefault();setError("");setMessage("");try{const r=await fetch("/api/hr/departments",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,managerId})});const d=await r.json();if(!r.ok)throw Error(d.error||"Unable to save");setMessage("Department reporting line saved.");await load();}catch(e){setError(e instanceof Error?e.message:"Unable to save");}}

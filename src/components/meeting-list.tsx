@@ -1,4 +1,5 @@
 "use client";
+import {useFeedback} from "@/components/use-feedback";
 import {
   useCallback,
   useContext,
@@ -53,7 +54,7 @@ export default function Meetings() {
     [offset, setOffset] = useState(0),
     [showAll, setShowAll] = useState(false),
     [details, setDetails] = useState<Meeting | null>(null),
-    [message, setMessage] = useState(""),
+    [message, setMessage] = useFeedback(),
     [busy, setBusy] = useState(false),
     [startsAt, setStartsAt] = useState("");
   const reload = useCallback(async () => {
@@ -605,7 +606,7 @@ function MeetingDetails({
     >([]),
     [q, setQ] = useState(""),
     [offset, setOffset] = useState(0),
-    [message, setMessage] = useState("");
+    [message, setMessage] = useFeedback();
   useEffect(() => {
     const c = new AbortController(),
       t = setTimeout(

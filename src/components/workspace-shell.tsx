@@ -3,6 +3,7 @@ import {createContext,useContext,useEffect,useRef,useState,type ReactNode} from 
 import {usePathname,useRouter} from 'next/navigation';
 import Link from 'next/link';
 import {Menu,X,User,LogOut,ChevronDown} from 'lucide-react';
+import {useIdleDismiss} from './use-idle-dismiss';
 import WorkspaceTools from './workspace-tools';
 import BrandLogo from './brand-logo';
 import NotificationBell from './notification-bell';
@@ -17,8 +18,10 @@ export function PortalFrame({children,role,navigation:Navigation,title}:{childre
  const [collapsed,setCollapsed]=useState(false);
  const [menu,setMenu]=useState(false),[account,setAccount]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState('');
  const menuButton=useRef<HTMLButtonElement>(null),accountTrigger=useRef<HTMLButtonElement>(null),aside=useRef<HTMLElement>(null),accountBox=useRef<HTMLDivElement>(null);
+ useIdleDismiss(accountBox,()=>setAccount(false),account);
  const home=workspaceHomes[role],profile=role==='employer'?home+'/account':role==='employee'?home+'/profile':home;
  const close=()=>{setMenu(false);if(menu)menuButton.current?.focus()};
+ useEffect(()=>{const dismiss=(e:PointerEvent)=>{if(account&&!accountBox.current?.contains(e.target as Node))setAccount(false)};document.addEventListener('pointerdown',dismiss);return()=>document.removeEventListener('pointerdown',dismiss)},[account]);
  useEffect(()=>{if(menu)aside.current?.querySelector<HTMLElement>('button,a')?.focus()},[menu]);
  useEffect(()=>{const handle=(e:KeyboardEvent)=>{if(e.key==='Escape'){if(menu){setMenu(false);menuButton.current?.focus()}if(account){setAccount(false);accountTrigger.current?.focus()}}if(menu&&e.key==='Tab'){const items=aside.current?.querySelectorAll<HTMLElement>('a,button');if(!items?.length)return;const first=items[0],last=items[items.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}}};document.addEventListener('keydown',handle);return()=>document.removeEventListener('keydown',handle)},[menu,account]);
  useEffect(()=>{if(inside)return;let last=Date.now(),pending=false;const touch=()=>{last=Date.now()};const events=['pointerdown','keydown','scroll'];for(const e of events)window.addEventListener(e,touch,{passive:true});const timer=setInterval(()=>{if(pending||Date.now()-last<30*60*1000)return;pending=true;const endpoint=role==='admin'?'/api/support-console/logout':role==='employer'?'/api/auth/logout':'/api/auth/logout/'+role;void fetch(endpoint,{method:'POST'}).then(r=>{if(!r.ok)throw Error();router.replace(role==='admin'?'/support-console/login':'/auth/login?role='+role);router.refresh()}).catch(()=>{pending=false;setError('Your session is idle. Sign out or retry when connected.')})},30000);return()=>{clearInterval(timer);for(const e of events)window.removeEventListener(e,touch)}},[role,router,inside]);

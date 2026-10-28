@@ -1,4 +1,5 @@
 "use client";
+import {useFeedback} from "@/components/use-feedback";
 import { useEffect, useState } from "react";
 
 import { ChevronRight, Save, ShieldCheck, UserRound, Wallet, HeartHandshake } from "lucide-react";
@@ -12,7 +13,7 @@ export default function ProfileWorkspace({mode,id}:{mode:"employee"|"employer";i
  const [sites,setSites]=useState<string[]>([]);
  const [managers,setManagers]=useState<{id:string;first_name:string;last_name:string;email:string}[]>([]);
  useEffect(()=>{if(mode==='employer')fetch('/api/employees').then(r=>r.json()).then(d=>{setManagers(d.employees||[]);setSites((d.employees||[]).map((e:{location?:string})=>e.location).filter(Boolean))}).catch(()=>{})},[mode]);
- const [employee,setEmployee]=useState<Employee|null>(null),[details,setDetails]=useState<Profile>({}),[section,setSection]=useState<string|null>(null),[saving,setSaving]=useState(false),[message,setMessage]=useState(""),[loading,setLoading]=useState(true);
+ const [employee,setEmployee]=useState<Employee|null>(null),[details,setDetails]=useState<Profile>({}),[section,setSection]=useState<string|null>(null),[saving,setSaving]=useState(false),[message,setMessage]=useFeedback(),[loading,setLoading]=useState(true);
  useEffect(()=>{fetch(endpoint,{cache:"no-store"}).then(async r=>{const d=await r.json();if(!r.ok)throw Error(d.error||"Unable to load profile");setEmployee(d.employee);setDetails(d.details||{});}).catch(e=>setMessage(e.message)).finally(()=>setLoading(false));},[endpoint]);
  const selected=profileSections.find(s=>s.key===section);
  async function save(){if(!selected)return;setSaving(true);setMessage("");try{const r=await fetch(endpoint,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({[selected.key]:details[selected.key]||{}})});const d=await r.json();if(!r.ok)throw Error(d.error||"Save failed");setMessage("Information saved successfully.");setSection(null);}catch(e){setMessage(e instanceof Error?e.message:"Unable to save");}finally{setSaving(false);}}

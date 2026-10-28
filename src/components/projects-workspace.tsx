@@ -1,4 +1,5 @@
 "use client";
+import {useFeedback} from "@/components/use-feedback";
 import {
   Fragment,
   useCallback,
@@ -84,7 +85,7 @@ export default function ProjectsWorkspace({
     [modal, setModal] = useState(""),
     [task, setTask] = useState<Task | null>(null),
     [people, setPeople] = useState<Person[]>([]),
-    [message, setMessage] = useState(""),
+    [message, setMessage] = useFeedback(),
     [busy, setBusy] = useState(false),
     [loading, setLoading] = useState(true),
     [saved, setSaved] = useState<
@@ -1020,7 +1021,7 @@ function TaskDetail({
       children: { id: string; title: string; status: string }[];
       activity: { action: string; created_at: string }[];
     } | null>(null),
-    [message, setMessage] = useState("");
+    [message, setMessage] = useFeedback();
   const endpoint = "/api/projects/" + task.project_id + "/tasks/" + task.id;
   const load = useCallback(async () => {
     try {

@@ -1,10 +1,11 @@
 "use client";
+import {useFeedback} from "@/components/use-feedback";
 import Feedback from "@/components/company-feedback";
 import {useEffect,useState} from "react";
 import {PortalShell} from "@/components/aerotech-portal";
 type Survey={id:string;title:string;question:string;responded:boolean;closes_at:string|null};
 export default function EmployeeSurveys(){
- const [surveys,setSurveys]=useState<Survey[]>([]),[ratings,setRatings]=useState<Record<string,number>>({}),[feedback,setFeedback]=useState<Record<string,string>>({}),[message,setMessage]=useState(""),[busy,setBusy]=useState(false);
+ const [surveys,setSurveys]=useState<Survey[]>([]),[ratings,setRatings]=useState<Record<string,number>>({}),[feedback,setFeedback]=useState<Record<string,string>>({}),[message,setMessage]=useFeedback(),[busy,setBusy]=useState(false);
  async function load(){const r=await fetch("/api/employee/surveys",{cache:"no-store"});const d=await r.json();if(!r.ok)throw Error(d.error||"Unable to load surveys");setSurveys(d.surveys||[])}
  useEffect(()=>{void Promise.resolve().then(()=>{void load().catch(e=>setMessage(e.message))});},[]);
  async function send(id:string){setBusy(true);setMessage("");try{const r=await fetch("/api/employee/surveys",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({surveyId:id,rating:ratings[id],feedback:feedback[id]||""})});const d=await r.json();if(!r.ok)throw Error(d.error||"Unable to submit");setMessage("Thank you. Your response has been recorded.");await load()}catch(e){setMessage(e instanceof Error?e.message:"Unable to submit")}finally{setBusy(false)}}

@@ -1,4 +1,5 @@
 "use client";
+import {useFeedback} from "@/components/use-feedback";
 import CollaborationWidgets from '@/components/collaboration-widgets';
 import DashboardAttention from '@/components/dashboard-attention';
 import {useEffect,useState,type FormEvent} from "react";
@@ -8,7 +9,7 @@ type RequestRow={id:string;request_type:string;start_date:string;end_date:string
 type Shift={id:string;work_date:string;starts_at:string;ends_at:string};
 export default function EmployeeDashboard(){
  const [data,setData]=useState<{employee:{firstName:string;department:string};requests:RequestRow[];shifts:Shift[]}|null>(null);
- const [pending,setPending]=useState<RequestRow[]>([]),[message,setMessage]=useState(""),[busy,setBusy]=useState(false);
+ const [pending,setPending]=useState<RequestRow[]>([]),[message,setMessage]=useFeedback(),[busy,setBusy]=useState(false);
  const [form,setForm]=useState({startDate:"",endDate:"",details:""});
  async function reload(){const [r,m]=await Promise.all([fetch("/api/employee/workspace"),fetch("/api/employee/manager/leave")]);const d=await r.json();if(!r.ok)throw Error(d.error||"Unable to load your workspace");setData(d);if(m.ok)setPending((await m.json()).requests||[]);}
  useEffect(()=>{void Promise.resolve().then(()=>{reload().catch(e=>setMessage(e.message));});},[]);

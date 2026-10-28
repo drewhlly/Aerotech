@@ -1,10 +1,11 @@
 "use client";
+import {useFeedback} from "@/components/use-feedback";
 import Feedback from "@/components/company-feedback";
 import {useEffect,useState,type FormEvent} from "react";
 import {DashboardShell,PageHeader} from "@/components/aerotech-ui";
 type Survey={id:string;title:string;question:string;active:boolean;cadence:string;closes_at:string|null;response_count:number;average_rating:string|null;low_ratings:number|null};
 export default function PulseSurveys(){
- const [surveys,setSurveys]=useState<Survey[]>([]),[title,setTitle]=useState(""),[question,setQuestion]=useState(""),[cadence,setCadence]=useState("once"),[closesAt,setClosesAt]=useState(""),[busy,setBusy]=useState(false),[message,setMessage]=useState("");
+ const [surveys,setSurveys]=useState<Survey[]>([]),[title,setTitle]=useState(""),[question,setQuestion]=useState(""),[cadence,setCadence]=useState("once"),[closesAt,setClosesAt]=useState(""),[busy,setBusy]=useState(false),[message,setMessage]=useFeedback();
  async function load(){const r=await fetch("/api/hr/surveys",{cache:"no-store"});const d=await r.json();if(!r.ok)throw Error(d.error||"Unable to load surveys");setSurveys(d.surveys||[])}
  useEffect(()=>{void Promise.resolve().then(()=>{void load().catch(e=>setMessage(e.message))});},[]);
  async function create(e:FormEvent){e.preventDefault();setBusy(true);setMessage("");try{const r=await fetch("/api/hr/surveys",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({title,question,cadence,closesAt})});const d=await r.json();if(!r.ok)throw Error(d.error||"Unable to create survey");setTitle("");setQuestion("");setClosesAt("");setMessage("Survey published to your employees.");await load()}catch(e){setMessage(e instanceof Error?e.message:"Unable to create survey")}finally{setBusy(false)}}

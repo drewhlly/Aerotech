@@ -1,4 +1,5 @@
 "use client";
+import {useFeedback} from "@/components/use-feedback";
 import {useEffect,useState,type FormEvent} from "react";
 import {DashboardShell,PageHeader} from "@/components/aerotech-ui";
 type Site={id:string;name:string;radius_m:number;active:boolean};
@@ -6,7 +7,7 @@ type Employee={id:string;first_name:string;last_name:string};
 export default function AttendanceVerification(){
  const [sites,setSites]=useState<Site[]>([]),[employees,setEmployees]=useState<Employee[]>([]);
  const [site,setSite]=useState({name:"",latitude:"",longitude:"",radiusMeters:"150"});
- const [employeeId,setEmployeeId]=useState(""),[siteId,setSiteId]=useState(""),[message,setMessage]=useState(""),[busy,setBusy]=useState(false);
+ const [employeeId,setEmployeeId]=useState(""),[siteId,setSiteId]=useState(""),[message,setMessage]=useFeedback(),[busy,setBusy]=useState(false);
  async function reload(){const [a,b]=await Promise.all([fetch("/api/hr/attendance/sites"),fetch("/api/employees")]);const x=await a.json(),y=await b.json();if(!a.ok||!b.ok)throw Error(x.error||y.error||"Unable to load attendance setup");setSites(x.sites||[]);setEmployees(y.employees||[]);}
  useEffect(()=>{void Promise.resolve().then(()=>{reload().catch(e=>setMessage(e.message));});},[]);
  async function createSite(e:FormEvent){e.preventDefault();setBusy(true);setMessage("");

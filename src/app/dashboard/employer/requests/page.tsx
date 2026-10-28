@@ -1,9 +1,10 @@
 "use client";
+import {useFeedback} from "@/components/use-feedback";
 import {useEffect,useState} from "react";
 import Link from "next/link";
 type Item={id:string;first_name:string;last_name:string;request_type:string;details:string;start_date:string|null;end_date:string|null;status:string;created_at:string};
 export default function HRRequests(){
- const [items,setItems]=useState<Item[]>([]),[error,setError]=useState(""),[busy,setBusy]=useState(""),[loading,setLoading]=useState(true),[message,setMessage]=useState("");
+ const [items,setItems]=useState<Item[]>([]),[error,setError]=useState(""),[busy,setBusy]=useState(""),[loading,setLoading]=useState(true),[message,setMessage]=useFeedback();
  async function reload(){try{const r=await fetch("/api/hr/requests");const d=await r.json();if(!r.ok)throw Error(d.error||"Unable to load requests");setItems(d.requests);}catch(e){setError(e instanceof Error?e.message:"Unable to load requests");}finally{setLoading(false);}}
  useEffect(()=>{void Promise.resolve().then(()=>{void reload();});},[]);
  async function review(id:string,decision:"approved"|"rejected"){setBusy(id);setError("");setMessage("");try{const r=await fetch(`/api/hr/requests/${id}/review`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({decision})});const d=await r.json();if(!r.ok)throw Error(d.error||"Review failed");await reload();setMessage("Request "+decision+" successfully.");}catch(e){setError(e instanceof Error?e.message:"Review failed");}finally{setBusy("");}}

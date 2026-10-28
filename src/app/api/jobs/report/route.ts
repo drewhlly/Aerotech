@@ -1,9 +1,10 @@
+import {sameOrigin} from "@/lib/collaboration-policy";
 import {NextResponse} from 'next/server';
 import {createHash,randomUUID} from 'node:crypto';
 import {db} from '@/lib/employer-session';
 import {reportReasons} from '@/lib/job-policy';
 export async function POST(req:Request){
- if(req.headers.get('origin')!==new URL(req.url).origin)return NextResponse.json({error:'Invalid origin'},{status:403});
+ if(!sameOrigin(req.headers.get('origin')||'',req.headers.get('host'),new URL(req.url).protocol))return NextResponse.json({error:'Invalid origin'},{status:403});
  let b;try{b=await req.json();if(typeof b.id!=='string'||! /^[0-9a-f-]{36}$/i.test(b.id)||!reportReasons.includes(b.reason)||typeof b.details!=='string'||b.details.length>1000)throw Error()}catch{return NextResponse.json({error:'Select a reason and valid job'},{status:400})}
  const ip=req.headers.get('x-forwarded-for')?.split(',')[0]?.trim();if(!ip)return NextResponse.json({error:'Unable to verify report source. Please contact support.'},{status:400});
  const hash=createHash('sha256').update((process.env.REPORT_HASH_SECRET||process.env.CRON_SECRET||'job-reports')+ip).digest('hex');const p=db(),c=await p.connect();

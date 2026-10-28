@@ -1,11 +1,12 @@
 "use client";
+import {useFeedback} from "@/components/use-feedback";
 import {useEffect,useState,type FormEvent} from "react";
 import {DashboardShell,PageHeader} from "@/components/aerotech-ui";
 type Employee={id:string;first_name:string;last_name:string};
 type Approver={stage:string;employee_id:string;first_name:string;last_name:string};
 const stages=["hr","finance","ceo"] as const;
 export default function PayrollApprovers(){
- const [employees,setEmployees]=useState<Employee[]>([]),[approvers,setApprovers]=useState<Approver[]>([]),[message,setMessage]=useState(""),[busy,setBusy]=useState(false);
+ const [employees,setEmployees]=useState<Employee[]>([]),[approvers,setApprovers]=useState<Approver[]>([]),[message,setMessage]=useFeedback(),[busy,setBusy]=useState(false);
  async function load(){const [a,b]=await Promise.all([fetch("/api/employees"),fetch("/api/payroll/approvers")]);const x=await a.json(),y=await b.json();if(!a.ok||!b.ok)throw Error(x.error||y.error||"Unable to load");setEmployees(x.employees||[]);setApprovers(y.approvers||[]);}
  useEffect(()=>{void Promise.resolve().then(()=>{load().catch(e=>setMessage(e.message));});},[]);
  async function assign(e:FormEvent<HTMLFormElement>,stage:string){e.preventDefault();setBusy(true);setMessage("");const employeeId=String(new FormData(e.currentTarget).get("employeeId")||"");

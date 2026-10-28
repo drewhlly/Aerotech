@@ -1,3 +1,4 @@
+import {sameOrigin} from "@/lib/collaboration-policy";
 import {NextResponse} from 'next/server';
 import {randomBytes,createHash} from 'node:crypto';
 import {db} from '@/lib/employer-session';
@@ -8,7 +9,7 @@ const digest=(token:string)=>createHash('sha256').update(token).digest('hex');
 const generic={ok:true,message:'If this account is eligible, a password reset link will be emailed shortly. Check your inbox and spam folder.'};
 const accounts={employer:{lookup:'SELECT id FROM employer_accounts WHERE company_email=$1',update:'UPDATE employer_accounts SET password_hash=$1 WHERE id=$2',sessions:'DELETE FROM employer_sessions WHERE employer_id=$1'},applicant:{lookup:'SELECT id FROM applicant_accounts WHERE email=$1',update:'UPDATE applicant_accounts SET password_hash=$1 WHERE id=$2',sessions:'DELETE FROM applicant_sessions WHERE applicant_id=$1'},employee:{lookup:"SELECT e.id FROM workforce_employees e JOIN employee_credentials c ON c.employee_id=e.id WHERE LOWER(e.email)=$1 AND e.employment_status IN ('active','probation','on_leave')",update:'UPDATE employee_credentials SET password_hash=$1 WHERE employee_id=$2',sessions:'DELETE FROM employee_sessions WHERE employee_id=$1'}};
 export async function POST(req:Request){
- if(req.headers.get('origin')!==new URL(req.url).origin)return NextResponse.json({error:'Invalid origin'},{status:403});
+ if(!sameOrigin(req.headers.get('origin')||'',req.headers.get('host'),new URL(req.url).protocol))return NextResponse.json({error:'Invalid origin'},{status:403});
  let b;try{b=await req.json()}catch{return NextResponse.json({error:'Invalid request'},{status:400})}
  if(!b||!Object.hasOwn(accounts,b.role))return NextResponse.json({error:'Choose a valid account role'},{status:400});
  const role=b.role as keyof typeof accounts,queries=accounts[role];

@@ -1,4 +1,5 @@
 "use client";
+import {useIdleDismiss} from "@/components/use-idle-dismiss";
 import { useRef, useEffect, type ReactNode } from "react";
 export default function CollaborationDialog({
   title,
@@ -10,6 +11,7 @@ export default function CollaborationDialog({
   children: ReactNode;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
+  const idle=useIdleDismiss(ref,close);
   useEffect(() => {
     const d = ref.current;
     const focus = document.activeElement as HTMLElement | null;
@@ -35,6 +37,7 @@ export default function CollaborationDialog({
           Close
         </button>
       </div>
+      <button type="button" className="aero-button border mb-3" aria-pressed={idle.keepOpen} onClick={()=>idle.setKeepOpen(v=>!v)}>{idle.keepOpen?"Keep open: on":"Keep open"}</button>
       {children}
     </dialog>
   );

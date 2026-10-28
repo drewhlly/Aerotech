@@ -1,7 +1,8 @@
 "use client";
+import {useFeedback} from "@/components/use-feedback";
 import { useState, type FormEvent } from "react";
 export default function CandidateImport(){
- const [message,setMessage]=useState("");const [busy,setBusy]=useState(false);
+ const [message,setMessage]=useFeedback();const [busy,setBusy]=useState(false);
  async function submit(event:FormEvent<HTMLFormElement>){
   event.preventDefault();setBusy(true);setMessage("");
   const body=new FormData(event.currentTarget);

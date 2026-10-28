@@ -1,10 +1,11 @@
 "use client";
+import {useFeedback} from "@/components/use-feedback";
 import {useEffect,useState,type FormEvent} from "react";
 import {DashboardShell,PageHeader} from "@/components/aerotech-ui";
 type Employee={id:string;first_name:string;last_name:string;manager_employee_id?:string|null};
 type Shift={id:string;first_name:string;last_name:string;work_date:string;starts_at:string;ends_at:string};
 export default function ShiftAssignments(){
- const [staff,setStaff]=useState<Employee[]>([]),[shifts,setShifts]=useState<Shift[]>([]),[v,setV]=useState({employeeId:"",managerId:"",date:"",startsAt:"09:00",endsAt:"17:00"}),[error,setError]=useState(""),[message,setMessage]=useState("");
+ const [staff,setStaff]=useState<Employee[]>([]),[shifts,setShifts]=useState<Shift[]>([]),[v,setV]=useState({employeeId:"",managerId:"",date:"",startsAt:"09:00",endsAt:"17:00"}),[error,setError]=useState(""),[message,setMessage]=useFeedback();
  async function load(){const [r,s]=await Promise.all([fetch("/api/employees"),fetch("/api/hr/shifts")]);const a=await r.json(),b=await s.json();if(!r.ok||!s.ok)throw Error(a.error||b.error||"Unavailable");setStaff(a.employees||[]);setShifts(b.shifts||[]);}
  useEffect(()=>{void Promise.resolve().then(()=>{void load().catch(e=>setError(e.message));});},[]);
  async function submit(e:FormEvent){e.preventDefault();setError("");setMessage("");try{const r=await fetch("/api/hr/shifts",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(v)});const b=await r.json();if(!r.ok)throw Error(b.error||"Unable to assign shift");setMessage("Shift assigned.");await load();}catch(e){setError(e instanceof Error?e.message:"Unable to assign shift");}}

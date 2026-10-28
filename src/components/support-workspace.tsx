@@ -1,4 +1,5 @@
 "use client";
+import {useFeedback} from "@/components/use-feedback";
 import {useRouter,usePathname} from "next/navigation";
 import {useCallback,useEffect,useState} from "react";
 import Link from "next/link";
@@ -10,7 +11,7 @@ export default function SupportWorkspace({staff=false}:{staff?:boolean}){const r
  const base=staff?"/api/support-console/tickets":"/api/support/tickets";
  const [currentTime,setCurrentTime]=useState(()=>Date.now());useEffect(()=>{const timer=setInterval(()=>setCurrentTime(Date.now()),60000);return()=>clearInterval(timer)},[]);const [tickets,setTickets]=useState<Ticket[]>([]),[selected,setSelected]=useState<Ticket|null>(null),[grants,setGrants]=useState<Grant[]>([]),[events,setEvents]=useState<Event[]>([]);
  const [title,setTitle]=useState(""),[description,setDescription]=useState(""),[chosen,setChosen]=useState<string[]>([]),[minutes,setMinutes]=useState("30"),[summary,setSummary]=useState("");
- const [message,setMessage]=useState(""),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[diagnostic,setDiagnostic]=useState<{scope:string;data:Record<string,unknown>;configured:Record<string,unknown>}|null>(null);
+ const [message,setMessage]=useFeedback(),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[diagnostic,setDiagnostic]=useState<{scope:string;data:Record<string,unknown>;configured:Record<string,unknown>}|null>(null);
  async function call(path:string,body?:unknown){const r=await fetch(path,{method:body?"POST":"GET",headers:{"Content-Type":"application/json"},...(body?{body:JSON.stringify(body)}:{}),cache:"no-store"});const d=await r.json();if(!r.ok)throw Error(d.error||"Support request failed");return d;}
  const refresh=useCallback(async()=>{try{const d=await call(base);setTickets(d.tickets);}catch(e){setMessage(e instanceof Error?e.message:"Unable to load support");}finally{setLoading(false);}},[base]);
  useEffect(()=>{void Promise.resolve().then(()=>{void refresh();});},[refresh]);

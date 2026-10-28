@@ -1,10 +1,11 @@
 "use client";
+import {useFeedback} from "@/components/use-feedback";
 import {allocateGross} from "@/lib/gross-allocation";
 import {useEffect,useState,type FormEvent} from 'react';
 type Band={band:string;monthly_gross:string;basic:string;housing:string;transport:string};
 type Person={id:string;first_name:string;last_name:string;salary_band?:string|null};
 export default function SalaryBands({people,onSaved}:{people:Person[];onSaved:()=>Promise<void>}){
- const [bands,setBands]=useState<Band[]>([]),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[editing,setEditing]=useState<string|null>(null);
+ const [bands,setBands]=useState<Band[]>([]),[message,setMessage]=useFeedback(),[busy,setBusy]=useState(false),[editing,setEditing]=useState<string|null>(null);
  async function load(){const r=await fetch('/api/payroll/bands',{cache:'no-store'}),d=await r.json();if(!r.ok)throw Error(d.error||'Unable to load salary bands');setBands(d.bands)}
  useEffect(()=>{void Promise.resolve().then(()=>{load().catch(e=>setMessage(e.message))});},[]);
  async function save(e:FormEvent<HTMLFormElement>,action:string){e.preventDefault();const f=new FormData(e.currentTarget);setBusy(true);setMessage('');try{const r=await fetch('/api/payroll/bands',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,...Object.fromEntries(f)})}),d=await r.json();if(!r.ok)throw Error(d.error);await Promise.all([load(),onSaved()]);setEditing(null);setMessage(action==='configure'?'Salary band saved. Assigned salaries update automatically for future payroll.':'Salary band assigned.')}catch(e){setMessage(e instanceof Error?e.message:'Unable to save')}finally{setBusy(false)}}
