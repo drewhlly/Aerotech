@@ -1,0 +1,39 @@
+name: Encrypted Cloudflare backups
+on:
+  schedule:
+    - cron: '0 1 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/backups.yml', 'ops/backups/**']
+permissions:
+  contents: read
+  id-token: write
+concurrency:
+  group: aerotech-encrypted-backups
+  cancel-in-progress: false
+jobs:
+  backup-and-restore:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: restore_verify
+          POSTGRES_PASSWORD: disposable_restore_only
+          POSTGRES_DB: restore_verify
+        options: >-
+          --health-cmd "pg_isready -U restore_verify"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      - name: Install pinned backup libraries
+        run: python -m pip install -r ops/backups/requirements.txt
+      - name: Back up, restore and verify
+        env:
+          PG_CONTAINER: ${{ job.services.postgres.id }}
+          BACKUP_BROKER_URL: https://backup-control.aerotechhr.app/credentials
+        run: python ops/backups/run.py
