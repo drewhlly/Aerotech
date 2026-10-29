@@ -1,12 +1,16 @@
-import os,json,urllib.request,urllib.parse,subprocess,tempfile,pathlib,hashlib,secrets,datetime,tarfile,sys
+import os,json,urllib.request,urllib.parse,urllib.error,subprocess,tempfile,pathlib,hashlib,secrets,datetime,tarfile,sys
 import boto3
 from botocore.config import Config
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 BUCKET='aerotech-private-backups'
 def digest(data):return hashlib.sha256(data).hexdigest()
 def request_json(url,headers,body=None):
+ headers={**headers,'User-Agent':'Aerotech-Backup/1.0'}
  req=urllib.request.Request(url,headers=headers,data=body,method='POST' if body is not None else 'GET')
- with urllib.request.urlopen(req,timeout=60) as response:return json.load(response)
+ try:
+  with urllib.request.urlopen(req,timeout=60) as response:return json.load(response)
+ except urllib.error.HTTPError as e:
+  print('Backup authentication HTTP failure:',e.code,e.headers.get('Server'),e.headers.get('CF-Ray'),e.read(300).decode(errors='replace'),flush=True);raise
 def credentials():
  url=os.environ['ACTIONS_ID_TOKEN_REQUEST_URL']+'&audience='+urllib.parse.quote('https://backup-control.aerotechhr.app',safe='')
  token=request_json(url,{'Authorization':'Bearer '+os.environ['ACTIONS_ID_TOKEN_REQUEST_TOKEN']})['value'];print('::add-mask::'+token,flush=True)
@@ -21,7 +25,7 @@ def archive_counts(sql):
   elif table:result[table]+=1
  return result
 def main():
- c=credentials();u=urllib.parse.urlsplit(c['databaseUrl']);assert u.username=='aerotech_backup_reader';container=os.environ['PG_CONTAINER'];env=os.environ.copy();env.update(PGHOST=u.hostname,PGPORT=u.port or '5432',PGDATABASE=u.path.lstrip('/'),PGUSER=urllib.parse.unquote(u.username),PGPASSWORD=urllib.parse.unquote(u.password),PGSSLMODE='require',PGCONNECT_TIMEOUT='30')
+ c=credentials();u=urllib.parse.urlsplit(c['databaseUrl']);assert u.username=='aerotech_backup_reader';container=os.environ['PG_CONTAINER'];env=os.environ.copy();env.update(PGHOST=u.hostname,PGPORT=str(u.port or 5432),PGDATABASE=u.path.lstrip('/'),PGUSER=urllib.parse.unquote(u.username),PGPASSWORD=urllib.parse.unquote(u.password),PGSSLMODE='require',PGCONNECT_TIMEOUT='30')
  s3=boto3.client('s3',endpoint_url='https://3144bf081a43f5ca5bc88b60e956a9ce.r2.cloudflarestorage.com',aws_access_key_id=c['accessKeyId'],aws_secret_access_key=c['secretAccessKey'],region_name='auto',config=Config(connect_timeout=15,read_timeout=120,retries={'max_attempts':3}))
  def store(key,data,content_type='application/octet-stream'):
   checksum=digest(data);s3.put_object(Bucket=BUCKET,Key=key,Body=data,ContentType=content_type,Metadata={'sha256':checksum});back=s3.get_object(Bucket=BUCKET,Key=key)['Body'].read();assert digest(back)==checksum,'R2 readback mismatch';return {'key':key,'bytes':len(data),'sha256':checksum}
