@@ -1,4 +1,5 @@
 export type EmployerPlan = "basic" | "professional" | "business" | "enterprise";
+export const PRICING_VERSION = '2026-10-29';
 export type AccountType = "employer" | "employee";
 export type Currency = "NGN" | "USD";
 
@@ -6,6 +7,7 @@ export type SubscriptionPlan = {
   id: string;
   name: string;
   accountType: AccountType;
+  includedEmployees?: number;
   monthly: boolean; // false means billed annually for paid employer plans
 
   // Default display values used by the current pricing UI.
@@ -40,12 +42,13 @@ export const EMPLOYER_PLANS: Record<
   basic: {
     id: "employer_basic",
     name: "Basic",
+    includedEmployees: 25,
     accountType: "employer",
     monthly: false,
     price: "₦500,000",
     period: "/ year",
     description:
-      "Essential recruitment tools for growing businesses.",
+      "Employee records and recruitment tools for small teams.",
     prices: {
       NGN: 500000,
       USD: 350,
@@ -60,15 +63,16 @@ export const EMPLOYER_PLANS: Record<
 
   professional: {
     id: "employer_professional",
-    name: "Professional",
+    name: "Premium",
+    includedEmployees: 50,
     accountType: "employer",
     monthly: false,
-    price: "₦1,000,000",
+    price: "₦1,200,000",
     period: "/ year",
     description:
-      "Advanced recruitment capabilities for growing teams.",
+      "Connected HR, attendance and payroll workflows for growing teams.",
     prices: {
-      NGN: 1000000,
+      NGN: 1200000,
       USD: 700,
     },
     features: [
@@ -83,18 +87,19 @@ export const EMPLOYER_PLANS: Record<
   business: {
     id: "employer_business",
     name: "Business",
+    includedEmployees: 100,
     accountType: "employer",
     monthly: false,
-    price: "₦2,000,000",
+    price: "₦2,400,000",
     period: "/ year",
     description:
       "Workflow automation and reporting for growing organisations.",
     prices: {
-      NGN: 2000000,
+      NGN: 2400000,
       USD: 1400,
     },
     features: [
-      "Everything in Professional",
+      "Everything in Premium",
       "Workflow automation and document tracking",
       "Monthly workforce report generation",
       "Document expiry alerts and review queues",
@@ -104,12 +109,13 @@ export const EMPLOYER_PLANS: Record<
   enterprise: {
     id: "employer_enterprise",
     name: "Enterprise",
+    includedEmployees: 200,
     accountType: "employer",
     monthly: false,
-    price: "Contact sales",
-    period: "custom annual pricing",
+    price: "From ₦4,800,000",
+    period: "/ year, quoted scope",
     description: "Tailored workforce automation, implementation and support for large organisations.",
-    prices: { NGN: 0, USD: 0 },
+    prices: { NGN: 4800000, USD: 0 },
     features: [
       "Everything in Business",
       "Organisation-specific implementation by agreement",

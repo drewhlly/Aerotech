@@ -1,0 +1,7 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {EMPLOYER_PLANS,PRICING_VERSION} from '../src/lib/subscriptions.ts';
+import {quote} from '../src/lib/subscription-quote.ts';
+import {regionalPrice} from '../src/lib/regional-pricing.ts';
+test('recommended Nigeria annual plans retain stable identifiers and show Premium',()=>{assert.equal(EMPLOYER_PLANS.professional.name,'Premium');assert.equal(EMPLOYER_PLANS.professional.id,'employer_professional');assert.deepEqual(Object.values(EMPLOYER_PLANS).map(p=>p.prices.NGN),[500000,1200000,2400000,4800000]);assert.deepEqual(Object.values(EMPLOYER_PLANS).map(p=>p.includedEmployees),[25,50,100,200]);assert.ok(Object.values(EMPLOYER_PLANS).every(p=>p.monthly===false))});
+test('checkout quotes server-controlled annual prices in integer kobo',()=>{for(const [plan,amount,cap]of [['basic',50000000,25],['professional',120000000,50],['business',240000000,100]]){const v=quote(plan,'Nigeria');assert.equal(v.amountMinor,amount);assert.equal(v.employeeLimit,cap);assert.equal(v.currency,'NGN');assert.equal(v.pricingVersion,PRICING_VERSION)}});
+test('unpublished international and Enterprise prices cannot be charged through self-service',()=>{assert.throws(()=>quote('enterprise','NG'),/written quote/);assert.throws(()=>quote('professional','US'),/requires a quote/);assert.throws(()=>quote('unknown','NG'));assert.equal(regionalPrice(EMPLOYER_PLANS.professional,'US').amount,null)});

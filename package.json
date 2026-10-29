@@ -12,7 +12,9 @@
     "db:migrate": "node scripts/migrate.mjs",
     "test:collaboration:db": "node --import ./tests/helpers/ts-loader.mjs tests/collaboration-db.integration.mjs",
     "test:collaboration:api": "node --experimental-test-module-mocks --import ./tests/helpers/ts-loader.mjs tests/collaboration-api.integration.mjs",
-    "test:collaboration:browser": "node scripts/phase2-browser-suite.mjs"
+    "test:collaboration:browser": "node scripts/phase2-browser-suite.mjs",
+    "verify:paystack:live": "node scripts/verify-paystack-live.mjs",
+    "test:billing": "node --experimental-test-module-mocks --import ./tests/helpers/ts-loader.mjs tests/subscription-billing.integration.mjs"
   },
   "repository": {
     "type": "git",

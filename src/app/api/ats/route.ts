@@ -1,3 +1,4 @@
+import {assertEmployeeCapacity} from '@/lib/subscription-capacity';
 import {publishJob,expireJobs} from '@/lib/job-publishing';
 import {jobStates,JobPolicyError,JobRateLimitError} from '@/lib/job-policy';
 import {NextResponse} from 'next/server';
@@ -89,7 +90,7 @@ export async function POST(request:Request){
  await c.query('UPDATE ats_applications SET feedback=$1,interview_at=$2,interview_details=$3 WHERE id=$4',[String(b.feedback||'').slice(0,5000),b.interview_at||a.interview_at,String(b.interview_details||'').slice(0,2000),a.id]);
  if(stage==='interview'){let roomId=a.interview_room_id;if(!roomId){roomId=randomUUID();await c.query('INSERT INTO meet_rooms(id,employer_id,title,starts_at,duration_minutes) VALUES($1,$2,$3,$4,60)',[roomId,employer,'Interview: '+a.title,b.interview_at]);await c.query('UPDATE ats_applications SET interview_room_id=$1 WHERE id=$2',[roomId,a.id]);}else{await c.query('UPDATE meet_rooms SET starts_at=$1 WHERE id=$2 AND employer_id=$3',[b.interview_at,roomId,employer]);}await c.query('UPDATE ats_applications SET interview_details=$1 WHERE id=$2',['/meet/'+roomId,a.id]);}
  }else return bad('Unknown action');
- if(stage==='hired'&&!a.employee_id){const employeeId=randomUUID();const e=await c.query("INSERT INTO workforce_employees(id,employer_id,first_name,last_name,email,phone,job_title,department,location,hire_date) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,CURRENT_DATE) ON CONFLICT(employer_id,email) DO UPDATE SET updated_at=NOW() RETURNING id",[employeeId,a.employer_id,a.first_name,a.last_name,a.email,a.phone,a.title,a.department,a.location]);await c.query('UPDATE ats_applications SET employee_id=$1 WHERE id=$2',[e.rows[0].id,a.id]);}
+ if(stage==='hired'&&!a.employee_id){await assertEmployeeCapacity(c,a.employer_id,a.email);const employeeId=randomUUID();const e=await c.query("INSERT INTO workforce_employees(id,employer_id,first_name,last_name,email,phone,job_title,department,location,hire_date) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,CURRENT_DATE) ON CONFLICT(employer_id,email) DO UPDATE SET updated_at=NOW() RETURNING id",[employeeId,a.employer_id,a.first_name,a.last_name,a.email,a.phone,a.title,a.department,a.location]);await c.query('UPDATE ats_applications SET employee_id=$1 WHERE id=$2',[e.rows[0].id,a.id]);}
 
  if(stage==='hired')await enrollWorkflows(c,a.employer_id);
  await c.query('UPDATE ats_applications SET stage=$1 WHERE id=$2',[stage,a.id]);
