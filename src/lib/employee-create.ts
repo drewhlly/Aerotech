@@ -1,3 +1,4 @@
+import {assertEmployeeCapacity} from './subscription-capacity';
 import {randomUUID} from 'node:crypto';
 import type {PoolClient} from 'pg';
 import {sanitizeProfile} from './employee-profile-fields';
@@ -11,6 +12,7 @@ export async function createEmployee(c:PoolClient,employer:string,b:Record<strin
  let manager:string|null=null;let managerName='';
  if(b.managerEmployeeId||b.managerEmail){const found=await c.query('SELECT id,first_name,last_name FROM workforce_employees WHERE employer_id=$1 AND (id::text=$2 OR LOWER(email)=$3)',[employer,String(b.managerEmployeeId||''),String(b.managerEmail||'').toLowerCase()]);if(!found.rowCount)throw Error('Line manager must be an existing employee in your company');manager=found.rows[0].id;managerName=found.rows[0].first_name+' '+found.rows[0].last_name;}
  details.employment={...details.employment,hireDate:String(hire),lineManager:managerName||details.employment?.lineManager||''};
+ await assertEmployeeCapacity(c,employer,email);
  const id=randomUUID();details.employment.employeeNumber=details.employment.employeeNumber||'AT-'+id.replaceAll('-','').slice(0,12).toUpperCase();await c.query("INSERT INTO workforce_employees(id,employer_id,first_name,last_name,email,phone,job_title,department,location,employment_status,date_of_birth,hire_date,manager_employee_id,employee_number) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,'active',$10::date,$11::date,$12,$13)",[id,employer,String(b.firstName).trim(),String(b.lastName).trim(),email,String(b.phone||''),String(b.jobTitle).trim(),String(b.department).trim(),String(b.location||details.employment.workLocation||''),dob,hire,manager,details.employment.employeeNumber||null]);
  await c.query('INSERT INTO employee_private_profiles(employee_id,employer_id,details) VALUES($1,$2,$3::jsonb)',[id,employer,JSON.stringify(details)]);return id;
 }

@@ -19,6 +19,8 @@ jobs:
         run: npm run lint
       - name: Run smoke tests
         run: npm test
+      - name: Verify subscription billing and capacity
+        run: npm run test:billing
       - name: Build production app
         run: npm run build
       - name: Type-check

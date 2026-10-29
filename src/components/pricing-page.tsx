@@ -33,8 +33,7 @@ export default function PricingPage({billingLive}:{billingLive:boolean}) {
           </h1>
 
           <p className="mx-auto mt-4 max-w-2xl text-slate-600">
-            Powerful recruitment technology designed to help employers hire
-            better and help professionals access better opportunities.
+            Connected recruitment and workforce tools, with clear annual company subscriptions.
           </p>
         </div>
 
@@ -48,7 +47,7 @@ export default function PricingPage({billingLive}:{billingLive:boolean}) {
             </h2>
 
             <p className="mt-1 text-sm text-slate-500">
-              Choose the level of recruitment power your organisation needs.
+              Annual company plans. Employees and applicants remain free.
             </p>
           </div>
 
@@ -83,7 +82,7 @@ export default function PricingPage({billingLive}:{billingLive:boolean}) {
 
                   <div className="mt-6">
                     <div className="text-2xl font-bold tabular-nums text-slate-950">
-                      {planId === "enterprise" ? "Contact sales" : displayRegionalPrice(regionalPrice(plan, country))}
+                      {planId === "enterprise" && normalizeCountry(country) === "NG" ? plan.price : displayRegionalPrice(regionalPrice(plan, country))}
                     </div>
 
                     <p className="mt-1 text-sm text-slate-500">
@@ -91,7 +90,7 @@ export default function PricingPage({billingLive}:{billingLive:boolean}) {
                     </p>
                   </div>
 
-                  <div className="my-6 border-t border-slate-200" />
+                  <p className="mt-4 text-sm font-semibold text-slate-700">Up to {plan.includedEmployees} employees{planId==='enterprise'?' in the entry quote':' included'}</p><div className="my-6 border-t border-slate-200" />
 
                   <ul className="mb-8 flex-1 space-y-3">
                     {plan.features.map((feature: string) => (
@@ -118,7 +117,7 @@ export default function PricingPage({billingLive}:{billingLive:boolean}) {
 
         <section className="mx-auto mt-16 max-w-3xl rounded-2xl border border-slate-200 bg-white p-8 text-center">
           <h2 className="text-2xl font-bold text-slate-950">Employees and applicants join free</h2>
-          <p className="mt-3 text-slate-600">Only companies pay for Aerotech subscriptions. Employees are invited by their employers, and applicants can create free accounts to view job opportunities.</p>
+          <p className="mt-3 text-slate-600">Only companies pay for Aerotech subscriptions. Nigeria prices are billed annually; international pricing, additional capacity and managed services are quoted separately. Employees are invited by their employers, and applicants can create free accounts to view job opportunities.</p>
           <Link href="/careers" className="mt-6 inline-block rounded-xl bg-slate-950 px-6 py-3.5 font-semibold text-white">Find jobs</Link>
         </section>
 

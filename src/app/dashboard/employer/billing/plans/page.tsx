@@ -1,2 +1,2 @@
-import Link from 'next/link';
-export default function ActivationStatus(){return <section className="aero-card space-y-5"><h1 className="text-3xl font-bold">Workspace activation</h1><p className="leading-7 text-slate-600">Your organisation’s workspace is awaiting an active subscription. Subscription payments are not currently available online.</p><p className="leading-7 text-slate-600">Contact Aerotech support for help with activation and access.</p><Link href="/dashboard/employer/support" className="aero-button bg-blue-700 text-white">Contact support</Link></section>}
+import EmployerBilling from '@/components/employer-billing';
+export default function Page(){return <EmployerBilling/>}
