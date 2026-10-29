@@ -1,0 +1,6 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import handler,{allowed} from './broker.mjs';
+const valid={repository_id:'1334327157',repository_owner_id:'31317304',repository:'drewhlly/Aerotech',ref:'refs/heads/main',workflow_ref:'drewhlly/Aerotech/.github/workflows/backups.yml@refs/heads/main',sub:'repo:drewhlly@31317304/Aerotech@1334327157:ref:refs/heads/main',event_name:'schedule'};
+test('only the expected main-branch workflow identity is accepted',()=>{assert(allowed(valid));for(const key of Object.keys(valid))assert(!allowed({...valid,[key]:'untrusted'}),key);for(const event_name of ['push','schedule','workflow_dispatch'])assert(allowed({...valid,event_name}));assert(!allowed({...valid,event_name:'pull_request'}));});
+test('anonymous and malformed tokens do not expose credentials',async()=>{assert.equal((await handler.fetch(new Request('https://backup-control.aerotechhr.app/credentials',{method:'POST'}),{})).status,401);assert.equal((await handler.fetch(new Request('https://backup-control.aerotechhr.app/credentials'),{})).status,404);assert.equal((await handler.fetch(new Request('https://backup-control.aerotechhr.app/credentials',{method:'POST',headers:{Authorization:'Bearer invalid'}}),{})).status,401);});

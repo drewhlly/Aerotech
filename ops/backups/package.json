@@ -1,0 +1,15 @@
+{
+  "name": "aerotech-backup-broker",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "esbuild broker.mjs --bundle --format=esm --platform=browser --outfile=dist/broker.mjs",
+    "test": "node --test broker.test.mjs"
+  },
+  "dependencies": {
+    "jose": "6.2.14"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  }
+}
