@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {randomUUID} from 'node:crypto';
 import {PGlite} from '@electric-sql/pglite';
-import {eventVisible,meetingEnd} from '../src/lib/event-display.ts';
+import {eventVisible,meetingEnd,vacancyEnd,vacancyVisible} from '../src/lib/event-display.ts';
 const database=new PGlite();
 const query=async(sql,args=[])=>{const r=await database.query(sql,args);return {...r,rowCount:r.rows.length||r.affectedRows||0}};
 class Pool{query=query;async connect(){return {query,release(){}}}async end(){}}
@@ -51,6 +51,8 @@ const alerts=await import('../src/app/api/employer/alerts/route.ts');
 const employeeNotices=await import('../src/app/api/employee/notifications/route.ts');
 const attention=await import('../src/app/api/workspace/attention/route.ts');
 const birthdays=await import('../src/app/api/hr/birthdays/route.ts');
+const employeeBirthdays=await import('../src/app/api/employee/birthdays/route.ts');
+const recruitment=await import('../src/app/api/ats/route.ts');
 const req=(query='')=>new Request('https://app.example.invalid/api/test'+query);
 try{
  for(const current of ['employer','employee']){
@@ -76,6 +78,29 @@ try{
  let b=await (await birthdays.GET()).json();assert.equal(b.hrAlerts.length,1);assert.ok(b.hrAlerts[0].expires_at);
  await query("UPDATE birthday_notification_log SET notified_at=NOW()-INTERVAL '1 day'");
  b=await (await birthdays.GET()).json();assert.equal(b.hrAlerts.length,0);
+
+ // The actual Birthday directory APIs must not return historical/all-year records.
+ for(const [label,days,owner,status]of [['Yesterday',-1,tenant,'active'],['Tomorrow',1,tenant,'active'],['Later',9,tenant,'active'],['Foreign',0,other,'active'],['Inactive',0,tenant,'terminated']]){
+  await query(`INSERT INTO workforce_employees(id,employer_id,employee_number,first_name,last_name,email,job_title,department,location,employment_status,date_of_birth) VALUES($1,$2,$3,$3,'Person',$4,'HR','HR','Office',$5,((NOW() AT TIME ZONE 'Africa/Lagos')::date+$6::integer)-INTERVAL '20 years')`,[randomUUID(),owner,label,label+'@example.invalid',status,days]);
+ }
+ role='employer';b=await(await birthdays.GET()).json();assert.deepEqual(b.birthdays.map(x=>x.first_name).sort(),['Demo','Tomorrow']);assert.ok(b.birthdays.every(x=>x.expires_at&&x.celebration_date));
+ role='employee';assert.deepEqual((await(await employeeBirthdays.GET()).json()).birthdays.map(x=>x.first_name).sort(),['Demo','Tomorrow']);
+ role='employer';
+ const jobIds={};
+ for(const [label,status,expired,deadline,owner]of [['Live','published',false,false,tenant],['Expired','published',true,false,tenant],['Deadline passed','published',false,true,tenant],['Closed','closed',false,false,tenant],['Archived','archived',false,false,tenant],['Draft','draft',false,false,tenant],['Foreign','published',false,false,other]]){
+  const id=jobIds[label]=randomUUID();
+  await query(`INSERT INTO ats_jobs(id,employer_id,title,department,location,country,employment_type,description,status,expires_at,deadline) VALUES($1,$2,$3,'HR','Lagos','Nigeria','Full-time','Disposable vacancy',$4,NOW()+INTERVAL '${expired?'-1':'1'} day',${deadline?"NOW()-INTERVAL '1 second'":'NULL'})`,[id,owner,label,status]);
+ }
+ let jobs=(await(await recruitment.GET(req('?view=employer'))).json()).jobs;assert.deepEqual(jobs.map(j=>j.title).sort(),['Live','future']);
+ jobs=(await(await recruitment.GET(req('?view=employer&vacancies=history'))).json()).jobs;assert.deepEqual(jobs.map(j=>j.title).sort(),['Archived','Closed','Deadline passed','Expired','past']);
+ assert.deepEqual((await(await recruitment.GET(req('?view=employer&vacancies=drafts'))).json()).jobs.map(j=>j.title),['Draft']);
+ assert.equal((await(await recruitment.GET(req('?view=employer&job_id='+jobIds.Foreign))).json()).jobs.length,0);
+ assert.equal((await(await recruitment.GET(req('?view=employer&job_id='+jobIds.Closed))).json()).jobs[0].title,'Closed');
+ const boundary='2026-10-30T23:00:00Z';assert.equal(vacancyVisible({status:'published',expires_at:boundary},Date.parse(boundary)-1),true);assert.equal(vacancyVisible({status:'published',expires_at:boundary},Date.parse(boundary)),false);assert.equal(vacancyEnd({expires_at:'2026-11-01T00:00:00Z',deadline:boundary}),boundary);
+ // A year boundary must surface Jan 1 tomorrow while excluding Dec 30.
+ const {birthdayEventsSql}=await import('../src/lib/birthday-events.ts');
+ await query("UPDATE workforce_employees SET date_of_birth=CASE WHEN first_name='Demo' THEN DATE '1990-12-31' WHEN first_name='Tomorrow' THEN DATE '1990-01-01' ELSE DATE '1990-12-30' END WHERE employer_id=$1",[tenant]);
+ const rollover=await query(birthdayEventsSql.replaceAll('NOW()',"TIMESTAMPTZ '2026-12-31T12:00:00Z'"),[tenant]);assert.deepEqual(rollover.rows.map(x=>new Date(x.celebration_date).toISOString().slice(0,10)),['2026-12-31','2027-01-01']);
  role='none';assert.equal((await meetings.GET(req())).status,401);assert.equal((await notices.GET(req())).status,401);
  const end=meetingEnd({starts_at:'2026-10-30T10:00:00Z',duration_minutes:60});assert.equal(eventVisible(end,Date.parse(end)-1),true);assert.equal(eventVisible(end,Date.parse(end)),false);assert.equal(eventVisible('invalid',Date.now()),false);assert.equal(eventVisible(null,Date.now()),true);
  console.log('PASS: expired birthday reminders, meeting lists/history, cancelled/revoked meetings, live rescheduling, unread counts, dashboard widgets, tenant isolation and exact expiry boundaries. No production writes.');

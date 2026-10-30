@@ -13,14 +13,16 @@ import {generateRoleAssessment} from '@/lib/role-assessment';
 export const runtime='nodejs';
 const bad=(error:string,status=400)=>NextResponse.json({error},{status});
 export async function GET(request:Request){
- const view=new URL(request.url).searchParams.get('view');
+ const params=new URL(request.url).searchParams;
+ const view=params.get('view'),vacancies=params.get('vacancies')||'active',selectedJob=params.get('job_id');
+ if(!['active','drafts','history'].includes(vacancies))return bad('Invalid vacancy view');
  const employer=view==='employer'?await currentEmployer():null;
  const applicant=view!=='employer'?await currentApplicant():null;
  if(view==='employer'&&!employer||view==='applicant'&&!applicant)return bad('Sign in required',401);
  const pool=db();try{
  await expireJobs(pool);
  if(!employer&&!applicant){const r=await pool.query("SELECT j.id,j.title,j.location,j.country,j.employment_type,e.company_name FROM ats_jobs j JOIN employer_accounts e ON e.id=j.employer_id WHERE j.status='published' AND j.expires_at>NOW() AND (j.deadline IS NULL OR j.deadline>NOW()) ORDER BY j.created_at DESC");return NextResponse.json({jobs:r.rows,applications:[]})}
- const jobs=await pool.query(`SELECT j.*,e.company_name FROM ats_jobs j JOIN employer_accounts e ON e.id=j.employer_id WHERE ${employer?'j.employer_id=$1':"j.status='published' AND j.expires_at>NOW() AND (j.deadline IS NULL OR j.deadline>NOW())"} ORDER BY j.created_at DESC`,employer?[employer]:[]);
+ const jobs=await pool.query(`SELECT j.*,e.company_name FROM ats_jobs j JOIN employer_accounts e ON e.id=j.employer_id WHERE ${employer?"j.employer_id=$1 AND ($2::text IS NOT NULL AND j.id::text=$2 OR $2::text IS NULL AND (CASE $3::text WHEN 'drafts' THEN j.status='draft' WHEN 'history' THEN j.status IN ('closed','expired','archived') ELSE j.status='published' AND j.expires_at>NOW() AND (j.deadline IS NULL OR j.deadline>NOW()) END))":"j.status='published' AND j.expires_at>NOW() AND (j.deadline IS NULL OR j.deadline>NOW())"} ORDER BY j.created_at DESC`,employer?[employer,selectedJob,vacancies]:[]);
  if(!employer)for(const j of jobs.rows)j.questions=j.questions.map((q:Question)=>({prompt:q.prompt,options:q.options}));
  let applications:Record<string,unknown>[]=[];
  if(employer||applicant){const r=await pool.query(`SELECT a.*,m.starts_at+m.duration_minutes*INTERVAL '1 minute' AS interview_end_at,COALESCE((${activeMeeting}),FALSE) AS interview_active,(SELECT s.id FROM workforce_submissions s WHERE s.application_id=a.id AND s.title='Application CV' ORDER BY s.created_at DESC LIMIT 1) AS cv_document_id,j.title,j.questions,e.company_name,p.first_name,p.last_name,p.email,COALESCE((SELECT jsonb_agg(jsonb_build_object('stage',v.stage,'message',v.message,'created_at',v.created_at) ORDER BY v.created_at) FROM ats_events v WHERE v.application_id=a.id),'[]') AS events FROM ats_applications a JOIN ats_jobs j ON j.id=a.job_id JOIN employer_accounts e ON e.id=j.employer_id JOIN applicant_accounts p ON p.id=a.applicant_id LEFT JOIN meet_rooms m ON m.id=a.interview_room_id AND m.employer_id=j.employer_id WHERE ${employer?'j.employer_id=$1':'a.applicant_id=$1'} ORDER BY a.created_at DESC`,[employer||applicant]);applications=r.rows;

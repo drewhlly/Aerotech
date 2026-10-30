@@ -41,10 +41,12 @@ jobs:
       - run: npx playwright install --with-deps chromium --only-shell
       - run: npm run db:migrate
       - run: npm run build
-      - name: Verify browser, API and database journeys
+      - name: Verify signed-in journeys and event expiry
         run: |
           npm run start -- --hostname localhost --port 3010 > /tmp/aerotech-server.log 2>&1 &
           node scripts/verify-signed-in.mjs
+      - name: Verify extended portal audits
+        run: |
           node scripts/verify-phase2.mjs
           node scripts/verify-pwa.mjs
           node scripts/verify-portal-isolation.mjs
