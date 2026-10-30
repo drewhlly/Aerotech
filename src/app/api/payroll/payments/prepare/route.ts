@@ -1,3 +1,4 @@
+import {sameOrigin} from "@/lib/collaboration-policy";
 import {NextResponse} from "next/server";
 import {randomUUID} from "node:crypto";
 import {currentEmployer,db} from "@/lib/employer-session";
@@ -5,7 +6,7 @@ import {bankFingerprint} from '@/lib/payout-security';
 export const runtime="nodejs";
 /** Prepare payment instructions. Never sends funds. Actual transfer initiation requires
  * verified merchant onboarding, business-owned keys, and an independently approved payout release. */
-export async function POST(request:Request){
+export async function POST(request:Request){if(!sameOrigin(request.headers.get('origin')||'',request.headers.get('host'),new URL(request.url).protocol))return NextResponse.json({error:'Invalid origin'},{status:403});
  const employer=await currentEmployer();if(!employer)return NextResponse.json({error:"Employer login required"},{status:401});
  let runId:unknown;try{({runId}=await request.json());}catch{return NextResponse.json({error:"Invalid JSON"},{status:400});}
  if(typeof runId!=="string"||! /^[0-9a-f-]{36}$/i.test(runId))return NextResponse.json({error:"Valid payroll run required"},{status:400});
