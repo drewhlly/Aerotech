@@ -579,7 +579,7 @@ await check(
 );
 await check("read and expired notices leave active inbox but remain in history",async()=>{
  jar={aerotech_employee_session:"employee"};const active=randomUUID(),expired=randomUUID(),read=randomUUID();
- await query("INSERT INTO collaboration_notifications(id,employer_id,actor,event,title,body,href,source_key,read_at,expires_at) VALUES($1,$4,$5,'meeting','Active','','/employee/meet','completion-active',NULL,NULL),($2,$4,$5,'meeting','Expired','','/employee/meet','completion-expired',NULL,NOW()-INTERVAL '1 second'),($3,$4,$5,'meeting','Read','','/employee/meet','completion-read',NOW(),NULL)",[active,expired,read,owner,"employee:"+employee]);
+ await query("INSERT INTO collaboration_notifications(id,employer_id,actor,event,title,body,href,source_key,read_at,expires_at) VALUES($1,$4,$5,'comment','Active','','/employee/tasks','completion-active',NULL,NULL),($2,$4,$5,'comment','Expired','','/employee/tasks','completion-expired',NULL,NOW()-INTERVAL '1 second'),($3,$4,$5,'comment','Read','','/employee/tasks','completion-read',NOW(),NULL)",[active,expired,read,owner,"employee:"+employee]);
  let d=await(await notices.GET(req("/api/collaboration/notifications"))).json();assert.ok(d.records.some(x=>x.id===active));assert.ok(!d.records.some(x=>[expired,read].includes(x.id)));
  assert.equal((await notices.PATCH(req("/api/collaboration/notifications","PATCH",{id:active}))).status,200);
  d=await(await notices.GET(req("/api/collaboration/notifications?history=1&limit=100"))).json();for(const id of [active,expired,read])assert.ok(d.records.some(x=>x.id===id));
