@@ -8,7 +8,7 @@ export default function DashboardAttention({role}:{role:'employer'|'employee'}){
  const [data,setData]=useState<Data|null>(null),[error,setError]=useState('');
  const home=role==='employer'?'/dashboard/employer':'/employee';
  const load=useCallback(async()=>{try{const r=await fetch('/api/workspace/attention',{cache:'no-store'}),d=await r.json();if(!r.ok)throw Error(d.error);setData(d);setError('')}catch(e){setError(e instanceof Error?e.message:'Unable to load attention widgets')}},[]);
- useEffect(()=>{queueMicrotask(()=>void load())},[load]);
+ useEffect(()=>{queueMicrotask(()=>void load());const timer=setInterval(()=>void load(),60000);const refresh=()=>void load();window.addEventListener('focus',refresh);window.addEventListener('aerotech-notifications-changed',refresh);return()=>{clearInterval(timer);window.removeEventListener('focus',refresh);window.removeEventListener('aerotech-notifications-changed',refresh)}},[load]);
  const cards=[['meetings',role==='employee'?"Today’s meetings":'Upcoming meetings',home+'/meet'],['documents',role==='employee'?'Documents to acknowledge':'Expiring documents',home+'/documents'],['tasks',role==='employee'?'My learning tasks':'Workforce activity',role==='employee'?home+'/training':home+'/reports']] as const;
  const maximum=Math.max(1,...(data?.pipeline||[]).map(x=>x.count));
  // Preserve the same panel geometry before and after data arrives. Lists scroll

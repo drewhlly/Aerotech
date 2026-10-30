@@ -26,7 +26,7 @@ export async function GET(req: Request) {
       respond({
         records: (
           await c.query(
-            "SELECT * FROM collaboration_notifications WHERE employer_id=$1 AND actor=$2 AND in_app AND ($5::boolean OR read_at IS NULL AND (expires_at IS NULL OR expires_at>NOW())) ORDER BY created_at DESC,id LIMIT $3 OFFSET $4",
+            "SELECT * FROM collaboration_notifications WHERE employer_id=$1 AND actor=$2 AND in_app AND ($5::boolean AND (read_at IS NOT NULL OR expires_at<=NOW()) OR NOT $5::boolean AND read_at IS NULL AND (expires_at IS NULL OR expires_at>NOW())) ORDER BY created_at DESC,id LIMIT $3 OFFSET $4",
             [a.tenant, a.id, limit, offset,new URL(req.url).searchParams.get("history")==="1"],
           )
         ).rows,
