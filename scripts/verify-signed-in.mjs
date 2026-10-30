@@ -26,27 +26,27 @@ try{
  // Simulate time crossing expiry while the screen stays open, including offline refresh.
  for(const viewport of [{width:390,height:844},{width:1280,height:900}]){
   const expiryPage=await employer.newPage();await expiryPage.setViewportSize(viewport);
-  const frozen=new Date();await expiryPage.clock.install({time:frozen});await expiryPage.clock.pauseAt(frozen);
-  const expiry=new Date(frozen.getTime()+5000).toISOString();
+  const frozen=new Date();await expiryPage.clock.install({time:frozen});
+  const expiry=new Date(frozen.getTime()+60000).toISOString();
   await expiryPage.route('**/api/employer/alerts*',r=>r.fulfill({json:{notifications:[{id:'expiry-fixture',title:'Birthday expiry fixture',body:'Timed reminder',read_at:null,expires_at:expiry}]}}));
   await expiryPage.route('**/api/collaboration/notifications*',r=>r.fulfill({json:{records:[],preferences:[],unread:0,nextExpiry:null}}));
   await expiryPage.goto('/dashboard/employer/notifications');
   await expiryPage.getByRole('heading',{name:'Birthday expiry fixture',exact:true}).waitFor();
-  await expiryPage.clock.fastForward(5001);
+  await expiryPage.clock.fastForward(60001);
   await expiryPage.getByRole('heading',{name:'Birthday expiry fixture',exact:true}).waitFor({state:'hidden'});
-  const birthdayExpiry=new Date(frozen.getTime()+15000).toISOString();
+  const birthdayExpiry=new Date(frozen.getTime()+120000).toISOString();
   await expiryPage.route('**/api/hr/birthdays',r=>r.fulfill({json:{birthdays:[],hrAlerts:[{first_name:'Today fixture',last_name:'Person',expires_at:birthdayExpiry}],tomorrow:[{first_name:'Tomorrow fixture',last_name:'Person',department:'HR',expires_at:birthdayExpiry}]}}));
   await expiryPage.goto('/dashboard/employer/hr/birthdays');
   await expiryPage.getByRole('heading',{name:'HR birthday reminders',exact:true}).waitFor();
   await expiryPage.getByRole('heading',{name:'Tomorrow’s birthdays',exact:true}).waitFor();
-  await expiryPage.clock.fastForward(10001);
+  await expiryPage.clock.fastForward(60001);
   await expiryPage.getByRole('heading',{name:'HR birthday reminders',exact:true}).waitFor({state:'hidden'});
   await expiryPage.getByRole('heading',{name:'Tomorrow’s birthdays',exact:true}).waitFor({state:'hidden'});
-  const meetingExpiry=new Date(frozen.getTime()+25000).toISOString();
+  const meetingExpiry=new Date(frozen.getTime()+180000).toISOString();
   await expiryPage.route('**/api/meet?**',r=>r.fulfill({json:{meetings:[{id:randomUUID(),title:'Meeting expiry fixture',starts_at:new Date(Date.parse(meetingExpiry)-3600000).toISOString(),duration_minutes:60,timezone:'Africa/Lagos',joinState:'open',status:'scheduled'}]}}));
   await expiryPage.goto('/dashboard/employer/meet');
   await expiryPage.getByRole('heading',{name:'Meeting expiry fixture',exact:true}).waitFor();
-  await expiryPage.clock.fastForward(10001);
+  await expiryPage.clock.fastForward(60001);
   await expiryPage.getByRole('heading',{name:'Meeting expiry fixture',exact:true}).waitFor({state:'hidden'});
   await expiryPage.close();
  }
