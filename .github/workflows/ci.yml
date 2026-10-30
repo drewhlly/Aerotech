@@ -23,6 +23,8 @@ jobs:
         run: npm run test:billing
       - name: Verify isolated payout connection and transfer safety
         run: npm run test:payouts
+      - name: Verify event expiry and active reminders
+        run: npm run test:events
       - name: Build production app
         run: npm run build
       - name: Type-check

@@ -22,7 +22,36 @@ try{
  await call(employer,'/api/employees',undefined,401,'get');const paywall=await employer.newPage();await paywall.goto('/dashboard/employer');assert.ok(paywall.url().includes('/billing'));await paywall.close();
  // Paid-state fixture is allowed only in this script's asserted disposable localhost database. No provider charge is made.
  await pool.query("INSERT INTO company_subscriptions(employer_id,plan,status,currency,paid_until,reference) VALUES($1,'business','active','NGN',NOW()+INTERVAL '1 year',$2)",[company,'disposable-ci-'+company]);await pool.query("UPDATE company_subscriptions SET plan='basic' WHERE employer_id=$1",[company]);await get(employer,'/api/employees');await call(employer,'/api/payroll/compensation',undefined,401,'get');await pool.query("UPDATE company_subscriptions SET plan='business' WHERE employer_id=$1",[company]);passed('New unpaid company is blocked; disposable paid-plan fixture enables only the purchased services');
- const employerPage=await employer.newPage();await employerPage.goto('/dashboard/employer');await employerPage.getByRole('heading',{name:/good|overview|workforce|company|team|dashboard/i}).first().waitFor({timeout:15000});assert.ok(!employerPage.url().includes('/auth/login'));passed('Employer registration, session and dashboard');// A loading boundary may stream HTTP 200 before notFound resolves; verify the rendered denial and noindex as well.
+ const employerPage=await employer.newPage();await employerPage.goto('/dashboard/employer');await employerPage.getByRole('heading',{name:/good|overview|workforce|company|team|dashboard/i}).first().waitFor({timeout:15000});assert.ok(!employerPage.url().includes('/auth/login'));passed('Employer registration, session and dashboard');
+ // Simulate time crossing expiry while the screen stays open, including offline refresh.
+ for(const viewport of [{width:390,height:844},{width:1280,height:900}]){
+  const expiryPage=await employer.newPage();await expiryPage.setViewportSize(viewport);
+  const frozen=new Date();await expiryPage.clock.install({time:frozen});await expiryPage.clock.pauseAt(frozen);
+  const expiry=new Date(frozen.getTime()+5000).toISOString();
+  await expiryPage.route('**/api/employer/alerts*',r=>r.fulfill({json:{notifications:[{id:'expiry-fixture',title:'Birthday expiry fixture',body:'Timed reminder',read_at:null,expires_at:expiry}]}}));
+  await expiryPage.route('**/api/collaboration/notifications*',r=>r.fulfill({json:{records:[],preferences:[],unread:0,nextExpiry:null}}));
+  await expiryPage.goto('/dashboard/employer/notifications');
+  await expiryPage.getByRole('heading',{name:'Birthday expiry fixture',exact:true}).waitFor();
+  await expiryPage.clock.fastForward(5001);
+  await expiryPage.getByRole('heading',{name:'Birthday expiry fixture',exact:true}).waitFor({state:'hidden'});
+  const birthdayExpiry=new Date(frozen.getTime()+15000).toISOString();
+  await expiryPage.route('**/api/hr/birthdays',r=>r.fulfill({json:{birthdays:[],hrAlerts:[{first_name:'Today fixture',last_name:'Person',expires_at:birthdayExpiry}],tomorrow:[{first_name:'Tomorrow fixture',last_name:'Person',department:'HR',expires_at:birthdayExpiry}]}}));
+  await expiryPage.goto('/dashboard/employer/hr/birthdays');
+  await expiryPage.getByRole('heading',{name:'HR birthday reminders',exact:true}).waitFor();
+  await expiryPage.getByRole('heading',{name:'Tomorrow’s birthdays',exact:true}).waitFor();
+  await expiryPage.clock.fastForward(10001);
+  await expiryPage.getByRole('heading',{name:'HR birthday reminders',exact:true}).waitFor({state:'hidden'});
+  await expiryPage.getByRole('heading',{name:'Tomorrow’s birthdays',exact:true}).waitFor({state:'hidden'});
+  const meetingExpiry=new Date(frozen.getTime()+25000).toISOString();
+  await expiryPage.route('**/api/meet?**',r=>r.fulfill({json:{meetings:[{id:randomUUID(),title:'Meeting expiry fixture',starts_at:new Date(Date.parse(meetingExpiry)-3600000).toISOString(),duration_minutes:60,timezone:'Africa/Lagos',joinState:'open',status:'scheduled'}]}}));
+  await expiryPage.goto('/dashboard/employer/meet');
+  await expiryPage.getByRole('heading',{name:'Meeting expiry fixture',exact:true}).waitFor();
+  await expiryPage.clock.fastForward(10001);
+  await expiryPage.getByRole('heading',{name:'Meeting expiry fixture',exact:true}).waitFor({state:'hidden'});
+  await expiryPage.close();
+ }
+ passed('Birthday notices, birthday reminder panels and ended meetings disappear at expiry without reload on mobile and desktop');
+// A loading boundary may stream HTTP 200 before notFound resolves; verify the rendered denial and noindex as well.
  for(const path of ['/dashboard/employer/recruitment/jobs/'+ '-'.repeat(36),'/dashboard/employer/recruitment/candidates/'+randomUUID()]){const missing=await employer.newPage();const response=await missing.goto(path);assert.ok([200,404].includes(response.status()));await missing.getByRole('heading',{name:'Page not found',exact:true}).waitFor();assert.ok(await missing.locator('meta[name="robots"][content*="noindex"]').count());assert.equal(await missing.getByRole('heading',{name:'Your vacancies',exact:true}).count(),0);await missing.close()}
  const other=await context();const otherAccount=await call(other,'/api/auth/signup/employer',{companyName:'Other Verification Company',companyEmail:'other-fixture@example.invalid',firstName:'Other',lastName:'Owner',phone:'08000000000',country:'Nigeria',password},201);await pool.query("INSERT INTO company_subscriptions(employer_id,plan,status,currency,paid_until,reference) VALUES($1,'business','active','NGN',NOW()+INTERVAL '1 year',$2)",[otherAccount.employerId,'disposable-ci-'+otherAccount.employerId]);
  const staff=[];for(const [,role] of ['hr','finance','ceo'].entries()){const e=await call(employer,'/api/employees',{firstName:'Fixture',lastName:role,email:role+'-fixture@example.invalid',jobTitle:role,department:'Operations',location:'Head office'},201);Object.assign(e,{role,email:role+'-fixture@example.invalid'});staff.push(e);await call(employer,'/api/payroll/compensation',{employeeId:e.id,monthlyGross:150000,basic:70000,housing:30000,transport:10000,annualRent:0,otherDeductions:0,pensionEnabled:true,nhfEnabled:false,taxExempt:false,active:true},200,'put');await call(employer,'/api/payroll/approvers',{stage:role,employeeId:e.id});const token=randomBytes(32).toString('hex');await pool.query("INSERT INTO employee_invitations(id,employer_id,employee_id,token_hash,expires_at) VALUES($1,$2,$3,$4,NOW()+INTERVAL '1 hour')",[randomUUID(),company,e.id,createHash('sha256').update(token).digest('hex')]);e.context=await context();await call(e.context,'/api/auth/activate/employee',{token,password},201);}
