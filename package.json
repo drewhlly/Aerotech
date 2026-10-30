@@ -60,7 +60,7 @@
     "playwright": "1.64.1",
     "tailwindcss": "^4.3.3",
     "typescript": "^6.0.3",
-    "@opennextjs/cloudflare": "^1.15.0",
+    "@opennextjs/cloudflare": "1.20.13",
     "wrangler": "^4.45.0"
   },
   "type": "module"
