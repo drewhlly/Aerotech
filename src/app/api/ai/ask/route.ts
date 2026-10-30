@@ -1,48 +1,19 @@
-import { NextResponse } from "next/server";
-import { currentEmployer, db } from "@/lib/employer-session";
-import { authAttempt } from "@/lib/auth-rate-limit";
-export const runtime = "nodejs";
-export async function GET() {
-  const employerId=await currentEmployer();
-  if(!employerId)return NextResponse.json({error:"Please sign in as an employer with access to AI."},{status:401,headers:{"Cache-Control":"private, no-store"}});
-  return NextResponse.json({configured:!!process.env.OPENAI_API_KEY},{headers:{"Cache-Control":"private, no-store"}});
-}
-export async function POST(request: Request) {
-  const employerId = await currentEmployer();
-  if (!employerId) return NextResponse.json({ error: "Please sign in as an employer." }, { status: 401 });
-  let question: unknown;
-  try { ({ question } = await request.json()); } catch { return NextResponse.json({ error: "Invalid request." }, { status: 400 }); }
-  if (typeof question !== "string" || question.trim().length < 2 || question.length > 2000)
-    return NextResponse.json({ error: "Enter a question under 2,000 characters." }, { status: 400 });
-  const key = process.env.OPENAI_API_KEY;
-  if (!key) return NextResponse.json({ error: "Aerotech AI is not configured yet. Please contact the administrator." }, { status: 503 });
-  try {
-    const pool=db();
-    let workforceContext="Workforce counts unavailable.";
-    try {
-      if(!await authAttempt(pool,'ai',employerId))return NextResponse.json({error:"You have reached the question limit. Please try again in 15 minutes."},{status:429,headers:{"Cache-Control":"private, no-store"}});
-      const [staff,requests]=await Promise.all([
-        pool.query("SELECT COUNT(*)::int AS total FROM workforce_employees WHERE employer_id=$1",[employerId]),
-        pool.query("SELECT COUNT(*)::int AS pending FROM employee_requests WHERE employer_id=$1 AND status=$2",[employerId,"pending"])
-      ]);
-      workforceContext=`Verified company totals: employees=${staff.rows[0].total}; pending HR requests=${requests.rows[0].pending}. No individual employee details were provided.`;
-    } finally {await pool.end();}
-    const response = await fetch("https://api.openai.com/v1/responses", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: process.env.OPENAI_MODEL || "gpt-4.1-mini",
-        store: false,
-        max_output_tokens: 650,
-        instructions: "You are Aerotech's HR and workforce assistant. Help employers with recruitment, payroll concepts, compliance, training, and workforce policy. You only have access to the following two aggregate company metrics for the authenticated tenant. Do not claim to have accessed individual employee records, payroll, or live attendance. For tax or legal topics, explain rules may vary by jurisdiction and require professional verification. Never claim to have paid staff or approved a payroll. Be concise and practical. " + workforceContext,
-        input: question.trim(),
-      }),
-      signal: AbortSignal.timeout(20000),
-    });
-    if (!response.ok) return NextResponse.json({ error: "The AI service is unavailable right now." }, { status: 502 });
-    const data: { output?: Array<{ content?: Array<{ type?: string; text?: string }> }> } = await response.json();
-    const answer = data.output?.flatMap(item => item.content ?? []).filter(item => item.type === "output_text").map(item => item.text ?? "").join("\n").trim();
-    if (!answer) return NextResponse.json({ error: "The model returned no answer." }, { status: 502 });
-    return NextResponse.json({ answer }, {headers:{"Cache-Control":"private, no-store"}});
-  } catch { return NextResponse.json({ error: "The AI request timed out or failed." }, { status: 502 }); }
+import {NextResponse} from 'next/server';
+import {currentEmployer,db} from '@/lib/employer-session';
+import {authAttempt} from '@/lib/auth-rate-limit';
+import {generalQuestions,type GeneralQuestion} from '@/lib/ai-prompts';
+export const runtime='nodejs';
+const headers={'Cache-Control':'private, no-store'};
+export async function GET(){const employer=await currentEmployer();if(!employer)return NextResponse.json({error:'Sign in as an employer with AI access.'},{status:401,headers});return NextResponse.json({configured:!!process.env.GEMINI_API_KEY},{headers})}
+export async function POST(request:Request){
+ const employer=await currentEmployer();if(!employer)return NextResponse.json({error:'Sign in as an employer with AI access.'},{status:401,headers});
+ let body:unknown;try{body=await request.json()}catch{return NextResponse.json({error:'Invalid request.'},{status:400,headers})}
+ if(!body||typeof body!=='object'||Array.isArray(body)||Object.keys(body).length!==1||!Object.hasOwn(body,'topic'))return NextResponse.json({error:'Select one of the available general questions.'},{status:400,headers});
+ const topic=(body as {topic?:unknown}).topic;if(typeof topic!=='string'||!Object.hasOwn(generalQuestions,topic))return NextResponse.json({error:'Select one of the available general questions.'},{status:400,headers});
+ const key=process.env.GEMINI_API_KEY;if(!key)return NextResponse.json({error:'Aerotech AI is not connected yet.'},{status:503,headers});
+ try{const pool=db();try{if(!await authAttempt(pool,'ai',employer))return NextResponse.json({error:'Question limit reached. Please try again later.'},{status:429,headers})}finally{await pool.end()}
+ const response=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify({systemInstruction:{parts:[{text:'Provide concise general HR guidance. Never claim to know an organisation or employee. Employment, payroll and legal rules vary by jurisdiction; recommend qualified local review where appropriate. Humans make employment decisions.'}]},contents:[{role:'user',parts:[{text:generalQuestions[topic as GeneralQuestion]}]}],generationConfig:{maxOutputTokens:1000}}),signal:AbortSignal.timeout(20000)});
+ if(response.status===429)return NextResponse.json({error:'The AI service has reached its free-tier limit. Please try again later.'},{status:429,headers});if(!response.ok)return NextResponse.json({error:'The AI service is unavailable. Please try again later.'},{status:502,headers});
+ const data:{candidates?:{content?:{parts?:{text?:string}[]}}[]}=await response.json();const answer=data.candidates?.[0]?.content?.parts?.map(x=>x.text||'').join('').trim();if(!answer)return NextResponse.json({error:'No response was returned. Please try again.'},{status:502,headers});return NextResponse.json({answer},{headers});
+ }catch{return NextResponse.json({error:'The AI request timed out or failed. Please try again.'},{status:502,headers})}
 }
