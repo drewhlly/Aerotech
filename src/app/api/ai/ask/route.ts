@@ -5,7 +5,7 @@ export const runtime = "nodejs";
 export async function GET() {
   const employerId=await currentEmployer();
   if(!employerId)return NextResponse.json({error:"Please sign in as an employer with access to AI."},{status:401,headers:{"Cache-Control":"private, no-store"}});
-  return NextResponse.json({configured:!!process.env.OPENAI_API_KEY},{headers:{"Cache-Control":"private, no-store"}});
+  return NextResponse.json({configured:!!(process.env.CLOUDFLARE_AI_TOKEN && process.env.CLOUDFLARE_AI_ACCOUNT_ID)},{headers:{"Cache-Control":"private, no-store"}});
 }
 export async function POST(request: Request) {
   const employerId = await currentEmployer();
@@ -14,8 +14,9 @@ export async function POST(request: Request) {
   try { ({ question } = await request.json()); } catch { return NextResponse.json({ error: "Invalid request." }, { status: 400 }); }
   if (typeof question !== "string" || question.trim().length < 2 || question.length > 2000)
     return NextResponse.json({ error: "Enter a question under 2,000 characters." }, { status: 400 });
-  const key = process.env.OPENAI_API_KEY;
-  if (!key) return NextResponse.json({ error: "Aerotech AI is not configured yet. Please contact the administrator." }, { status: 503 });
+  const key = process.env.CLOUDFLARE_AI_TOKEN;
+  const accountId = process.env.CLOUDFLARE_AI_ACCOUNT_ID;
+  if (!key || !accountId) return NextResponse.json({ error: "Aerotech AI is not configured yet. Please contact the administrator." }, { status: 503 });
   try {
     const pool=db();
     let workforceContext="Workforce counts unavailable.";
@@ -27,21 +28,22 @@ export async function POST(request: Request) {
       ]);
       workforceContext=`Verified company totals: employees=${staff.rows[0].total}; pending HR requests=${requests.rows[0].pending}. No individual employee details were provided.`;
     } finally {await pool.end();}
-    const response = await fetch("https://api.openai.com/v1/responses", {
+    const response = await fetch(`https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(accountId)}/ai/run/@cf/meta/llama-3.1-8b-instruct`, {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: process.env.OPENAI_MODEL || "gpt-4.1-mini",
-        store: false,
-        max_output_tokens: 650,
-        instructions: "You are Aerotech's HR and workforce assistant. Help employers with recruitment, payroll concepts, compliance, training, and workforce policy. You only have access to the following two aggregate company metrics for the authenticated tenant. Do not claim to have accessed individual employee records, payroll, or live attendance. For tax or legal topics, explain rules may vary by jurisdiction and require professional verification. Never claim to have paid staff or approved a payroll. Be concise and practical. " + workforceContext,
-        input: question.trim(),
+        max_tokens: 650,
+        messages: [
+          {role:"system",content:"You are Aerotech's HR and workforce assistant. Help employers with recruitment, payroll concepts, compliance, training, and workforce policy. You only have access to the following two aggregate company metrics for the authenticated tenant. Do not claim to have accessed individual employee records, payroll, or live attendance. For tax or legal topics, explain rules may vary by jurisdiction and require professional verification. Never claim to have paid staff or approved a payroll. Be concise and practical. " + workforceContext},
+          {role:"user",content:question.trim()},
+        ],
       }),
       signal: AbortSignal.timeout(20000),
     });
+    if (response.status === 429) return NextResponse.json({ error: "The AI service has reached its usage limit. Please try again later." }, { status: 429, headers:{"Cache-Control":"private, no-store"} });
     if (!response.ok) return NextResponse.json({ error: "The AI service is unavailable right now." }, { status: 502 });
-    const data: { output?: Array<{ content?: Array<{ type?: string; text?: string }> }> } = await response.json();
-    const answer = data.output?.flatMap(item => item.content ?? []).filter(item => item.type === "output_text").map(item => item.text ?? "").join("\n").trim();
+    const data: { success?:boolean; result?:{response?:string; choices?:Array<{message?:{content?:string}}>}} = await response.json();
+    const answer = data.success ? (data.result?.response || data.result?.choices?.[0]?.message?.content || "").trim() : "";
     if (!answer) return NextResponse.json({ error: "The model returned no answer." }, { status: 502 });
     return NextResponse.json({ answer }, {headers:{"Cache-Control":"private, no-store"}});
   } catch { return NextResponse.json({ error: "The AI request timed out or failed." }, { status: 502 }); }
