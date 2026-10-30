@@ -49,9 +49,10 @@ test("Aerotech AI screens use the real API rather than canned replies", () => {
     assert.match(source, /fetch\(['"]\/api\/ai\/ask['"]/);
   }
   const route=read("src/app/api/ai/ask/route.ts");
-  assert.match(route, /OPENAI_API_KEY/);
+  assert.match(route, /CLOUDFLARE_AI_TOKEN/);
+  assert.match(route, /CLOUDFLARE_AI_ACCOUNT_ID/);
   assert.match(route, /currentEmployer/);
-  assert.match(route, /api\.openai\.com\/v1\/responses/);
+  assert.match(route, /api\.cloudflare\.com\/client\/v4\/accounts\//);
 });
 
 test("employee directory and profile use matching IDs and source", () => {
