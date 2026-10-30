@@ -61,7 +61,7 @@ export default function Home() {
           __html: JSON.stringify(organisationSchema).replace(/</g, "\\u003c"),
         }}
       />
-      <section className="relative overflow-hidden border-b border-slate-200 bg-[#f5f8ff] px-5 py-14 sm:px-8 sm:py-20">
+      <section className="relative overflow-hidden border-b border-blue-100 bg-gradient-to-br from-[#f3f7ff] via-white to-[#edf4ff] px-5 py-16 sm:px-8 sm:py-24">
         <div
           className="pointer-events-none absolute -right-32 top-0 h-[540px] w-[540px] rounded-full border-[75px] border-blue-100/50"
           aria-hidden="true"
@@ -108,7 +108,7 @@ export default function Home() {
               </span>
             </div>
           </div>
-          <div className="rounded-[26px] border border-slate-200 bg-white p-6 shadow-[0_20px_65px_#06163f0b] sm:p-8">
+          <div className="rounded-[28px] border border-blue-100 bg-white p-6 shadow-[0_24px_70px_rgba(18,57,130,0.10)] sm:p-8">
             <div className="flex items-center justify-between border-b border-slate-100 pb-5">
               <span className="text-sm font-semibold">
                 A little more clarity.
@@ -143,7 +143,7 @@ export default function Home() {
               ].map(({ Icon, title, text }) => (
                 <div
                   key={title}
-                  className="flex gap-4 rounded-2xl bg-slate-50 p-4"
+                  className="flex gap-4 rounded-2xl border border-slate-100 bg-slate-50/80 p-4"
                 >
                   <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-blue-100 bg-white text-blue-800">
                     <Icon size={20} />
@@ -166,7 +166,7 @@ export default function Home() {
       </section>
       <section
         id="choose-your-path"
-        className="mx-auto max-w-7xl scroll-mt-40 px-5 py-16 sm:px-8"
+        className="mx-auto max-w-7xl scroll-mt-40 px-5 py-20 sm:px-8"
       >
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <div>
@@ -256,7 +256,7 @@ export default function Home() {
           )}
         </div>
       </section>
-      <section className="border-y border-slate-200 bg-slate-50 px-5 py-16 sm:px-8">
+      <section className="border-y border-slate-200 bg-[#f7f9fd] px-5 py-20 sm:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="max-w-2xl">
             <p className="text-xs font-semibold uppercase tracking-[.16em] text-blue-800">
@@ -295,7 +295,7 @@ export default function Home() {
                 text: "Bring tasks, meetings, learning and feedback into everyday work.",
               },
             ].map(({ Icon, title, text }) => (
-              <article key={title} className="aero-card">
+              <article key={title} className="aero-card transition-colors hover:border-blue-200">
                 <Icon size={22} className="text-blue-800" />
                 <h3 className="mt-5 font-semibold">{title}</h3>
                 <p className="mt-3 text-sm leading-7 text-slate-600">{text}</p>
