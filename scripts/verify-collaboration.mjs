@@ -286,7 +286,7 @@ for (const route of [
       ),
     );
   });
-await check("Combined command palette retains privacy navigation and permission-aware search",async()=>{await page.goto(origin+'/dashboard/employer/projects',{waitUntil:'networkidle'});await page.keyboard.press('Control+k');const dialog=page.getByRole('dialog',{name:'Search your workspace',exact:true});await dialog.waitFor();await dialog.getByRole('textbox').fill('Privacy');await dialog.getByRole('link',{name:'Privacy settings',exact:true}).click();await page.getByRole('heading',{name:'Privacy settings',exact:true}).waitFor();});
+await check("Combined command palette retains privacy navigation and permission-aware search",async()=>{await page.goto(origin+'/dashboard/employer/projects',{waitUntil:'networkidle'});await page.keyboard.press('Control+k');const dialog=page.getByRole('dialog',{name:'Search your workspace',exact:true});await dialog.waitFor();await dialog.getByRole('searchbox',{name:'Search',exact:true}).fill('Privacy');await dialog.getByRole('link',{name:'Privacy settings',exact:true}).click();await page.getByRole('heading',{name:'Privacy settings',exact:true}).waitFor();});
 const employee = await roleContext("employee"),
   ep = await employee.newPage();
 await check(
