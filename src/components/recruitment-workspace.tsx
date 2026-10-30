@@ -1,5 +1,6 @@
 "use client";
-import EmployerRecruitment from './employer-recruitment';
+import dynamic from 'next/dynamic';
+const EmployerRecruitment=dynamic(()=>import('./employer-recruitment'),{loading:()=> <p role="status">Loading recruitment…</p>});
 import {useRouter} from "next/navigation";
 import { useCallback, useState, type FormEvent } from 'react';
 import Link from 'next/link';
