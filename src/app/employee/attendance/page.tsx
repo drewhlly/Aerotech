@@ -16,7 +16,7 @@ export default function AttendancePage(){
  const stream=useRef<MediaStream|null>(null);
  const stopCamera=useCallback(()=>{stream.current?.getTracks().forEach(track=>track.stop());stream.current=null;setCameraOpen(false);},[]);
  const reload=useCallback(async()=>{const response=await fetch("/api/employee/attendance",{cache:"no-store"});const body=await response.json();if(!response.ok)throw new Error(body.error||"Attendance could not be loaded");const next=body as AttendanceResponse;setData(next);setSiteId(next.assignedSiteId||"");},[]);
- useEffect(()=>{void reload().catch(e=>setError(e instanceof Error?e.message:"Attendance unavailable"));return()=>{stream.current?.getTracks().forEach(track=>track.stop());};},[reload]);
+ useEffect(()=>{void Promise.resolve().then(reload).catch(e=>setError(e instanceof Error?e.message:"Attendance unavailable"));return()=>{stream.current?.getTracks().forEach(track=>track.stop());};},[reload]);
  const todayEvents=data?.events.filter(event=>String(event.work_date).slice(0,10)===data.today)||[];
  const clockedIn=todayEvents.some(event=>event.event_type==="clock_in");
  const clockedOut=todayEvents.some(event=>event.event_type==="clock_out");
