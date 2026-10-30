@@ -1,4 +1,5 @@
 import Link from "next/link";
+import CookieNotice from "@/components/cookie-notice";
 import {
   ArrowRight,
   BriefcaseBusiness,
@@ -55,6 +56,7 @@ const audiences = [
 export default function Home() {
   return (
     <main className="bg-white text-[#06163F]">
+      <CookieNotice/>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
