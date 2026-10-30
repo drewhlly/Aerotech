@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, type FormEvent } from 'react';
-import { ArrowRight, Bot, Lightbulb, Send, ShieldCheck, Sparkles } from 'lucide-react';
+import { ArrowRight, Lightbulb, Send, ShieldCheck, Sparkles } from 'lucide-react';
 
 type Status = 'loading' | 'ready' | 'unavailable' | 'error';
 const suggestions = [
@@ -62,7 +62,7 @@ export default function AIPage() {
 
       <section className="aero-card">
         <div className="flex items-start gap-4">
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-700"><Bot size={23} aria-hidden="true" /></span>
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-sm"><Sparkles size={23} aria-hidden="true" /></span>
           <div><h2 className="text-xl font-bold text-slate-900">How can I help?</h2><p className="mt-1 text-sm leading-6 text-slate-600">Ask about recruitment, onboarding, payroll or day-to-day HR.</p></div>
         </div>
 
@@ -78,7 +78,7 @@ export default function AIPage() {
             <button disabled={busy || status !== 'ready' || prompt.trim().length < 2} className="aero-button bg-blue-700 text-white disabled:cursor-not-allowed disabled:opacity-50"><Send size={16} aria-hidden="true" />{busy ? 'Preparing response…' : 'Ask Aerotech AI'}</button>
           </div>
         </form>
-        <p className="mt-5 flex items-start gap-2 text-xs leading-5 text-slate-600"><ShieldCheck size={16} className="mt-0.5 shrink-0" aria-hidden="true" /><span>Questions are processed by Cloudflare. Please avoid sharing sensitive personal information or passwords.</span></p>
+        <p className="mt-5 flex items-start gap-2 text-xs leading-5 text-slate-600"><ShieldCheck size={16} className="mt-0.5 shrink-0" aria-hidden="true" /><span>Please avoid sharing sensitive personal information or passwords.</span></p>
 
         {error && <p role="alert" className="mt-5 rounded-xl bg-red-50 p-4 text-sm text-red-800">{error}</p>}
         {busy && <p role="status" className="mt-5 text-sm text-slate-600">Preparing your response…</p>}
