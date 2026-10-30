@@ -46,7 +46,7 @@ test("applicant registration is free and submits to backend", () => {
 test("Aerotech AI screens use the real API rather than canned replies", () => {
   for (const path of ["src/app/dashboard/employer/ai/page.tsx", "src/components/aerotech-ui.tsx"]) {
     const source=read(path);
-    assert.match(source, /fetch\("\/api\/ai\/ask"/);
+    assert.match(source, /fetch\(['"]\/api\/ai\/ask['"]/);
   }
   const route=read("src/app/api/ai/ask/route.ts");
   assert.match(route, /OPENAI_API_KEY/);
