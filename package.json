@@ -14,6 +14,7 @@
     "test:collaboration:api": "node --experimental-test-module-mocks --import ./tests/helpers/ts-loader.mjs tests/collaboration-api.integration.mjs",
     "test:collaboration:browser": "node scripts/phase2-browser-suite.mjs",
     "verify:paystack:live": "node scripts/verify-paystack-live.mjs",
+    "test:payouts": "node --experimental-test-module-mocks --import ./tests/helpers/ts-loader.mjs tests/payout-api.integration.mjs",
     "test:billing": "node --experimental-test-module-mocks --import ./tests/helpers/ts-loader.mjs tests/subscription-billing.integration.mjs"
   },
   "repository": {

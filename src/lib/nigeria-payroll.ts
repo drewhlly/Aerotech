@@ -15,7 +15,9 @@ export function nigeriaPayroll(input:PayrollInput) {
  if(pensionEnabled&&pensionBase===0)throw Error("Basic, housing and transport required for pension");
  const employeePension=money(pensionEnabled?pensionBase*.08:0);
  const employerPension=money(pensionEnabled?pensionBase*.10:0);
- const nhf=money(nhfEnabled?basic*.025:0);
+ // Business Facilitation Act 2022, Schedule s45: 2.5% monthly income.
+ // Private-sector participation must be evidenced before HR enables NHF.
+ const nhf=money(nhfEnabled?monthlyGross*.025:0);
  const annualTaxable=Math.max(0,monthlyGross*12-employeePension*12-nhf*12-Math.min(annualRentRelief*0.20,500000));
  const bands:[[number,number],...[number,number][]]=[[800000,0],[2200000,.15],[9000000,.18],[13000000,.21],[25000000,.23],[Infinity,.25]];
  let remaining=annualTaxable,annualTax=0;
