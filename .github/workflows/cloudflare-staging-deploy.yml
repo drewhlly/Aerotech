@@ -62,7 +62,7 @@ jobs:
         run: |
           set -euo pipefail
           base='https://aerotech-staging.aerotechhr-staging.workers.dev'
-          for route in / /careers /pricing /about; do
+          for route in / /auth/login /careers /pricing /about; do
             status=$(curl --location --silent --output /dev/null --write-out '%{http_code}' --max-time 30 "$base$route")
             echo "Public route $route: HTTP $status"
             test "$status" = 200
