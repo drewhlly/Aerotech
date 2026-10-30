@@ -181,3 +181,4 @@ progress::-webkit-progress-bar{background:#e2e8f0;border-radius:8px}progress::-w
 .recruit-search input::placeholder{color:var(--aero-muted);opacity:1}
 
 .recruit-workspace #recruit-candidates>.aero-card{border:0;background:transparent;box-shadow:none;padding:24px 0}
+[data-theme="dark"] .recruit-candidate-name{color:#93c5fd}

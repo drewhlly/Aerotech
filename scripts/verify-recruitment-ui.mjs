@@ -21,6 +21,9 @@ export async function verifyRecruitmentUI(context,jobId,applicationId){
    const data=await(await context.request.get('/api/ats?view=employer')).json(),candidate=data.applications.find(a=>a.id===applicationId);
    assert.equal(candidate.stage,'interview');assert.ok(candidate.interview_room_id);
   }else{await page.keyboard.press('Escape');await dialog.waitFor({state:'hidden'})}
+  await page.evaluate(()=>{document.documentElement.dataset.theme='dark'});
+  const dark=await new AxeBuilder({page}).include('main').analyze();assert.deepEqual(dark.violations.filter(v=>['critical','serious'].includes(v.impact)).map(v=>v.id),[]);
+  await page.evaluate(()=>{document.documentElement.dataset.theme='light'});
   await page.close();
  }
  console.log('PASS modern recruitment: mobile/desktop filtered pipeline, isolated CV access, guarded employer checks, automatic shortlist, interview room creation, panels close after save and no serious/critical axe findings.');
