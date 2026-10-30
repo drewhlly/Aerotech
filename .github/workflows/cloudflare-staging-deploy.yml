@@ -48,3 +48,11 @@ jobs:
         shell: bash
         run: |
           npx wrangler deployments list --name aerotech-staging
+
+      - name: Smoke test deployed staging homepage
+        shell: bash
+        run: |
+          url='https://aerotech-staging.aerotechhr-staging.workers.dev/'
+          code=$(curl --location --silent --output /dev/null --write-out '%{http_code}' --max-time 30 "$url")
+          echo "Staging homepage HTTP status: $code"
+          test "$code" = 200
