@@ -1,4 +1,5 @@
 "use client";
+import EmployerRecruitment from './employer-recruitment';
 import {useRouter} from "next/navigation";
 import { useCallback, useState, type FormEvent } from 'react';
 import Link from 'next/link';
@@ -14,7 +15,9 @@ import {useFormDraft} from './use-form-draft';
 import {useEventRefresh,useExpiryClock} from './use-event-refresh';
 import {eventVisible,vacancyEnd,vacancyVisible} from '@/lib/event-display';
 async function api(body:unknown){const r=await fetch('/api/ats',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json();if(!r.ok)throw Error(d.error);return d;}
-export default function RecruitmentWorkspace({mode='employer',jobId,applicationId,view='all'}:{mode?:'employer'|'applicant'|'jobs';jobId?:string;applicationId?:string;view?:'all'|'jobs'|'candidates'|'offers'}){
+type RecruitmentProps={initialJob?:string;mode?:'employer'|'applicant'|'jobs';jobId?:string;applicationId?:string;view?:'all'|'jobs'|'candidates'|'offers'};
+export default function RecruitmentWorkspace(props:RecruitmentProps){return !props.mode||props.mode==='employer'?<EmployerRecruitment initialJob={props.initialJob} jobId={props.jobId} applicationId={props.applicationId} view={props.view}/>:<LegacyRecruitmentWorkspace {...props}/>}
+function LegacyRecruitmentWorkspace({mode='employer',jobId,applicationId,view='all'}:{mode?:'employer'|'applicant'|'jobs';jobId?:string;applicationId?:string;view?:'all'|'jobs'|'candidates'|'offers'}){
  const [vacancyView,setVacancyView]=useState<'active'|'drafts'|'history'>('active');
  const [data,setData]=useState<{jobs:Job[];applications:Application[]}|null>(null),[error,setError]=useState(''),[search,setSearch]=useState(''),[filter,setFilter]=useState('all'),[busy,setBusy]=useState(false),[notice,setNotice]=useState('');
  const load=useCallback(async()=>{const r=await fetch('/api/ats?'+new URLSearchParams({view:mode,vacancies:vacancyView,...(jobId?{job_id:jobId}:{})}),{cache:'no-store'});const d=await r.json();if(!r.ok)throw Error(d.error);setData(d)},[mode,vacancyView,jobId]);
