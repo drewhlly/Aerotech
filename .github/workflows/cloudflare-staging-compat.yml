@@ -1,0 +1,24 @@
+name: Cloudflare staging compatibility
+on:
+  push:
+    branches: [infra/cloudflare-staging-20261030]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  adapter-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install staging dependencies without changing the production lockfile
+        run: npm install --no-audit --no-fund --package-lock=false
+      - name: Compile Next.js
+        run: npm run build
+      - name: Adapt to Cloudflare Worker
+        run: npm run cf:build
+      - name: Dry-run Worker bundle (no credentials or publishing)
+        run: npx wrangler deploy --dry-run -c wrangler.aerotech-staging.toml

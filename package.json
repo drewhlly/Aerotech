@@ -16,7 +16,10 @@
     "verify:paystack:live": "node scripts/verify-paystack-live.mjs",
     "test:events": "node --experimental-test-module-mocks --import ./tests/helpers/ts-loader.mjs tests/event-expiry.integration.mjs",
     "test:payouts": "node --experimental-test-module-mocks --import ./tests/helpers/ts-loader.mjs tests/payout-api.integration.mjs",
-    "test:billing": "node --experimental-test-module-mocks --import ./tests/helpers/ts-loader.mjs tests/subscription-billing.integration.mjs"
+    "test:billing": "node --experimental-test-module-mocks --import ./tests/helpers/ts-loader.mjs tests/subscription-billing.integration.mjs",
+    "cf:build": "NODE_ENV=production opennextjs-cloudflare build --skipWranglerConfigCheck",
+    "cf:preview": "opennextjs-cloudflare preview",
+    "cf:deploy:staging": "wrangler deploy -c wrangler.aerotech-staging.toml"
   },
   "repository": {
     "type": "git",
@@ -56,7 +59,10 @@
     "lighthouse": "^13.5.0",
     "playwright": "1.64.1",
     "tailwindcss": "^4.3.3",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "@opennextjs/cloudflare": "1.20.13",
+    "wrangler": "^4.45.0",
+    "pg-cloudflare": "^1.0.0"
   },
   "type": "module"
 }
