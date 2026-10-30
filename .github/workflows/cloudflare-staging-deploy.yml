@@ -1,0 +1,36 @@
+name: Deploy Cloudflare staging
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: cloudflare-staging
+    timeout-minutes: 30
+    env:
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+      PAYSTACK_SECRET_KEY: ${{ secrets.STAGING_PAYSTACK_SECRET_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Require isolated deployment credentials
+        shell: bash
+        run: |
+          test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo 'Missing Cloudflare account ID'; exit 1; }
+          test -n "$CLOUDFLARE_API_TOKEN" || { echo 'Missing Cloudflare API token'; exit 1; }
+          test -n "$DATABASE_URL" || { echo 'Missing isolated staging database'; exit 1; }
+          case "$DATABASE_URL" in *spring-fire-35269323*) ;; *) echo 'Database URL must be reviewed for isolated staging origin'; exit 1;; esac
+          test -z "$PAYSTACK_SECRET_KEY" || { case "$PAYSTACK_SECRET_KEY" in sk_test_*) ;; *) echo 'Only Paystack test credentials allowed'; exit 1;; esac; }
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund --package-lock=false
+      - name: Validate staging migration ledger
+        run: npm run db:migrate
+      - name: Build and bundle Worker
+        run: npm run cf:build
+      - name: Deploy only to workers.dev staging Worker
+        run: npx wrangler deploy -c wrangler.aerotech-staging.toml
