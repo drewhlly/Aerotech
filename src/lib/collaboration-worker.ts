@@ -1,3 +1,4 @@
+import {activeMeeting,activeCollaborationNotice} from './notification-policy';
 import type { PoolClient } from "pg";
 import { db } from "./employer-session";
 import { transaction, enqueue, notify, type Actor } from "./collaboration";
@@ -128,8 +129,16 @@ async function perform(c: PoolClient, job: Job) {
           [a.tenant, recipient, event],
         )
       ).rows[0];
+    let expiresAt: Date | null=null;
+    if(event==='meeting'){
+      const room=String(b.href||'').match(/\/meet\/([0-9a-f-]{36})$/i)?.[1];
+      if(!room)return;
+      const live=await c.query(`SELECT m.starts_at+m.duration_minutes*INTERVAL '1 minute' AS expires_at FROM meet_rooms m WHERE m.employer_id=$1 AND m.id=$2 AND (${activeMeeting})`,[a.tenant,room]);
+      if(!live.rows.length)return;
+      expiresAt=live.rows[0].expires_at;
+    }
     await c.query(
-      "INSERT INTO collaboration_notifications(employer_id,actor,event,title,body,href,source_key,in_app) VALUES($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT DO NOTHING",
+      "INSERT INTO collaboration_notifications(employer_id,actor,event,title,body,href,source_key,in_app,expires_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) ON CONFLICT DO NOTHING",
       [
         a.tenant,
         recipient,
@@ -139,6 +148,7 @@ async function perform(c: PoolClient, job: Job) {
         b.href,
         job.id,
         pref?.in_app !== false,
+        expiresAt,
       ],
     );
     if (pref?.email !== false && (!pref || pref.digest === "none"))
@@ -152,6 +162,10 @@ async function perform(c: PoolClient, job: Job) {
     return;
   }
   if (job.kind === "email") {
+    if(b.event==='meeting'){
+      const room=String(b.href||'').match(/\/meet\/([0-9a-f-]{36})$/i)?.[1];
+      if(!room||!(await c.query(`SELECT 1 FROM meet_rooms m WHERE m.employer_id=$1 AND m.id=$2 AND (${activeMeeting})`,[a.tenant,room])).rows.length)return;
+    }
     const pref = (
       await c.query(
         "SELECT email,digest FROM notification_preferences WHERE employer_id=$1 AND actor=$2 AND event=$3",
@@ -190,7 +204,7 @@ async function perform(c: PoolClient, job: Job) {
     if (!enabled.length) return;
     const records = (
       await c.query(
-        "SELECT title,body FROM collaboration_notifications WHERE employer_id=$1 AND actor=$2 AND event=ANY($3::text[]) AND created_at>NOW()-$4*INTERVAL '1 day' ORDER BY created_at DESC LIMIT 100",
+        `SELECT n.title,n.body FROM collaboration_notifications n WHERE n.employer_id=$1 AND n.actor=$2 AND n.event=ANY($3::text[]) AND n.created_at>NOW()-$4*INTERVAL '1 day' AND (${activeCollaborationNotice}) ORDER BY n.created_at DESC LIMIT 100`,
         [a.tenant, recipient, enabled, b.period === "weekly" ? 7 : 1],
       )
     ).rows;

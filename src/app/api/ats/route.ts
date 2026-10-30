@@ -1,3 +1,4 @@
+import {activeMeeting} from '@/lib/notification-policy';
 import {assertEmployeeCapacity} from '@/lib/subscription-capacity';
 import {publishJob,expireJobs} from '@/lib/job-publishing';
 import {jobStates,JobPolicyError,JobRateLimitError} from '@/lib/job-policy';
@@ -22,7 +23,7 @@ export async function GET(request:Request){
  const jobs=await pool.query(`SELECT j.*,e.company_name FROM ats_jobs j JOIN employer_accounts e ON e.id=j.employer_id WHERE ${employer?'j.employer_id=$1':"j.status='published' AND j.expires_at>NOW() AND (j.deadline IS NULL OR j.deadline>NOW())"} ORDER BY j.created_at DESC`,employer?[employer]:[]);
  if(!employer)for(const j of jobs.rows)j.questions=j.questions.map((q:Question)=>({prompt:q.prompt,options:q.options}));
  let applications:Record<string,unknown>[]=[];
- if(employer||applicant){const r=await pool.query(`SELECT a.*,(SELECT s.id FROM workforce_submissions s WHERE s.application_id=a.id AND s.title='Application CV' ORDER BY s.created_at DESC LIMIT 1) AS cv_document_id,j.title,j.questions,e.company_name,p.first_name,p.last_name,p.email,COALESCE((SELECT jsonb_agg(jsonb_build_object('stage',v.stage,'message',v.message,'created_at',v.created_at) ORDER BY v.created_at) FROM ats_events v WHERE v.application_id=a.id),'[]') AS events FROM ats_applications a JOIN ats_jobs j ON j.id=a.job_id JOIN employer_accounts e ON e.id=j.employer_id JOIN applicant_accounts p ON p.id=a.applicant_id WHERE ${employer?'j.employer_id=$1':'a.applicant_id=$1'} ORDER BY a.created_at DESC`,[employer||applicant]);applications=r.rows;
+ if(employer||applicant){const r=await pool.query(`SELECT a.*,m.starts_at+m.duration_minutes*INTERVAL '1 minute' AS interview_end_at,COALESCE((${activeMeeting}),FALSE) AS interview_active,(SELECT s.id FROM workforce_submissions s WHERE s.application_id=a.id AND s.title='Application CV' ORDER BY s.created_at DESC LIMIT 1) AS cv_document_id,j.title,j.questions,e.company_name,p.first_name,p.last_name,p.email,COALESCE((SELECT jsonb_agg(jsonb_build_object('stage',v.stage,'message',v.message,'created_at',v.created_at) ORDER BY v.created_at) FROM ats_events v WHERE v.application_id=a.id),'[]') AS events FROM ats_applications a JOIN ats_jobs j ON j.id=a.job_id JOIN employer_accounts e ON e.id=j.employer_id JOIN applicant_accounts p ON p.id=a.applicant_id LEFT JOIN meet_rooms m ON m.id=a.interview_room_id AND m.employer_id=j.employer_id WHERE ${employer?'j.employer_id=$1':'a.applicant_id=$1'} ORDER BY a.created_at DESC`,[employer||applicant]);applications=r.rows;
  if(!employer)for(const a of applications){a.questions=(a.questions as Question[]).map(q=>({prompt:q.prompt,options:q.options}));delete a.answers;}}
  return NextResponse.json({jobs:jobs.rows,applications});
  }catch{return bad('Recruitment data unavailable. Please retry.',503)}finally{await pool.end()}
@@ -70,7 +71,7 @@ export async function POST(request:Request){
  await c.query('INSERT INTO workforce_submissions(id,employer_id,applicant_id,application_id,title,filename,mime,content) VALUES($1,$2,$3,$4,$5,$6,$7,$8)',[randomUUID(),job.rows[0].employer_id,applicant,id,'Application CV',b.cv_filename.slice(0,160),'application/pdf',cv]);
  await c.query('COMMIT');return NextResponse.json({id},{status:201});
  }
- const record=await c.query('SELECT a.*,j.employer_id,j.questions,j.title,j.department,j.location,p.first_name,p.last_name,p.email,p.phone FROM ats_applications a JOIN ats_jobs j ON j.id=a.job_id JOIN applicant_accounts p ON p.id=a.applicant_id WHERE a.id=$1 FOR UPDATE OF a',[b.id]);
+ const record=await c.query('SELECT a.*,j.employer_id,j.questions,j.title,j.department,j.location,p.first_name,p.last_name,p.email,p.phone FROM ats_applications a JOIN ats_jobs j ON j.id=a.job_id JOIN applicant_accounts p ON p.id=a.applicant_id LEFT JOIN meet_rooms m ON m.id=a.interview_room_id AND m.employer_id=j.employer_id WHERE a.id=$1 FOR UPDATE OF a',[b.id]);
  const a=record.rows[0];if(!a||employer&&a.employer_id!==employer||applicant&&a.applicant_id!==applicant)return bad('Application not found',404);
  let stage=a.stage;let message='';
  if(b.action==='accept_offer'){if(!applicant||a.stage!=='offer'||b.confirm!==true)return bad('A confirmed offer is required',409);stage='hired';message='Applicant accepted the employer offer. Onboarding started.';

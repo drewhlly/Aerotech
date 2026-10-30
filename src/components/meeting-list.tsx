@@ -15,6 +15,8 @@ import CollaborationDialog from "./collaboration-dialog";
 import { api } from "./collaboration-client";
 import ResourcePicker from "./resource-picker";
 import { formatDate } from "@/lib/i18n";
+import {useEventRefresh,useExpiryClock} from './use-event-refresh';
+import {eventVisible,meetingEnd} from '@/lib/event-display';
 type Meeting = {
   id: string;
   title: string;
@@ -40,6 +42,7 @@ export default function Meetings() {
     base = workspaceHomes[role] + "/meet",
     employer = role === "employer";
   const [meetings, setMeetings] = useState<Meeting[]>([]),
+    [history,setHistory]=useState(false),
     [people, setPeople] = useState<Person[]>([]),
     [groups, setGroups] = useState<Group[]>([]),
     [chosen, setChosen] = useState<Group[]>([]),
@@ -59,17 +62,14 @@ export default function Meetings() {
     [startsAt, setStartsAt] = useState("");
   const reload = useCallback(async () => {
     const d = await api<{ meetings: Meeting[] }>(
-      "/api/meet?offset=" + offset + "&limit=20",
+      "/api/meet?offset=" + offset + "&limit=20&history="+(history?"1":"0"),
     );
     setMeetings(d.meetings);
-  }, [offset]);
-  useEffect(() => {
-    void Promise.resolve()
-      .then(reload)
-      .catch((e) => setMessage(e.message));
-    const t = setInterval(() => void reload().catch(() => {}), 30000);
-    return () => clearInterval(t);
-  }, [reload, setMessage]);
+  }, [offset,history]);
+  const refresh=useCallback(async()=>{try{await reload()}catch(e){setMessage((e as Error).message)}},[reload,setMessage]);
+  useEventRefresh(refresh);
+  const now=useExpiryClock(meetings.map(meetingEnd));
+  const visibleMeetings=history?meetings:meetings.filter(m=>m.status==='scheduled'&&m.joinState!=='expired'&&eventVisible(meetingEnd(m),now));
   useEffect(() => {
     if (!employer) return;
     const c = new AbortController(),
@@ -438,7 +438,8 @@ export default function Meetings() {
       )}
       <section className="space-y-3">
         <h2 className="text-lg font-bold">My meetings</h2>
-        {meetings.map((m) => (
+        <div className="flex gap-3"><button className="aero-button border" aria-pressed={!history} onClick={()=>{setHistory(false);setOffset(0)}}>Upcoming & ongoing</button><button className="aero-button border" aria-pressed={history} onClick={()=>{setHistory(true);setOffset(0)}}>Past meetings</button></div>
+        {visibleMeetings.map((m) => (
           <article key={m.id} className="aero-card">
             <h3 className="font-bold">{m.title}</h3>
             <p className="mt-2 text-sm">
@@ -450,7 +451,7 @@ export default function Meetings() {
             </p>
             <p className="mt-2 text-sm">{m.agenda}</p>
             <div className="mt-4 flex flex-wrap gap-3">
-              {m.joinState === "open" ? (
+              {!history && m.joinState === "open" ? (
                 <Link
                   href={base + "/" + m.id}
                   className="aero-button bg-blue-700 text-white"
@@ -459,7 +460,7 @@ export default function Meetings() {
                 </Link>
               ) : (
                 <span className="py-3 text-sm text-slate-600">
-                  {m.joinState === "expired"
+                  {history || m.joinState === "expired"
                     ? "Ended / cancelled · no join link"
                     : "Join opens 15 minutes before start"}
                 </span>
@@ -472,7 +473,7 @@ export default function Meetings() {
                   Notes & attendees
                 </button>
               )}
-              {role === "employee" &&
+              {!history && role === "employee" &&
                 ["Accept", "Decline", "Maybe"].map((r) => (
                   <button
                     key={r}
@@ -497,8 +498,8 @@ export default function Meetings() {
             {m.notes && <p className="mt-3 text-sm">{m.notes}</p>}
           </article>
         ))}
-        {!meetings.length && (
-          <p className="aero-card">No meetings scheduled.</p>
+        {!visibleMeetings.length && (
+          <p className="aero-card">{history?"No past meetings.":"No upcoming or ongoing meetings."}</p>
         )}
         <div className="flex gap-3">
           <button

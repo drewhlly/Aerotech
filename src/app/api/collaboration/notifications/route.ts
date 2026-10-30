@@ -1,3 +1,4 @@
+import {activeCollaborationNotice,collaborationNoticeExpiry} from '@/lib/notification-policy';
 import {
   actor,
   transaction,
@@ -26,7 +27,7 @@ export async function GET(req: Request) {
       respond({
         records: (
           await c.query(
-            "SELECT * FROM collaboration_notifications WHERE employer_id=$1 AND actor=$2 AND in_app AND ($5::boolean AND (read_at IS NOT NULL OR expires_at<=NOW()) OR NOT $5::boolean AND read_at IS NULL AND (expires_at IS NULL OR expires_at>NOW())) ORDER BY created_at DESC,id LIMIT $3 OFFSET $4",
+            `SELECT n.*,(${collaborationNoticeExpiry}) AS expires_at FROM collaboration_notifications n WHERE n.employer_id=$1 AND n.actor=$2 AND n.in_app AND ($5::boolean AND NOT (${activeCollaborationNotice}) OR NOT $5::boolean AND (${activeCollaborationNotice})) ORDER BY n.created_at DESC,n.id LIMIT $3 OFFSET $4`,
             [a.tenant, a.id, limit, offset,new URL(req.url).searchParams.get("history")==="1"],
           )
         ).rows,
@@ -36,9 +37,10 @@ export async function GET(req: Request) {
             [a.tenant, a.id],
           )
         ).rows,
+        nextExpiry: (await c.query(`SELECT MIN(${collaborationNoticeExpiry}) AS expiry FROM collaboration_notifications n WHERE n.employer_id=$1 AND n.actor=$2 AND n.in_app AND (${activeCollaborationNotice})`,[a.tenant,a.id])).rows[0].expiry,
         unread: (
           await c.query(
-            "SELECT count(*)::int count FROM collaboration_notifications WHERE employer_id=$1 AND actor=$2 AND in_app AND read_at IS NULL AND (expires_at IS NULL OR expires_at>NOW())",
+            `SELECT count(*)::int count FROM collaboration_notifications n WHERE n.employer_id=$1 AND n.actor=$2 AND n.in_app AND (${activeCollaborationNotice})`,
             [a.tenant, a.id],
           )
         ).rows[0].count,
