@@ -56,3 +56,19 @@ jobs:
           code=$(curl --location --silent --output /dev/null --write-out '%{http_code}' --max-time 30 "$url")
           echo "Staging homepage HTTP status: $code"
           test "$code" = 200
+
+      - name: Verify public pages and protected routes
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://aerotech-staging.aerotechhr-staging.workers.dev'
+          for route in / /careers /pricing /about; do
+            status=$(curl --location --silent --output /dev/null --write-out '%{http_code}' --max-time 30 "$base$route")
+            echo "Public route $route: HTTP $status"
+            test "$status" = 200
+          done
+          for route in /dashboard/employer /dashboard/employee /dashboard/applicant /api/employees; do
+            status=$(curl --silent --output /dev/null --write-out '%{http_code}' --max-time 30 "$base$route")
+            echo "Protected route $route (anonymous): HTTP $status"
+            case "$status" in 301|302|303|307|308|401|403) ;; *) echo 'Unexpected anonymous access response'; exit 1 ;; esac
+          done
