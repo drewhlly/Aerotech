@@ -34,3 +34,15 @@ jobs:
         run: npm run cf:build
       - name: Deploy only to workers.dev staging Worker
         run: npx wrangler deploy -c wrangler.aerotech-staging.toml
+
+      - name: Install database URL as encrypted Worker secret
+        shell: bash
+        run: printf '%s' "$DATABASE_URL" | npx wrangler secret put DATABASE_URL --name aerotech-staging
+      - name: Configure test-only billing secret if provided
+        if: env.PAYSTACK_SECRET_KEY != ''
+        shell: bash
+        run: printf '%s' "$PAYSTACK_SECRET_KEY" | npx wrangler secret put PAYSTACK_SECRET_KEY --name aerotech-staging
+      - name: Verify staging Worker exists and is reachable
+        shell: bash
+        run: |
+          npx wrangler deployments list --name aerotech-staging
