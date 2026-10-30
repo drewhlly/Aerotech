@@ -50,4 +50,4 @@ export async function proxy(req:NextRequest){
  }
  return forward(req);
 }
-export const config={matcher:['/((?!$|_next/static|_next/image|favicon.ico|sw.js|offline.html|manifest.webmanifest|app-icons/|brand/|sitemap.xml|robots.txt).*)']};
+export const config={matcher:['/((?!$|auth/|careers(?:/|$)|pricing(?:/|$)|about(?:/|$)|contact(?:/|$)|solutions(?:/|$)|privacy(?:/|$)|terms(?:/|$)|install(?:/|$)|cookies(?:/|$)|_next/static|_next/image|favicon.ico|sw.js|offline.html|manifest.webmanifest|app-icons/|brand/|sitemap.xml|robots.txt).*)']};
