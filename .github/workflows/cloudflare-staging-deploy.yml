@@ -1,6 +1,8 @@
 name: Deploy Cloudflare staging
 on:
   workflow_dispatch:
+  push:
+    branches: [infra/cloudflare-staging-20261030]
 permissions:
   contents: read
 jobs:
