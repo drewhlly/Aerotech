@@ -1,0 +1,2 @@
+'use client';
+export async function downloadReport(url:string,filename:string){const r=await fetch(url,{cache:'no-store'});if(!r.ok){let message='Report unavailable. Please try again.';try{message=(await r.json()).error||message}catch{}throw Error(message)}const blob=await r.blob(),link=document.createElement('a'),objectUrl=URL.createObjectURL(blob);link.href=objectUrl;link.download=filename;link.click();setTimeout(()=>URL.revokeObjectURL(objectUrl),1000)}
