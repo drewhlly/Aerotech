@@ -11,7 +11,8 @@ export default function CollaborationSearch({ role,navigation=[] }: { role: Work
     [records, setRecords] = useState<
       { id: string; title: string; kind: string; href: string }[]
     >([]),
-    [message, setMessage] = useState("");
+    [message, setMessage] = useState(""),
+    [loading, setLoading] = useState(true);
   useEffect(() => {
     const fn = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "k") {
@@ -35,10 +36,11 @@ export default function CollaborationSearch({ role,navigation=[] }: { role: Work
           )
             .then((d) => {
               setRecords(d.records.filter((r) => linkAllowed(role, r.href)));
+              setLoading(false);
               setMessage("");
             })
             .catch((e) => {
-              if (e.name !== "AbortError") setMessage(e.message);
+              if (e.name !== "AbortError") { setMessage(e.message); setLoading(false); }
             }),
         250,
       );
@@ -47,12 +49,13 @@ export default function CollaborationSearch({ role,navigation=[] }: { role: Work
       c.abort();
     };
   }, [open, q, role]);
+  const matchingNavigation=navigation.filter(n=>n.label.toLowerCase().includes(q.toLowerCase())&&linkAllowed(role,n.href));
   if (!["employee", "employer"].includes(role)) return null;
   return (
     <>
       <button
         className="aero-button border text-sm"
-        onClick={() => setOpen(true)}
+        onClick={() => { setLoading(true); setOpen(true); }}
         aria-label="Search workspace, Control or Command K"
       >
         <Search aria-hidden="true" size={20} className="sm:hidden"/><span className="hidden sm:inline">Search</span>{" "}
@@ -70,13 +73,15 @@ export default function CollaborationSearch({ role,navigation=[] }: { role: Work
             <input
               className="aero-input mt-2"
               value={q}
-              onChange={(e) => setQ(e.target.value)}
+              onChange={(e) => { setLoading(true); setRecords([]); setMessage(""); setQ(e.target.value); }}
               placeholder="Projects, tasks, shared documents…"
             />
           </label>
-          {message && <p role="alert">{message}</p>}
+          {message && <p role="alert" className="mt-3 text-sm text-red-700">{message}</p>}
+          {loading && <p role="status" className="mt-3 text-sm text-slate-600">Searching…</p>}
+          {!loading&&!message&&!matchingNavigation.length&&!records.length&&<p className="mt-4 text-sm text-slate-600">No results found. Try a different search.</p>}
           <ul className="mt-4 space-y-2">
-            {navigation.filter(n=>n.label.toLowerCase().includes(q.toLowerCase())&&linkAllowed(role,n.href)).map(n=><li key={n.href}><Link className="block rounded-xl border p-3 text-sm hover:bg-blue-50" href={n.href} onClick={()=>setOpen(false)}>{n.label}</Link></li>)}
+            {matchingNavigation.map(n=><li key={n.href}><Link className="block rounded-xl border p-3 text-sm hover:bg-blue-50" href={n.href} onClick={()=>setOpen(false)}>{n.label}</Link></li>)}
             {records.map((r) => (
               <li key={r.kind + r.id}>
                 <Link
