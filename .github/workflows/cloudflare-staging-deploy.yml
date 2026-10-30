@@ -24,7 +24,7 @@ jobs:
           test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo 'Missing Cloudflare account ID'; exit 1; }
           test -n "$CLOUDFLARE_API_TOKEN" || { echo 'Missing Cloudflare API token'; exit 1; }
           test -n "$DATABASE_URL" || { echo 'Missing isolated staging database'; exit 1; }
-          case "$DATABASE_URL" in *spring-fire-35269323*) ;; *) echo 'Database URL must be reviewed for isolated staging origin'; exit 1;; esac
+          case "$DATABASE_URL" in */aerotech_staging\?*|*/aerotech_staging) ;; *) echo 'Expected isolated staging database'; exit 1;; esac
           test -z "$PAYSTACK_SECRET_KEY" || { case "$PAYSTACK_SECRET_KEY" in sk_test_*) ;; *) echo 'Only Paystack test credentials allowed'; exit 1;; esac; }
       - name: Install dependencies
         run: npm install --no-audit --no-fund --package-lock=false
