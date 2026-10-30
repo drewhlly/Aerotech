@@ -35,22 +35,30 @@ try{
   await expiryPage.clock.fastForward(60001);
   await expiryPage.getByRole('heading',{name:'Birthday expiry fixture',exact:true}).waitFor({state:'hidden'});
   const birthdayExpiry=new Date(frozen.getTime()+120000).toISOString();
-  await expiryPage.route('**/api/hr/birthdays',r=>r.fulfill({json:{birthdays:[],hrAlerts:[{first_name:'Today fixture',last_name:'Person',expires_at:birthdayExpiry}],tomorrow:[{first_name:'Tomorrow fixture',last_name:'Person',department:'HR',expires_at:birthdayExpiry}]}}));
+  await expiryPage.route('**/api/hr/birthdays',r=>r.fulfill({json:{birthdays:[{first_name:'Birthday directory fixture',last_name:'Person',department:'HR',celebration_date:frozen.toISOString().slice(0,10),expires_at:birthdayExpiry}],hrAlerts:[],tomorrow:[]}}));
   await expiryPage.goto('/dashboard/employer/hr/birthdays');
-  await expiryPage.getByRole('heading',{name:'HR birthday reminders',exact:true}).waitFor();
-  await expiryPage.getByRole('heading',{name:'Tomorrow’s birthdays',exact:true}).waitFor();
+  await expiryPage.getByRole('heading',{name:'Birthday directory fixture Person',exact:true}).waitFor();
   await expiryPage.clock.fastForward(60001);
-  await expiryPage.getByRole('heading',{name:'HR birthday reminders',exact:true}).waitFor({state:'hidden'});
-  await expiryPage.getByRole('heading',{name:'Tomorrow’s birthdays',exact:true}).waitFor({state:'hidden'});
+  await expiryPage.getByRole('heading',{name:'Birthday directory fixture Person',exact:true}).waitFor({state:'hidden'});
   const meetingExpiry=new Date(frozen.getTime()+180000).toISOString();
   await expiryPage.route('**/api/meet?**',r=>r.fulfill({json:{meetings:[{id:randomUUID(),title:'Meeting expiry fixture',starts_at:new Date(Date.parse(meetingExpiry)-3600000).toISOString(),duration_minutes:60,timezone:'Africa/Lagos',joinState:'open',status:'scheduled'}]}}));
   await expiryPage.goto('/dashboard/employer/meet');
   await expiryPage.getByRole('heading',{name:'Meeting expiry fixture',exact:true}).waitFor();
   await expiryPage.clock.fastForward(60001);
   await expiryPage.getByRole('heading',{name:'Meeting expiry fixture',exact:true}).waitFor({state:'hidden'});
+  const vacancyExpiry=new Date(frozen.getTime()+240000).toISOString();
+  const fixture={id:randomUUID(),title:'Vacancy expiry fixture',company_name:'Disposable company',status:'published',expires_at:vacancyExpiry,deadline:null,location:'Lagos',country:'Nigeria',department:'HR',employment_type:'Full-time',description:'Disposable vacancy',requirements:'Test only',questions:[]};
+  await expiryPage.route('**/api/ats?**',r=>r.fulfill({json:{jobs:[fixture,{...fixture,id:randomUUID(),title:'Expired vacancy fixture',expires_at:new Date(frozen.getTime()-60000).toISOString(),status:'expired'}],applications:[]}}));
+  await expiryPage.goto('/dashboard/employer/recruitment/jobs');
+  await expiryPage.getByRole('heading',{name:'Vacancy expiry fixture',exact:true}).waitFor();
+  assert.equal(await expiryPage.getByRole('heading',{name:'Expired vacancy fixture',exact:true}).count(),0);
+  await expiryPage.clock.fastForward(60001);
+  await expiryPage.getByRole('heading',{name:'Vacancy expiry fixture',exact:true}).waitFor({state:'hidden'});
+  await expiryPage.getByRole('button',{name:'Vacancy history',exact:true}).click();
+  await expiryPage.getByRole('heading',{name:'Expired vacancy fixture',exact:true}).waitFor();
   await expiryPage.close();
  }
- passed('Birthday notices, birthday reminder panels and ended meetings disappear at expiry without reload on mobile and desktop');
+ passed('Birthday page entries, active vacancies, notices and ended meetings disappear at expiry without reload on mobile and desktop');
 // A loading boundary may stream HTTP 200 before notFound resolves; verify the rendered denial and noindex as well.
  for(const path of ['/dashboard/employer/recruitment/jobs/'+ '-'.repeat(36),'/dashboard/employer/recruitment/candidates/'+randomUUID()]){const missing=await employer.newPage();const response=await missing.goto(path);assert.ok([200,404].includes(response.status()));await missing.getByRole('heading',{name:'Page not found',exact:true}).waitFor();assert.ok(await missing.locator('meta[name="robots"][content*="noindex"]').count());assert.equal(await missing.getByRole('heading',{name:'Your vacancies',exact:true}).count(),0);await missing.close()}
  const other=await context();const otherAccount=await call(other,'/api/auth/signup/employer',{companyName:'Other Verification Company',companyEmail:'other-fixture@example.invalid',firstName:'Other',lastName:'Owner',phone:'08000000000',country:'Nigeria',password},201);await pool.query("INSERT INTO company_subscriptions(employer_id,plan,status,currency,paid_until,reference) VALUES($1,'business','active','NGN',NOW()+INTERVAL '1 year',$2)",[otherAccount.employerId,'disposable-ci-'+otherAccount.employerId]);
