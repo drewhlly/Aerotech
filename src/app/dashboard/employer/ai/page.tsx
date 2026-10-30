@@ -1,152 +1,20 @@
-"use client";
+'use client';
+import {useEffect,useState,type FormEvent} from 'react';
+import {Bot,CheckCircle2,Lightbulb,LockKeyhole,Send,Sparkles} from 'lucide-react';
 
-import { useState } from "react";
-import { Activity, Bot, CircleDollarSign, GraduationCap, ShieldCheck, Sparkles, Users } from "lucide-react";
-import { AIAssistant, DashboardShell, PageHeader } from "@/components/aerotech-ui";
-
-
-export default function AIPage() {
-  const [prompt, setPrompt] = useState("");
-  const [answer, setAnswer] = useState(
-    "Ask me anything about your workforce. I can help with payroll, attendance, employees, training, recruitment and compliance."
-  );
-
-  const capabilities = [
-    [CircleDollarSign, "Payroll Intelligence", "Review payroll readiness and identify potential issues."],
-    [Activity, "Attendance Insights", "Find patterns in lateness, absence and shifts."],
-    [GraduationCap, "Training Recommendations", "Identify learning gaps and recommend development."],
-    [Users, "People Analytics", "Summarize workforce trends and employee movements."],
-    [ShieldCheck, "Compliance", "Surface upcoming compliance and documentation tasks."],
-    [Sparkles, "HR Reporting", "Turn workforce questions into management summaries."],
-  ];
-
-  const [busy, setBusy] = useState(false);
-  async function ask() {
-    if (!prompt.trim() || busy) return;
-    setBusy(true);
-    try {
-      const response = await fetch("/api/ai/ask", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question: prompt }) });
-      const data = await response.json();
-      setAnswer(response.ok ? data.answer : data.error || "AI unavailable.");
-      if (response.ok) setPrompt("");
-    } catch { setAnswer("Unable to reach Aerotech AI."); } finally { setBusy(false); }
-  }
-
-  return (
-    <>
-      <DashboardShell title="Aerotech AI">
-        <PageHeader
-          eyebrow="WORKFORCE INTELLIGENCE"
-          title="Aerotech AI"
-          description="Your intelligent HR and workforce assistant."
-        />
-
-        <div className="grid gap-6 lg:grid-cols-[1fr_350px]">
-          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-            <div className="flex items-center gap-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#00D4FF] via-[#6366F1] to-[#9D4EDD] text-white shadow-lg">
-                <Bot className="h-7 w-7" />
-              </div>
-              <div>
-                <h2 className="text-lg font-bold">Ask Aerotech AI</h2>
-                <p className="text-xs text-slate-500">
-                  Natural-language workforce intelligence
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-8 min-h-[180px] rounded-2xl bg-slate-50 p-5">
-              <div className="flex gap-3">
-                <Sparkles className="h-5 w-5 shrink-0 text-indigo-500" />
-                <p className="text-sm leading-7 text-slate-600">{answer}</p>
-              </div>
-            </div>
-
-            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-              <input
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") ask();
-                }}
-                placeholder="e.g. Is payroll ready for this month?"
-                className="h-12 flex-1 rounded-xl border border-slate-200 bg-white px-4 text-sm outline-none focus:border-indigo-400"
-              />
-              <button
-                onClick={ask}
-                disabled={busy}
-                className="h-12 rounded-xl bg-gradient-to-r from-[#6366F1] to-[#9D4EDD] px-6 text-sm font-bold text-white"
-              >
-                {busy ? "Thinking..." : "Ask AI"}
-              </button>
-            </div>
-
-            <div className="mt-6 flex flex-wrap gap-2">
-              {[
-                "Is payroll ready?",
-                "Explain attendance",
-                "Recommend training",
-                "Any compliance issues?",
-              ].map((suggestion) => (
-                <button
-                  key={suggestion}
-                  onClick={() => setPrompt(suggestion)}
-                  className="rounded-full border border-slate-200 px-3 py-2 text-[10px] font-semibold text-slate-600 hover:bg-slate-50"
-                >
-                  {suggestion}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="rounded-3xl bg-[#07111f] p-6 text-white">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">
-              AI capabilities
-            </p>
-
-            <div className="mt-5 space-y-3">
-              {["HR question answering", "Recruitment assistance", "Workforce guidance"].map((item) => (
-                <div
-                  key={item}
-                  className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] p-3 text-xs text-slate-300"
-                >
-                  <CheckIcon />
-                  {item}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {capabilities.map(([Icon, title, description]) => (
-            <div
-              key={title as string}
-              className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
-            >
-              {Icon && (
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50">
-                  <Icon className="h-5 w-5 text-indigo-600" />
-                </div>
-              )}
-              <h3 className="mt-4 text-sm font-bold">{title as string}</h3>
-              <p className="mt-1 text-xs leading-5 text-slate-500">
-                {description as string}
-              </p>
-            </div>
-          ))}
-        </div>
-      </DashboardShell>
-
-      <AIAssistant />
-    </>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-400/10 text-emerald-400">
-      ✓
-    </span>
-  );
+type Status='loading'|'ready'|'unavailable'|'error';
+const suggestions=['How can I plan a fair interview process?','What should an onboarding checklist include?','How can I improve attendance communication?','Explain the steps in preparing payroll.'];
+export default function AIPage(){
+ const [status,setStatus]=useState<Status>('loading'),[prompt,setPrompt]=useState(''),[answer,setAnswer]=useState(''),[error,setError]=useState(''),[busy,setBusy]=useState(false);
+ useEffect(()=>{const controller=new AbortController();fetch('/api/ai/ask',{cache:'no-store',signal:controller.signal}).then(async r=>{if(!r.ok)throw Error();return r.json()}).then(d=>setStatus(d.configured?'ready':'unavailable')).catch(e=>{if(e.name!=='AbortError')setStatus('error')});return()=>controller.abort()},[]);
+ async function ask(e:FormEvent){e.preventDefault();if(busy||!prompt.trim()||status!=='ready')return;setBusy(true);setError('');try{const r=await fetch('/api/ai/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:prompt.trim()})}),d=await r.json();if(!r.ok)throw Error(d.error||'Unable to get a response.');setAnswer(d.answer);setPrompt('')}catch(e){setError(e instanceof Error?e.message:'Unable to reach Aerotech AI.')}finally{setBusy(false)}}
+ return <div className="space-y-6"><section className="aero-hero"><p className="text-xs font-semibold uppercase tracking-[.18em] text-cyan-200">Workforce guidance</p><h1 className="mt-3 text-3xl font-bold tracking-tight">Aerotech AI</h1><p className="mt-3 max-w-2xl text-sm leading-7 text-slate-200">A practical assistant for your HR questions, from recruitment and onboarding to payroll and people operations.</p></section>
+ <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]"><section className="aero-card"><div className="flex items-start gap-4"><span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-700"><Bot size={23} aria-hidden="true"/></span><div><h2 className="text-xl font-bold">Ask a question</h2><p className="mt-1 text-sm leading-6 text-slate-600">Get general guidance and ideas for your next step.</p></div></div>
+ {status==='loading'&&<p role="status" className="mt-6 rounded-xl bg-slate-50 p-4 text-sm text-slate-600">Checking assistant availability…</p>}
+ {status==='unavailable'&&<div role="status" className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950"><strong>AI is not connected yet.</strong> The administrator needs to configure the AI provider before questions can be answered.</div>}
+ {status==='error'&&<div role="alert" className="mt-6 rounded-xl bg-red-50 p-4 text-sm text-red-800">Could not check AI availability. Refresh the page to retry.</div>}
+ <form onSubmit={ask} className="mt-6 space-y-4"><label htmlFor="ai-question" className="block text-sm font-semibold">Your question</label><textarea id="ai-question" value={prompt} onChange={e=>setPrompt(e.target.value)} maxLength={2000} minLength={2} required rows={4} placeholder="For example: How do I create an onboarding checklist?" className="aero-input w-full"/><div className="flex flex-wrap items-center justify-between gap-3"><span className="text-xs text-slate-600">{prompt.length} / 2,000 characters</span><button disabled={busy||status!=='ready'||prompt.trim().length<2} className="aero-button bg-blue-700 text-white disabled:cursor-not-allowed disabled:opacity-50"><Send size={16} aria-hidden="true"/>{busy?'Preparing response…':'Ask Aerotech AI'}</button></div></form>
+ {error&&<p role="alert" className="mt-5 rounded-xl bg-red-50 p-4 text-sm text-red-800">{error}</p>}{busy&&<p role="status" className="mt-5 text-sm text-slate-600">Preparing your response…</p>}{answer&&<section aria-label="AI response" className="mt-6 rounded-2xl border border-blue-100 bg-blue-50/60 p-5"><div className="flex items-center gap-2 font-bold text-blue-900"><Sparkles size={18} aria-hidden="true"/> Aerotech AI</div><p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-800">{answer}</p><p className="mt-4 text-xs leading-5 text-slate-600">Review AI responses before using them for employment, payroll or legal decisions.</p></section>}
+ <div className="mt-7 border-t border-slate-100 pt-6"><h3 className="flex items-center gap-2 text-sm font-bold"><Lightbulb size={17} aria-hidden="true"/> Try a question</h3><div className="mt-3 flex flex-wrap gap-2">{suggestions.map(s=><button type="button" key={s} onClick={()=>setPrompt(s)} className="min-h-11 rounded-xl border border-slate-200 px-3 py-2 text-left text-sm text-slate-700 hover:border-blue-300 hover:bg-blue-50">{s}</button>)}</div></div></section>
+ <aside className="space-y-4"><section className="aero-card"><h2 className="flex items-center gap-2 font-bold"><CheckCircle2 size={19} className="text-blue-700" aria-hidden="true"/> What it can use</h2><p className="mt-3 text-sm leading-7 text-slate-600">When connected, the assistant receives your question and two company totals: employee count and pending HR requests. It cannot see individual records, payroll details or live attendance.</p></section><section className="aero-card"><h2 className="flex items-center gap-2 font-bold"><LockKeyhole size={19} className="text-blue-700" aria-hidden="true"/> Protect information</h2><p className="mt-3 text-sm leading-7 text-slate-600">Avoid sharing names, identity numbers, bank details, passwords or other sensitive employee information in questions.</p></section></aside></div></div>
 }

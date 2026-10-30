@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
 import { currentEmployer, db } from "@/lib/employer-session";
+import { authAttempt } from "@/lib/auth-rate-limit";
 export const runtime = "nodejs";
+export async function GET() {
+  const employerId=await currentEmployer();
+  if(!employerId)return NextResponse.json({error:"Please sign in as an employer with access to AI."},{status:401,headers:{"Cache-Control":"private, no-store"}});
+  return NextResponse.json({configured:!!process.env.OPENAI_API_KEY},{headers:{"Cache-Control":"private, no-store"}});
+}
 export async function POST(request: Request) {
   const employerId = await currentEmployer();
   if (!employerId) return NextResponse.json({ error: "Please sign in as an employer." }, { status: 401 });
@@ -14,6 +20,7 @@ export async function POST(request: Request) {
     const pool=db();
     let workforceContext="Workforce counts unavailable.";
     try {
+      if(!await authAttempt(pool,'ai',employerId))return NextResponse.json({error:"You have reached the question limit. Please try again in 15 minutes."},{status:429,headers:{"Cache-Control":"private, no-store"}});
       const [staff,requests]=await Promise.all([
         pool.query("SELECT COUNT(*)::int AS total FROM workforce_employees WHERE employer_id=$1",[employerId]),
         pool.query("SELECT COUNT(*)::int AS pending FROM employee_requests WHERE employer_id=$1 AND status=$2",[employerId,"pending"])
@@ -36,6 +43,6 @@ export async function POST(request: Request) {
     const data: { output?: Array<{ content?: Array<{ type?: string; text?: string }> }> } = await response.json();
     const answer = data.output?.flatMap(item => item.content ?? []).filter(item => item.type === "output_text").map(item => item.text ?? "").join("\n").trim();
     if (!answer) return NextResponse.json({ error: "The model returned no answer." }, { status: 502 });
-    return NextResponse.json({ answer });
+    return NextResponse.json({ answer }, {headers:{"Cache-Control":"private, no-store"}});
   } catch { return NextResponse.json({ error: "The AI request timed out or failed." }, { status: 502 }); }
 }
