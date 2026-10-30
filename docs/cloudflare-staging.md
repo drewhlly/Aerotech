@@ -20,3 +20,9 @@ This branch prepares an isolated Cloudflare Workers deployment. It has **not** b
 - Verify deployment output; Wrangler config alone is **not** proof of Cloudflare application compatibility.
 
 Docs: https://developers.cloudflare.com/workers/framework-guides/web-apps/opennext/
+
+## Execution results (30 October 2026)
+
+- OpenNext/Wrangler package integration and isolated GitHub build workflow added to this staging branch; compilation and Worker dry-run await CI result.
+- A clean new Neon project was attempted but rejected: `organization is managed by Vercel`. The existing production Neon project was not cloned or modified. A separate Neon account/project or alternative staging PostgreSQL provisioning is required.
+- Cloudflare Worker application cannot be deployed safely until a clean database, staging credentials, compatibility build, and tests exist. The existing backup scheduler Worker is unrelated and remains untouched.
