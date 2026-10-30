@@ -22,5 +22,5 @@ export default function NotificationBell({role='employee'}:{role?:'employee'|'em
  useEffect(()=>{if(nextExpiry&&!eventVisible(nextExpiry,now))queueMicrotask(()=>void refresh())},[now,nextExpiry,refresh]);
  // At a collaboration expiry, suppress its stale count until the next server refresh.
  const count=notices.filter(n=>!n.read_at&&eventVisible(n.expires_at,now)).length+(eventVisible(nextExpiry,now)?extra:0);
- return <Link href={role==='employee'?'/employee/notifications':'/dashboard/employer/notifications'} aria-label={'Notifications, '+count+' unread'} className="relative rounded-xl p-3 text-slate-600 hover:bg-blue-50"><Bell size={21}/>{count>0&&<span className="absolute -right-1 -top-1 rounded-full bg-blue-600 px-1.5 text-[10px] text-white">{count>99?'99+':count}</span>}</Link>
+ return <Link href={role==='employee'?'/employee/notifications':'/dashboard/employer/notifications'} aria-label={'Notifications, '+count+' unread'} title="Notifications" className="workspace-icon-button relative"><Bell size={21}/>{count>0&&<span className="workspace-notification-count">{count>99?'99+':count}</span>}</Link>
 }
