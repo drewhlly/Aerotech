@@ -206,22 +206,22 @@ export default function ProjectsWorkspace({
   const metrics = details?.project;
   return (
     <div className="space-y-6">
-      <section className="aero-card">
+      <section className="aero-hero">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold">
               {myTasks ? "My Tasks" : details?.project.name || "Projects"}
             </h1>
-            <p className="mt-2 text-sm text-slate-600">
+            <p className="mt-2 text-sm text-slate-200">
               {details?.project.description ||
                 "Plan work, follow progress and collaborate within your company."}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Link className="aero-button border" href={base + "/projects"}>
+            <Link className="aero-button border border-white/50 text-white" href={base + "/projects"}>
               Projects
             </Link>
-            <Link className="aero-button border" href={base + "/tasks"}>
+            <Link className="aero-button border border-white/50 text-white" href={base + "/tasks"}>
               My Tasks
             </Link>
             {!myTasks && (!projectId ? canCreate : manager) && (

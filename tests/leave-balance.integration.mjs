@@ -1,0 +1,18 @@
+import {PGlite} from '@electric-sql/pglite';
+import {readFile} from 'node:fs/promises';
+import assert from 'node:assert/strict';
+const db=await PGlite.create();
+await db.exec(`CREATE TABLE employee_requests(id text,employer_id text,employee_id text,request_type text,status text,start_date date,end_date date);CREATE TABLE employee_leave_balances(employer_id text,employee_id text,leave_year int,annual_allowance_days int);`);
+await db.exec(await readFile('database/041_leave_types.sql','utf8'));
+const year=new Date().getUTCFullYear();
+await db.query('INSERT INTO employee_leave_balances VALUES($1,$2,$3,20)',['a','employee-a',year]);
+await db.query(`INSERT INTO employee_requests VALUES('1','a','employee-a','leave','approved',$1::date,$1::date,'annual'),('2','other','employee-a','leave','approved',$1::date,$1::date,'annual')`,[`${year}-01-05`]);
+const source=await readFile('src/app/api/leave/route.ts','utf8');
+const sql=source.match(/pool\.query\(`(SELECT b\.leave_year,[\s\S]*?)`, \[employee.employer_id, employee.id\]/)?.[1];
+assert(sql,'balance query extracted');
+let result=await db.query(sql,['a','employee-a']);
+assert.equal(result.rows[0].used_days,1);assert.equal(result.rows[0].has_uncategorised,false);
+await db.query(`INSERT INTO employee_requests VALUES('3','a','employee-a','leave','approved',$1::date,$1::date,NULL)`,[`${year}-01-06`]);
+result=await db.query(sql,['a','employee-a']);assert.equal(result.rows[0].has_uncategorised,true);
+await assert.rejects(()=>db.query(`INSERT INTO employee_requests VALUES('4','a','employee-a','leave','approved',$1::date,$1::date,'invalid')`,[`${year}-01-06`]));
+await db.close();console.log('PASS: leave migration, annual balance query, tenant isolation, legacy warning and invalid category constraint.');
