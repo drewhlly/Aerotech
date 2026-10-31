@@ -1,3 +1,4 @@
+import {validateLeaveApproval} from '@/lib/leave-calculations';
 import {notifyRequestDecision} from '@/lib/request-decision';
 import {NextResponse} from "next/server";
 import {currentEmployee} from "@/lib/employee-auth";
@@ -15,10 +16,12 @@ export async function POST(request:Request){
  if(typeof b.requestId!=="string"||!["approved","rejected"].includes(String(b.decision))||typeof b.note!=="string"||!b.note.trim()||b.note.length>1000)return NextResponse.json({error:"Request, decision and review note required"},{status:400});
  const pool=db(),client=await pool.connect();try{
  await client.query('BEGIN');
+ if(b.decision==='approved'){
+ const permitted=await client.query("SELECT 1 FROM employee_requests r JOIN workforce_employees e ON e.id=r.employee_id AND e.employer_id=r.employer_id WHERE r.id::text=$1 AND r.employer_id=$2 AND e.manager_employee_id=$3 AND e.id<>$3 AND r.status='pending'",[b.requestId,manager.employer_id,manager.id]);if(!permitted.rowCount)return NextResponse.json({error:'Request not found or outside your direct reports'},{status:404});await validateLeaveApproval(client,manager.employer_id,b.requestId);}
  const r=await client.query("UPDATE employee_requests r SET status=$1,reviewed_by_employee_id=$2,reviewed_at=NOW(),review_note=$3 FROM workforce_employees e WHERE r.id=$4 AND r.employer_id=$5 AND r.employee_id=e.id AND e.employer_id=r.employer_id AND e.manager_employee_id=$2 AND e.id<>$2 AND r.status='pending' AND r.request_type='leave' RETURNING r.id,r.employee_id,r.request_type,r.status",[b.decision,manager.id,b.note.trim(),b.requestId,manager.employer_id]);
  if(!r.rowCount)return NextResponse.json({error:"Request not found or outside your direct reports"},{status:404});
  await notifyRequestDecision(client,manager.employer_id,r.rows[0]);
  await client.query('COMMIT');
  return NextResponse.json({ok:true,status:b.decision});
- }catch{return NextResponse.json({error:"Unable to review request"},{status:503});}finally{await client.query('ROLLBACK').catch(()=>{});client.release();await pool.end();}
+ }catch(error){const policy=error instanceof Error&&error.message.startsWith('The leave policy');return NextResponse.json({error:policy?(error as Error).message:"Unable to review request"},{status:policy?422:503});}finally{await client.query('ROLLBACK').catch(()=>{});client.release();await pool.end();}
 }

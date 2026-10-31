@@ -1,11 +1,9 @@
 import {randomUUID} from 'node:crypto';
 import {db} from './employer-session';
-export const leaveCategories=['annual','sick','maternity','paternity','compassionate','study','unpaid','other'] as const;
-export function calendarDate(value:unknown):value is string {
- if(typeof value!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(value)||value<'1900-01-01'||value>'2200-12-31')return false;
- const parsed=Date.parse(value+'T00:00:00Z');
- return Number.isFinite(parsed)&&new Date(parsed).toISOString().slice(0,10)===value;
-}
+import {calendarDate,leaveCategories} from './leave-dates';
+export {calendarDate,leaveCategories} from './leave-dates';
+import {employeeLeaveBalances} from './leave-calculations';
+import {workingDates} from './leave-policy';
 export class LeaveRequestError extends Error {
  status:number;
  constructor(message:string,status:number){super(message);this.status=status}
@@ -19,6 +17,12 @@ export async function submitLeave(company:string,employeeId:string,body:{categor
   // All application entry points lock the same tenant-scoped employee row.
   const employee=await client.query("SELECT id FROM workforce_employees WHERE id=$1 AND employer_id=$2 AND employment_status IN ('active','probation','on_leave') FOR UPDATE",[employeeId,company]);
   if(!employee.rowCount)throw new LeaveRequestError('Active employee not found.',404);
+  for(let year=Number(body.startDate.slice(0,4));year<=Number(body.endDate.slice(0,4));year++){
+   const data=await employeeLeaveBalances(client,company,employeeId,year),balance=data.balances.find(b=>b.category===body.category)!;
+   if(!balance.enabled)throw new LeaveRequestError('This leave category is not enabled. Contact HR.',422);
+   const requested=workingDates(body.startDate,body.endDate,data.policy,year).length;
+   if(data.policy.enforceBalances&&balance.configured&&(balance.available_days===null||requested>balance.available_days))throw new LeaveRequestError('Insufficient available leave or a balance requiring HR review. Contact HR.',422);
+  }
   const overlap=await client.query("SELECT id FROM employee_requests WHERE employer_id=$1 AND employee_id=$2 AND request_type='leave' AND status IN ('pending','approved') AND start_date<=$4::date AND end_date>=$3::date LIMIT 1",[company,employeeId,body.startDate,body.endDate]);
   if(overlap.rowCount)throw new LeaveRequestError('These dates overlap an existing pending or approved leave request. Review your history before submitting again.',409);
   const id=randomUUID();

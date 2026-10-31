@@ -1,3 +1,4 @@
+import {validateLeaveApproval} from '@/lib/leave-calculations';
 import {notifyRequestDecision} from '@/lib/request-decision';
 import {NextResponse} from "next/server";
 import {currentEmployer,db} from "@/lib/employer-session";
@@ -11,10 +12,11 @@ export async function POST(request:Request,{params}:{params:Promise<{id:string}>
  if(body.decision==="rejected"&&!body.note?.trim())return NextResponse.json({error:"Provide a reason for rejecting this request"},{status:400});
  const pool=db(),client=await pool.connect();try{
  await client.query("BEGIN");
+ if(body.decision==='approved')await validateLeaveApproval(client,employerId,id);
  const result=await client.query("UPDATE employee_requests SET status=$1,reviewed_at=NOW(),reviewed_by=$2,review_note=$3 WHERE id=$4 AND employer_id=$2 AND status='pending' RETURNING id,status,employee_id,request_type",[body.decision,employerId,body.note||null,id]);
  if(!result.rowCount)return NextResponse.json({error:"Request not found or already reviewed"},{status:409});
  await notifyRequestDecision(client,employerId,result.rows[0]);
  await client.query("COMMIT");
  return NextResponse.json({request:result.rows[0]});
- }catch{return NextResponse.json({error:"Unable to review request"},{status:503});}finally{await client.query("ROLLBACK").catch(()=>{});client.release();await pool.end();}
+ }catch(error){const policy=error instanceof Error&&error.message.startsWith('The leave policy');return NextResponse.json({error:policy?(error as Error).message:"Unable to review request"},{status:policy?422:503});}finally{await client.query("ROLLBACK").catch(()=>{});client.release();await pool.end();}
 }
