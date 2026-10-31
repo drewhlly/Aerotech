@@ -74,3 +74,69 @@ Evidence and final counts are appended to the PR after the last source change. P
 7. Download screening XLSX; check no other tenant’s application can be fetched. Check applicant cannot read internal review reasons or answer keys.
 8. Check 360/768/1280 layouts, keyboard navigation, labels, notifications and role-isolated links.
 9. Confirm production commit/domain, protected redirects, unauthenticated API denial and runtime error scan after deployment.
+
+## Verified release checks
+
+- 58 unit tests passed.
+- 25 integration suites passed, including real-PDF extraction, ordered assessments, screening workbook, leave policy calculations and calendar privacy.
+- Build, ESLint (zero warnings/errors) and `tsc --noEmit` passed after the UI changes.
+- 2,125 malformed-input HTTP checks across 85 exported route/method combinations, five roles and five body shapes: zero unhandled 500s. Fixture-only unavailable integrations remain signed billing/payment webhooks and facial enrolment with no provider; these stay fail-closed.
+- Browser-to-database flows passed private CV extraction/review, general assessment, consented application, job assessment, 85% shortlist, HR report link, policy save and employee balances.
+- 360/768/1280 layouts, no page errors and no serious/critical axe findings on tested pages. HR allowance lists are searchable and paginated; employee annual balance duplication removed.
+- Migration 043 tested twice on the preview and applied transactionally to main. Three tables/two columns verified, no historical application re-scoring, expected ledger checksum `2a3cce5d5b13900951e59b5acd81f12269b06e6532af806f36f557c7531728c4`.
+- Before/after production preservation checks matched: 11 employees, four applications, zero leave requests; historical application and request digests unchanged. No live test identities created.
+- Lighthouse and the deployment’s live smoke/runtime checks are recorded separately in the final PR report.
+
+## Files changed
+
+| File | Purpose |
+| --- | --- |
+| `database/043_leave_and_assessment_policies.sql` | Add policy/profile storage and snapshot/threshold columns without historical rewrites. |
+| `docs/outstanding/README.md` | Release audit or compact verification evidence. |
+| `docs/outstanding/evidence/browser-results.json` | Release audit or compact verification evidence. |
+| `docs/outstanding/evidence/invalid-input-summary.json` | Release audit or compact verification evidence. |
+| `docs/outstanding/evidence/lighthouse.json` | Release audit or compact verification evidence. |
+| `package-lock.json` | Lock dependency resolution. |
+| `package.json` | Pin serverless PDF extraction dependency. |
+| `scripts/automation-browser-suite.mjs` | Allow a selected browser suite and optional targeted Lighthouse run. |
+| `scripts/lighthouse-outstanding.mjs` | Measure the three new portal screens with synthetic authenticated sessions. |
+| `scripts/migrate.mjs` | Register additive migration 043. |
+| `scripts/verify-recruitment-leave.mjs` | Disposable browser-to-database checks and responsive/axe verification. |
+| `src/app/api/applicant/profile/route.ts` | Protect private CV/profile, extraction, one-attempt general assessment and own-file download. |
+| `src/app/api/ats/route.ts` | Enforce ordered assessments, snapshot criteria, score shortlists and audit review exceptions. |
+| `src/app/api/employee/manager/leave/route.ts` | Check assigned manager scope and revalidate before approval. |
+| `src/app/api/hr/leave-balances/route.ts` | Save category/year entitlements and opening adjustments under employee lock. |
+| `src/app/api/hr/leave-policy/route.ts` | Validate, store and audit tenant leave policies. |
+| `src/app/api/hr/requests/[id]/review/route.ts` | Revalidate leave policy/balance before HR approval. |
+| `src/app/api/leave/route.ts` | Return shared calculated balances and the permitted absence calendar. |
+| `src/app/api/privacy/export/route.ts` | Include the applicant’s own career data without answer keys. |
+| `src/app/api/recruitment/report/route.ts` | Tenant-protected JSON/XLSX screening report with reviewable hints. |
+| `src/app/applicant/profile/page.tsx` | Add the portal-internal career profile route. |
+| `src/app/dashboard/employer/leave-policies/page.tsx` | Category/year/opening controls, policy editor, searchable paginated allowances. |
+| `src/app/employee/leave/page.tsx` | Show all category balances and scoped calendar; remove repeated annual summary. |
+| `src/components/applicant-career-profile.tsx` | Accessible CV extraction/review, consent and general assessment UI. |
+| `src/components/applicant-nav.tsx` | Link career profile inside the applicant portal. |
+| `src/components/employer-recruitment.tsx` | Prioritise shortlist without hiding review/history access. |
+| `src/components/leave-policy-editor.tsx` | Working-day/holiday, entitlement, accrual, carryover and enforcement controls. |
+| `src/components/recruitment-candidate-review.tsx` | Show both scores/threshold, internal exception reason and report download. |
+| `src/components/recruitment-workspace.tsx` | Separate applying from job assessment and expose vacancy threshold. |
+| `src/lib/ats.ts` | Extend response types with policy and general-score fields. |
+| `src/lib/cv-extraction.ts` | Bounded PDF extraction with manual fallback and resource cleanup. |
+| `src/lib/cv-profile.ts` | Literal section detection and non-scoring requirement-term hints. |
+| `src/lib/leave-calculations.ts` | Tenant/year data loading and approval reservation revalidation. |
+| `src/lib/leave-dates.ts` | Share safe date/category validation between server and client. |
+| `src/lib/leave-policy.ts` | Pure policy validation and auditable calendar/accrual/carryover calculations. |
+| `src/lib/leave-requests.ts` | Use policy calendars and optional balance checks at all submission entry points. |
+| `src/lib/recruitment-query.ts` | Return minimal assessment summary without answer keys/internal notes. |
+| `src/lib/recruitment-screening.ts` | Validate and sanitise immutable assessment policy; qualify scores. |
+| `src/lib/route-metadata.ts` | Name the new private career profile route. |
+| `tests/cv-extraction.integration.mjs` | Regression coverage for cv extraction. |
+| `tests/leave-api.integration.mjs` | Regression coverage for leave api. |
+| `tests/leave-balance.integration.mjs` | Regression coverage for leave balance. |
+| `tests/leave-calendar.integration.mjs` | Regression coverage for leave calendar. |
+| `tests/leave-policy.integration.mjs` | Regression coverage for leave policy. |
+| `tests/ordered-assessments.integration.mjs` | Regression coverage for ordered assessments. |
+
+## Targeted Lighthouse results
+
+Local production build, signed-in disposable fixtures: applicant profile Performance 98 / Accessibility 100 / Best Practices 100; employee leave 99 / 100 / 100; HR leave policies 98 / 100 / 100. CLS is zero on all three. Portal SEO is 69 because these routes intentionally use noindex. Employee leave initially measured Performance 82 and CLS 0.369; reserved loading cards removed the layout shift. See `evidence/lighthouse.json`. These are lab measurements, not production field Core Web Vitals.
