@@ -10,7 +10,9 @@ export async function GET(request:Request){
 }
 export async function POST(request:Request){
  const employer=await currentEmployer();if(!employer)return NextResponse.json({error:"Unauthorized"},{status:401});
- let b:{employeeId?:unknown;eventType?:unknown;date?:unknown};try{b=await request.json();}catch{return NextResponse.json({error:"Invalid request"},{status:400});}
+ let b:{employeeId?:unknown;eventType?:unknown;date?:unknown};try{b=await request.json().catch(()=>null);
+ if(!b||typeof b!=='object'||Array.isArray(b))return NextResponse.json({error:'Request body must be a JSON object.'},{status:400});
+}catch{return NextResponse.json({error:"Invalid request"},{status:400});}
  if(typeof b.employeeId!=="string"||!["clock_in","clock_out"].includes(String(b.eventType))||typeof b.date!=="string"||!/^\d{4}-\d{2}-\d{2}$/.test(b.date))return NextResponse.json({error:"Employee, event and date required"},{status:400});
  const pool=db();try{
  const r=await pool.query("INSERT INTO hr_attendance_events(id,employer_id,employee_id,work_date,event_type) SELECT $1,$2,id,$3::date,$4 FROM workforce_employees WHERE id=$5 AND employer_id=$2 RETURNING id",[randomUUID(),employer,b.date,b.eventType,b.employeeId]);

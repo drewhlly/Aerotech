@@ -1,0 +1,36 @@
+import {mock} from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {randomUUID} from 'node:crypto';
+import {PGlite} from '@electric-sql/pglite';
+const database=await PGlite.create(),company=randomUUID(),foreign=randomUUID(),person=randomUUID(),outsider=randomUUID();
+let employer=null,employee=null;
+const query=async(sql,args=[])=>{const r=await database.query(sql,args);return {...r,rowCount:r.rows.length||r.affectedRows||0}};
+mock.module(new URL('../src/lib/employer-session.ts',import.meta.url).href,{namedExports:{currentEmployer:async()=>employer,db:()=>({query,connect:async()=>({query,release(){}}),end:async()=>{}})}});
+mock.module(new URL('../src/lib/employee-auth.ts',import.meta.url).href,{namedExports:{currentEmployee:async()=>employee}});
+for(const m of readFileSync('scripts/migrate.mjs','utf8').matchAll(/"(\d{3}_[^"]+\.sql)"/g))await database.exec(readFileSync('database/'+m[1],'utf8'));
+for(const id of [company,foreign])await query("INSERT INTO employer_accounts(id,company_name,company_email,admin_first_name,admin_last_name,phone,country,password_hash) VALUES($1,'Fixture',$2,'Test','Owner','000','Nigeria','test-only')",[id,id+'@example.test']);
+for(const [id,tenant] of [[person,company],[outsider,foreign]])await query("INSERT INTO workforce_employees(id,employer_id,employee_number,first_name,last_name,email,job_title,department,location,employment_status) VALUES($1,$2,$3,'Test','Employee',$4,'Engineer','Engineering','Lagos','active')",[id,tenant,id,id+'@example.test']);
+const api=await import('../src/app/api/employee/onboarding/route.ts'),workflows=await import('../src/app/api/workflows/route.ts');
+const req=body=>new Request('https://local.test/api/onboarding',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});
+try{
+ assert.equal((await api.GET()).status,401);assert.equal((await api.POST(req({}))).status,401);
+ employee={id:person,employer_id:company};assert.equal((await workflows.POST(req({action:'settings'}))).status,403);
+ employer=company;
+ const settings={action:'settings',probationDays:90,credentials:['identity','qualification'],agreementTitle:'Company confidentiality agreement',agreementText:'Organisation-approved agreement text for this disposable test.'};
+ assert.equal((await workflows.POST(req(null))).status,400);
+ const configured=await workflows.POST(req(settings));assert.equal(configured.status,200,JSON.stringify(await configured.json()));
+ employer=null;
+ let data=await (await api.GET()).json();assert.equal(data.tasks.length,2);assert.equal(data.agreement.version,1);assert.equal(data.agreement.acknowledged,false);
+ for(const body of [null,{}, {action:'complete_task'}, {action:'acknowledge_agreement',version:1,accepted:false}])assert.equal((await api.POST(req(body))).status,400);
+ const accept={action:'acknowledge_agreement',version:1,accepted:true};assert.equal((await api.POST(req(accept))).status,200);assert.equal((await api.POST(req(accept))).status,200);
+ assert.equal((await query('SELECT COUNT(*)::int AS n FROM employee_agreement_acknowledgements')).rows[0].n,1);assert((await (await api.GET()).json()).agreement.acknowledged);
+ employer=company;assert.equal((await workflows.POST(req({...settings,agreementText:settings.agreementText+' Updated policy.'}))).status,200);employer=null;
+ assert.equal((await api.POST(req(accept))).status,409,'old version cannot acknowledge changed text');data=await (await api.GET()).json();assert.equal(data.agreement.version,2);assert.equal(data.agreement.acknowledged,false);
+ assert.equal((await api.POST(req({...accept,version:2}))).status,200);
+ const history=await query('SELECT version,agreement_text FROM employee_agreement_acknowledgements WHERE employee_id=$1 ORDER BY version',[person]);assert.equal(history.rows.length,2);assert.equal(history.rows[0].agreement_text,settings.agreementText);
+ const {activeEmployeeNotice}=await import('../src/lib/notification-policy.ts');assert.equal((await query(`SELECT COUNT(*)::int AS n FROM employee_notifications n WHERE n.employer_id=$1 AND n.employee_id=$2 AND n.source_key LIKE 'agreement:%' AND (${activeEmployeeNotice})`,[company,person])).rows[0].n,0);
+ employee={id:outsider,employer_id:foreign};data=await (await api.GET()).json();assert.equal(data.agreement,null);assert.equal((await api.POST(req({...accept,version:2}))).status,409);
+ assert.equal((await query('SELECT COUNT(*)::int AS n FROM employee_agreement_acknowledgements WHERE employee_id=$1',[outsider])).rows[0].n,0);
+ console.log('PASS employee onboarding scope, credential tasks, HR-only settings, explicit versioned acknowledgement, replay and historical snapshots');
+}finally{await database.close()}

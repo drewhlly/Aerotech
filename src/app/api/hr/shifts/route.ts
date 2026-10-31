@@ -9,7 +9,9 @@ export async function GET(){
 export async function POST(request:Request){
  const employer=await currentEmployer();if(!employer)return NextResponse.json({error:"Unauthorized"},{status:401});
  let b:{employeeId?:string;managerId?:string;date?:string;startsAt?:string;endsAt?:string};
- try{b=await request.json();}catch{return NextResponse.json({error:"Invalid JSON"},{status:400});}
+ try{b=await request.json().catch(()=>null);
+ if(!b||typeof b!=='object'||Array.isArray(b))return NextResponse.json({error:'Request body must be a JSON object.'},{status:400});
+}catch{return NextResponse.json({error:"Invalid JSON"},{status:400});}
  if(!b.employeeId||!b.managerId||!/^\d{4}-\d{2}-\d{2}$/.test(b.date||"")||!/^\d{2}:\d{2}$/.test(b.startsAt||"")||!/^\d{2}:\d{2}$/.test(b.endsAt||""))return NextResponse.json({error:"Employee, manager, shift date and times are required"},{status:400});
  const pool=db();try{
  const r=await pool.query("INSERT INTO workforce_shifts(id,employer_id,employee_id,assigned_by,work_date,starts_at,ends_at) SELECT $1,$2,e.id,m.id,$3::date,$4::time,$5::time FROM workforce_employees e JOIN workforce_employees m ON m.id=e.manager_employee_id AND m.employer_id=e.employer_id WHERE e.id=$6 AND e.employer_id=$2 AND m.id=$7 RETURNING id",[randomUUID(),employer,b.date,b.startsAt,b.endsAt,b.employeeId,b.managerId]);

@@ -1,0 +1,15 @@
+// Disposable localhost-only invalid-input audit. Never run against production.
+import {readdirSync,readFileSync,mkdirSync,writeFileSync} from 'node:fs';
+import {randomUUID} from 'node:crypto';
+const origin='http://127.0.0.1:3100',routes=[];
+function walk(directory){for(const file of readdirSync(directory,{withFileTypes:true})){const path=directory+'/'+file.name;if(file.isDirectory())walk(path);else if(file.name==='route.ts'){const source=readFileSync(path,'utf8');for(const method of [...source.matchAll(/export\s+(?:async\s+)?function\s+(POST|PATCH|PUT)\b/g)].map(x=>x[1])){const route=path.replace(/^src\/app/,'').replace(/\/route\.ts$/,'').replace(/\[module\]/g,'onboarding').replace(/\[role\]/g,'employee').replace(/\[\.\.\.[^\]]+\]/g,'fixture').replace(/\[[^\]]+\]/g,randomUUID());if(!/logout|signout|cron\//.test(route))routes.push({route,method});}}}}
+walk('src/app/api');routes.sort((a,b)=>a.route.localeCompare(b.route));const results=[];
+function save(){mkdirSync('docs/automation/evidence',{recursive:true});writeFileSync('docs/automation/evidence/invalid-input-results.json',JSON.stringify({scope:'Disposable localhost fixtures; malformed/non-object JSON and invalid field types; exported POST/PATCH/PUT handlers; excludes logout, crons and re-exported handlers',routes:routes.length,results},null,2));}
+const bodies=[['null','null'],['array','[]'],['number','42'],['malformed','{'],['invalid field types',JSON.stringify({name:123,email:123,password:123,notes:123,title:123,message:123,managerId:'11111111-1111-4111-8111-111111111111'})]];
+for(const role of ['logged out','employer','employee','applicant','admin']){
+ for(const {route,method} of routes)for(const [bodyShape,body] of bodies){const headers={'Content-Type':'application/json',Origin:origin};if(role!=='logged out')headers.Cookie=`aerotech_${role==='admin'?'support':role}_session=phase2-test-${role}`;
+  try{const r=await fetch(origin+route+(route==='/api/workforce-documents'?'?role='+(['employer','employee','applicant'].includes(role)?role:'employee'):''),{method,headers,body,redirect:'manual',signal:AbortSignal.timeout(8000)});await r.text();results.push({route,method,role,bodyShape,status:r.status});if(r.status===500)console.error(JSON.stringify({unhandledFailure:results.at(-1),completed:results.length}));}
+  catch(error){save();console.error(JSON.stringify({route,method,role,error:error.message}));process.exit(1);}
+ }
+}
+save();writeFileSync('docs/automation/evidence/invalid-input-summary.json',JSON.stringify({scope:'Local disposable database only',routeMethods:routes.length,roles:5,bodyShapes:bodies.map(b=>b[0]),checked:results.length,unhandled500:results.filter(r=>r.status===500),serviceUnavailable:[...new Set(results.filter(r=>r.status===503).map(r=>r.route))]},null,2));console.log(JSON.stringify({checked:results.length,routes:routes.length,unhandled500:results.filter(r=>r.status===500).length,serviceUnavailable:[...new Set(results.filter(r=>r.status===503).map(r=>r.route))]},null,2));process.exit(results.some(r=>r.status===500)?1:0);

@@ -8,7 +8,9 @@ export async function GET(){
 }
 export async function POST(request:Request){
  const employer=await currentEmployer();if(!employer)return NextResponse.json({error:"Employer sign-in required"},{status:401});
- let b:{stage?:unknown;employeeId?:unknown};try{b=await request.json();}catch{return NextResponse.json({error:"Invalid request"},{status:400});}
+ let b:{stage?:unknown;employeeId?:unknown};try{b=await request.json().catch(()=>null);
+ if(!b||typeof b!=='object'||Array.isArray(b))return NextResponse.json({error:'Request body must be a JSON object.'},{status:400});
+}catch{return NextResponse.json({error:"Invalid request"},{status:400});}
  if(!stages.includes(String(b.stage))||typeof b.employeeId!=="string")return NextResponse.json({error:"Stage and employee required"},{status:400});
  const pool=db();try{
  const r=await pool.query("INSERT INTO payroll_stage_approvers(employer_id,stage,employee_id) SELECT $1,$2,id FROM workforce_employees WHERE employer_id=$1 AND id=$3 AND employment_status='active' ON CONFLICT(employer_id,stage) DO UPDATE SET employee_id=EXCLUDED.employee_id RETURNING stage",[employer,b.stage,b.employeeId]);

@@ -53,7 +53,9 @@ export async function GET(req: Request) {
 export async function PATCH(req: Request) {
   try {
     const a = await actor(),
-      b = await req.json();
+      b = await req.json().catch(()=>null);
+ if(!b||typeof b!=='object'||Array.isArray(b))return respond({error:'Request body must be a JSON object.'},400);
+
     return await transaction(async (c) => {
       if (b.id) {
         await c.query(

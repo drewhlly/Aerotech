@@ -50,7 +50,9 @@ export async function POST(req: Request, ctx: C) {
   try {
     const a = await actor(),
       { id } = await ctx.params,
-      b = await req.json();
+      b = await req.json().catch(()=>null);
+ if(!b||typeof b!=='object'||Array.isArray(b))return respond({error:'Request body must be a JSON object.'},400);
+
     let generation: number | undefined;
     const result = await transaction(async (c) => {
       const meeting = await meetingAccess(c, a, id, b.action !== "rsvp");

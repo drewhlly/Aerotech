@@ -1,7 +1,24 @@
 import {NextResponse} from 'next/server';
 import {currentEmployee} from '@/lib/employee-auth';
 import {db} from '@/lib/employer-session';
-export const runtime='nodejs';
 import {enrollWorkflows} from '@/lib/workflow-automation';
-export async function GET(){const e=await currentEmployee();if(!e)return NextResponse.json({error:'Employee sign-in required'},{status:401});const pool=db();try{await enrollWorkflows(pool,e.employer_id);const [training,documents,reviews]=await Promise.all(['employee_training_records','employee_document_records','employee_performance_reviews'].map(t=>pool.query(`SELECT * FROM ${t} WHERE employee_id=$1 AND employer_id=$2 ORDER BY created_at DESC`,[e.id,e.employer_id])));return NextResponse.json({training:training.rows,documents:documents.rows,reviews:reviews.rows})}catch{return NextResponse.json({error:'Employee records unavailable'},{status:503})}finally{await pool.end()}}
-export async function PATCH(request:Request){const e=await currentEmployee();if(!e)return NextResponse.json({error:'Employee sign-in required'},{status:401});let b;try{b=await request.json();if(!['training','documents'].includes(b.module)||typeof b.id!=='string')throw Error()}catch{return NextResponse.json({error:'Invalid request'},{status:400})}const pool=db();try{const config=b.module==='training'?['employee_training_records',"status='completed',completed_at=NOW()"]:['employee_document_records','acknowledged_at=NOW()'];const result=await pool.query(`UPDATE ${config[0]} SET ${config[1]} WHERE id=$1 AND employee_id=$2 AND employer_id=$3 RETURNING id`,[b.id,e.id,e.employer_id]);return result.rowCount?NextResponse.json({ok:true}):NextResponse.json({error:'Record not found'},{status:404})}catch{return NextResponse.json({error:'Unable to update record'},{status:400})}finally{await pool.end()}}
+export const runtime='nodejs';
+const headers={'Cache-Control':'private, no-store'};
+export async function GET(){
+ const employee=await currentEmployee();if(!employee)return NextResponse.json({error:'Employee sign-in required'},{status:401,headers});
+ const pool=db();try{await enrollWorkflows(pool,employee.employer_id);const [training,documents,reviews]=await Promise.all(['employee_training_records','employee_document_records','employee_performance_reviews'].map(table=>pool.query(`SELECT * FROM ${table} WHERE employee_id=$1 AND employer_id=$2 ORDER BY created_at DESC LIMIT 200`,[employee.id,employee.employer_id])));return NextResponse.json({training:training.rows,documents:documents.rows,reviews:reviews.rows},{headers});}catch{return NextResponse.json({error:'Employee records unavailable'},{status:503,headers});}finally{await pool.end();}
+}
+export async function PATCH(req:Request){
+ const employee=await currentEmployee();if(!employee)return NextResponse.json({error:'Employee sign-in required'},{status:401,headers});
+ let body:Record<string,unknown>;try{body=await req.json();}catch{return NextResponse.json({error:'Invalid request'},{status:400,headers});}
+ if(!body||typeof body!=='object'||Array.isArray(body)||!['training','documents'].includes(String(body.module))||typeof body.id!=='string'||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.id))return NextResponse.json({error:'Choose a valid record.'},{status:400,headers});
+ const pool=db(),client=await pool.connect(),table=body.module==='training'?'employee_training_records':'employee_document_records';
+ try{
+  await client.query('BEGIN');const row=await client.query(`SELECT * FROM ${table} WHERE id=$1 AND employee_id=$2 AND employer_id=$3 FOR UPDATE`,[body.id,employee.id,employee.employer_id]);
+  if(!row.rowCount)return NextResponse.json({error:'Record not found'},{status:404,headers});
+  if(body.module==='training'?row.rows[0].status==='completed':!!row.rows[0].acknowledged_at){await client.query('COMMIT');return NextResponse.json({ok:true,reused:true},{headers});}
+  await client.query(`UPDATE ${table} SET ${body.module==='training'?"status='completed',completed_at=NOW()":'acknowledged_at=NOW()'} WHERE id=$1 AND employer_id=$2`,[body.id,employee.employer_id]);
+  if(body.module==='training')await client.query(`INSERT INTO workflow_alerts(employer_id,alert_key,title,details) VALUES($1,$2,'Learning activity completed',$3) ON CONFLICT DO NOTHING`,[employee.employer_id,'training-complete:'+body.id,employee.first_name+' '+employee.last_name+' completed '+row.rows[0].title+'. Completion is employee-reported.']);
+  await client.query('COMMIT');return NextResponse.json({ok:true},{headers});
+ }catch{return NextResponse.json({error:'Unable to update record'},{status:503,headers});}finally{await client.query('ROLLBACK').catch(()=>{});client.release();await pool.end();}
+}

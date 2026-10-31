@@ -1,0 +1,11 @@
+{
+  "origin": "http://127.0.0.1:3100",
+  "fixture": "Disposable localhost database; no production changes",
+  "results": [
+    "HR agreement settings, employee version acknowledgement, 360/768/1280 layouts, axe and permission boundary",
+    "HR learning assignment appears in employee portal and completion is retained in history",
+    "HR manual checklist completion synchronises with employee onboarding",
+    "Performance-backed HR confirmation changes probation status and appears in employee portal",
+    "Employee navigation isolation and no browser runtime errors on tested flows"
+  ]
+}

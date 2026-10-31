@@ -6,7 +6,9 @@ import {sendEmployeeInvitation} from "@/lib/invitation-email";
 export const runtime="nodejs";
 export async function POST(request:Request){
  const employer=await currentEmployer();if(!employer)return NextResponse.json({error:"Employer sign-in required"},{status:401});
- let b:{employeeId?:unknown};try{b=await request.json();}catch{return NextResponse.json({error:"Invalid JSON"},{status:400});}
+ let b:{employeeId?:unknown};try{b=await request.json().catch(()=>null);
+ if(!b||typeof b!=='object'||Array.isArray(b))return NextResponse.json({error:'Request body must be a JSON object.'},{status:400});
+}catch{return NextResponse.json({error:"Invalid JSON"},{status:400});}
  if(typeof b.employeeId!=="string")return NextResponse.json({error:"Employee required"},{status:400});
  const pool=db();try{
  const employee=await pool.query("SELECT e.id,e.email,e.first_name, c.employee_id AS activated FROM workforce_employees e LEFT JOIN employee_credentials c ON c.employee_id=e.id WHERE e.id=$1 AND e.employer_id=$2",[b.employeeId,employer]);

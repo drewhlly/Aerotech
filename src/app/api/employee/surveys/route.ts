@@ -12,7 +12,9 @@ export async function GET(){
 }
 export async function POST(request:Request){
  const e=await currentEmployee();if(!e)return NextResponse.json({error:"Sign in required"},{status:401});
- let b:{surveyId?:unknown;rating?:unknown;feedback?:unknown};try{b=await request.json()}catch{return NextResponse.json({error:"Invalid request"},{status:400})}
+ let b:{surveyId?:unknown;rating?:unknown;feedback?:unknown};try{b=await request.json().catch(()=>null);
+ if(!b||typeof b!=='object'||Array.isArray(b))return NextResponse.json({error:'Request body must be a JSON object.'},{status:400});
+}catch{return NextResponse.json({error:"Invalid request"},{status:400})}
  if(typeof b.surveyId!=="string"||!Number.isInteger(b.rating)||Number(b.rating)<1||Number(b.rating)>5||typeof b.feedback!=="string"||b.feedback.length>1000)return NextResponse.json({error:"Provide a rating from 1 to 5 and optional feedback (up to 1000 characters)"},{status:400});
  const pool=db();try{
  const s=await pool.query("SELECT id FROM hr_surveys WHERE id=$1 AND employer_id=$2 AND active=true AND (closes_at IS NULL OR closes_at>NOW())",[b.surveyId,e.employer_id]);if(!s.rowCount)return NextResponse.json({error:"Survey is closed or unavailable"},{status:404});

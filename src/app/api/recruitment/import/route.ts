@@ -6,7 +6,7 @@ export const runtime="nodejs";
 export async function POST(request:Request){
  const employerId=await currentEmployer();
  if(!employerId)return NextResponse.json({error:"Please sign in"},{status:401});
- const form=await request.formData();
+ let form:FormData;try{form=await request.formData()}catch{return NextResponse.json({error:"Submit a valid multipart upload."},{status:400})}
  const file=form.get("file");
  if(!(file instanceof File)||file.size>5_000_000||!(/\.(xlsx|csv)$/i).test(file.name))return NextResponse.json({error:"Upload an XLSX or CSV file under 5MB"},{status:400});
  const workbook=new ExcelJS.Workbook();
@@ -25,7 +25,7 @@ export async function POST(request:Request){
   const row=sheet.getRow(n),name=value(row.getCell(nameCol).value),email=value(row.getCell(emailCol).value).toLowerCase();
   if(!name&&!email)continue;
   if(!name||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return NextResponse.json({error:`Invalid record on row ${n}`},{status:400});
-  rows.push({name,email,phone:value(row.getCell(cols.phone||cols.phonenumber||0).value),position:value(row.getCell(cols.position||cols.positionapplied||0).value)});
+  rows.push({name,email,phone:cols.phone||cols.phonenumber?value(row.getCell(cols.phone||cols.phonenumber).value):'',position:cols.position||cols.positionapplied?value(row.getCell(cols.position||cols.positionapplied).value):''});
   if(rows.length>1000)return NextResponse.json({error:"Maximum 1,000 applicants per file"},{status:400});
  }
  const pool=db();const client=await pool.connect();
