@@ -1,3 +1,4 @@
+import {strictDatabaseConnectionString} from '@/lib/postgres-connection';
 import {acceptsPolicies,POLICY_VERSION} from '@/lib/policy';
 import { NextResponse } from "next/server";
 import { randomUUID, scrypt as callbackScrypt, randomBytes } from "node:crypto";
@@ -40,7 +41,7 @@ export async function POST(request: Request) {
   const salt = randomBytes(16).toString("hex");
   const derived = (await scrypt(password, salt, 64)) as Buffer;
   const passwordHash = `scrypt:${salt}:${derived.toString("hex")}`;
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL, connectionTimeoutMillis: 5000, max: 2 });
+  const pool = new Pool({ connectionString: strictDatabaseConnectionString(process.env.DATABASE_URL), connectionTimeoutMillis: 5000, max: 2 });
   const c=await pool.connect();
   try {
     await c.query('BEGIN');
