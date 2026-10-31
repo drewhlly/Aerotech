@@ -49,6 +49,7 @@ try{
  const rescheduled=(await get('&candidate_id='+id)).applications[0];assert.notEqual(rescheduled.interview_room_id,candidate.interview_room_id);assert.equal(rescheduled.interview_completed_at,null);assert.equal(rescheduled.interview_active,true);
  assert.equal((await post({action:'update',id,stage:'offer',expected_stage:'interview',feedback:'Offer recorded for the agreed role.'})).status,200);
  assert.equal((await post({action:'update',id,stage:'hired',expected_stage:'offer'})).status,200);
+ assert.equal((await query("SELECT COUNT(*)::int AS n FROM collaboration_jobs WHERE kind='employee_activation'")).rows[0].n,1,'Hiring queues one activation delivery');
  const employee=(await query('SELECT employee_id FROM ats_applications WHERE id=$1',[id])).rows[0].employee_id;assert.ok(employee);
  assert.equal((await post({action:'update',id,stage:'hired',expected_stage:'offer'})).status,409);assert.equal((await query('SELECT COUNT(*)::int AS n FROM workforce_employees')).rows[0].n,1);
  company=other;assert.equal((await get('&candidate_id='+id)).pagination.total,0);assert.equal((await post({action:'update',id,stage:'rejected'})).status,404);role='employee';assert.equal((await ats.GET(new Request('https://app.example.invalid/api/ats?view=employer&candidate_limit=20'))).status,401);

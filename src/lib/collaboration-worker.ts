@@ -1,3 +1,5 @@
+import {deliverInterviewUpdate} from './interview-delivery';
+import {deliverEmployeeActivation} from './activation-delivery';
 import {activeMeeting,activeCollaborationNotice} from './notification-policy';
 import type { PoolClient } from "pg";
 import { db } from "./employer-session";
@@ -13,6 +15,7 @@ type Job = {
   kind: string;
   payload: Record<string, unknown>;
   attempts: number;
+  created_at: Date|string;
 };
 async function email(to: string, subject: string, body: string, key: string) {
   if (!process.env.RESEND_API_KEY || !process.env.INVITATION_FROM_EMAIL)
@@ -71,6 +74,7 @@ export async function sweep(c: PoolClient) {
     "UPDATE ats_jobs SET status='expired' WHERE status='published' AND expires_at<=NOW()",
   );
   await c.query(`INSERT INTO collaboration_jobs(employer_id,kind,dedupe_key,payload) SELECT g.employer_id,'guest_invite','guest:'||g.room_id||':'||g.email,jsonb_build_object('meeting',g.room_id,'email',g.email) FROM meeting_guests g JOIN meet_rooms m ON m.id=g.room_id WHERE g.invited_at IS NULL AND m.status='scheduled' AND m.starts_at+duration_minutes*INTERVAL '1 minute'>NOW() ON CONFLICT DO NOTHING`);
+  for(const [label,window]of [['day',1440],['soon',30]] as const)await c.query(`INSERT INTO collaboration_jobs(employer_id,kind,dedupe_key,payload) SELECT j.employer_id,'interview_update','interview-reminder:'||a.id||':'||a.interview_revision||':'||$1,jsonb_build_object('application',a.id,'revision',a.interview_revision,'reminder',TRUE) FROM ats_applications a JOIN ats_jobs j ON j.id=a.job_id JOIN meet_rooms m ON m.id=a.interview_room_id AND m.employer_id=j.employer_id WHERE a.stage='interview' AND a.interview_completed_at IS NULL AND m.status='scheduled' AND m.revoked_at IS NULL AND a.interview_at>NOW() AND a.interview_at<=NOW()+$2::int*INTERVAL '1 minute' AND ($1<>'day' OR a.interview_at>NOW()+INTERVAL '30 minutes') AND m.created_at<NOW()-CASE WHEN $1='day' THEN INTERVAL '30 minutes' ELSE INTERVAL '5 minutes' END ON CONFLICT DO NOTHING`,[label,window]);
   await c.query(
     `INSERT INTO collaboration_jobs(employer_id,kind,dedupe_key,payload,run_at) SELECT employer_id,'task_overdue','overdue:'||id||':'||revision,jsonb_build_object('task',id,'revision',revision),NOW() FROM project_tasks WHERE status NOT IN ('Done','Cancelled') AND due_at<NOW() ON CONFLICT DO NOTHING`,
   );
@@ -105,6 +109,8 @@ async function perform(c: PoolClient, job: Job) {
       role: "employer",
     },
     b = job.payload;
+  if(job.kind==="interview_update"){await deliverInterviewUpdate(c,job);return;}
+  if(job.kind==="employee_activation"){await deliverEmployeeActivation(c,job);return;}
   if(job.kind==="guest_invite"){
     const row=(await c.query("SELECT m.*,g.email FROM meeting_guests g JOIN meet_rooms m ON m.id=g.room_id AND m.employer_id=g.employer_id WHERE m.employer_id=$1 AND m.id=$2 AND g.email=$3",[a.tenant,b.meeting,b.email])).rows[0];
     if(!row||row.status!=="scheduled"||row.revoked_at||new Date(row.starts_at).getTime()+row.duration_minutes*60000<=Date.now())return;

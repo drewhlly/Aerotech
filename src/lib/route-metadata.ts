@@ -1,6 +1,7 @@
 import {headers} from 'next/headers';
 import {pageMetadata} from './seo';
 const names:Record<string,string>={
+  "/dashboard/employer/recruitment/scheduling": "Interview availability",
   "/employee/onboarding": "Employee onboarding",
   "/": "Home",
   "/admin": "Admin",

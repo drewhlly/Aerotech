@@ -74,6 +74,8 @@ try {
       "Local application did not start. See /tmp/automation-server-suite.log",
     );
   process.exitCode = await run("node", [process.env.AUTOMATION_BROWSER_SCRIPT || "scripts/verify-automation-workflows.mjs"]);
+  if (process.env.INTERVIEW_LIGHTHOUSE === "1")
+    process.exitCode = (await run("node", ["scripts/lighthouse-interviews.mjs"])) || process.exitCode;
   if (process.env.OUTSTANDING_LIGHTHOUSE === "1")
     process.exitCode = (await run("node", ["scripts/lighthouse-outstanding.mjs"])) || process.exitCode;
   if (process.env.PHASE2_LIGHTHOUSE === "1")

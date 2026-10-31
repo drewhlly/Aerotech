@@ -61,7 +61,7 @@ try{
   const history=await (await meetings.GET(req('?history=1'))).json();assert.deepEqual(history.meetings.map(m=>m.title).sort(),['cancelled','ended','past','revoked']);
   let inbox=await (await notices.GET(req())).json();assert.deepEqual(inbox.records.map(n=>n.title).sort(),['future','ongoing']);assert.equal(inbox.unread,2);assert.ok(inbox.nextExpiry);assert.ok(inbox.records.every(n=>n.expires_at));
   assert.equal((await (await notices.GET(req('?history=1'))).json()).records.length,4);
-  const widgets=await (await attention.GET()).json();assert.deepEqual(widgets.meetings.map(m=>m.title).sort(),['future','ongoing']);
+  const widgets=await (await attention.GET()).json();const expectedWidgets=current==='employer'?['future','ongoing']:(await query("SELECT title FROM meet_rooms WHERE id=ANY($1::uuid[]) AND (starts_at AT TIME ZONE 'Africa/Lagos')::date=(NOW() AT TIME ZONE 'Africa/Lagos')::date ORDER BY title",[[ids.future,ids.ongoing]])).rows.map(m=>m.title);assert.deepEqual(widgets.meetings.map(m=>m.title).sort(),expectedWidgets);
  }
  role='employer';assert.deepEqual((await (await alerts.GET(req())).json()).notifications.map(n=>n.title).sort(),['Job expires soon','Review required']);
  assert.deepEqual((await (await alerts.GET(req('?history=1'))).json()).notifications.map(n=>n.title).sort(),['Birthday tomorrow','Job expires soon']);
