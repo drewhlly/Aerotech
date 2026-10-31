@@ -1,11 +1,103 @@
-import type {Pool,PoolClient} from 'pg';
-import {calculateLeaveBalances,defaultLeavePolicy,dayText,type LeavePolicy,type LeaveBalance} from './leave-policy';
-export async function employeeLeaveBalances(client:Pool|PoolClient,employer:string,employee:string,year:number,today=new Intl.DateTimeFormat('en-CA',{timeZone:'Africa/Lagos',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())){
- const [policies,entitlements,annual,requests,person]=await Promise.all([
- client.query('SELECT leave_year,policy FROM company_leave_policies WHERE employer_id=$1 AND leave_year BETWEEN $2-1 AND $2',[employer,year]),
- client.query('SELECT * FROM employee_leave_entitlements WHERE employer_id=$1 AND employee_id=$2 AND leave_year BETWEEN $3-1 AND $3',[employer,employee,year]),
- client.query('SELECT * FROM employee_leave_balances WHERE employer_id=$1 AND employee_id=$2 AND leave_year BETWEEN $3-1 AND $3',[employer,employee,year]),
- client.query("SELECT leave_category,start_date,end_date,status FROM employee_requests WHERE employer_id=$1 AND employee_id=$2 AND request_type='leave' AND status IN ('pending','approved') AND start_date<=make_date($3,12,31) AND end_date>=make_date($3-1,1,1)",[employer,employee,year]),client.query('SELECT hire_date FROM workforce_employees WHERE employer_id=$1 AND id=$2',[employer,employee])]);
- const policyFor=(y:number)=>policies.rows.find(r=>r.leave_year===y)?.policy as LeavePolicy||defaultLeavePolicy();const compute=(y:number,previous:LeaveBalance[]=[])=>calculateLeaveBalances({year:y,today:y<year?`${y}-12-31`:today,hireDate:dayText(person.rows[0]?.hire_date),policy:policyFor(y),requests:requests.rows,entitlements:entitlements.rows.filter(r=>r.leave_year===y),annualAllowance:annual.rows.find(r=>r.leave_year===y)?.annual_allowance_days??null,previous});return {year,policy:policyFor(year),balances:compute(year,compute(year-1))};
+import type { Pool, PoolClient } from "pg";
+import {
+  calculateLeaveBalances,
+  defaultLeavePolicy,
+  dayText,
+  type LeavePolicy,
+  type LeaveBalance,
+} from "./leave-policy";
+export async function employeeLeaveBalances(
+  client: Pool | PoolClient,
+  employer: string,
+  employee: string,
+  year: number,
+  today = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Africa/Lagos",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date()),
+) {
+  const [policies, entitlements, annual, requests, person] = await Promise.all([
+    client.query(
+      "SELECT leave_year,policy FROM company_leave_policies WHERE employer_id=$1 AND leave_year BETWEEN $2-1 AND $2",
+      [employer, year],
+    ),
+    client.query(
+      "SELECT * FROM employee_leave_entitlements WHERE employer_id=$1 AND employee_id=$2 AND leave_year BETWEEN $3-1 AND $3",
+      [employer, employee, year],
+    ),
+    client.query(
+      "SELECT * FROM employee_leave_balances WHERE employer_id=$1 AND employee_id=$2 AND leave_year BETWEEN $3-1 AND $3",
+      [employer, employee, year],
+    ),
+    client.query(
+      "SELECT leave_category,start_date,end_date,status FROM employee_requests WHERE employer_id=$1 AND employee_id=$2 AND request_type='leave' AND status IN ('pending','approved') AND start_date<=make_date($3,12,31) AND end_date>=make_date($3-1,1,1)",
+      [employer, employee, year],
+    ),
+    client.query(
+      "SELECT hire_date FROM workforce_employees WHERE employer_id=$1 AND id=$2",
+      [employer, employee],
+    ),
+  ]);
+  const policyFor = (y: number) =>
+    (policies.rows.find((r) => r.leave_year === y)?.policy as LeavePolicy) ||
+    defaultLeavePolicy();
+  const compute = (y: number, previous: LeaveBalance[] = []) =>
+    calculateLeaveBalances({
+      year: y,
+      today: y < year ? `${y}-12-31` : today,
+      hireDate: dayText(person.rows[0]?.hire_date),
+      policy: policyFor(y),
+      requests: requests.rows,
+      entitlements: entitlements.rows.filter((r) => r.leave_year === y),
+      annualAllowance:
+        annual.rows.find((r) => r.leave_year === y)?.annual_allowance_days ??
+        null,
+      previous,
+    });
+  return {
+    year,
+    policy: policyFor(year),
+    balances: compute(year, compute(year - 1)),
+  };
 }
-export async function validateLeaveApproval(client:PoolClient,employer:string,requestId:string){const result=await client.query("SELECT employee_id,leave_category,start_date,end_date FROM employee_requests WHERE employer_id=$1 AND id::text=$2 AND request_type='leave' AND status='pending'",[employer,requestId]);const r=result.rows[0];if(!r?.start_date||!r.end_date||!r.leave_category)return;await client.query('SELECT id FROM workforce_employees WHERE employer_id=$1 AND id=$2 FOR UPDATE',[employer,r.employee_id]);for(let year=Number(dayText(r.start_date).slice(0,4));year<=Number(dayText(r.end_date).slice(0,4));year++){const data=await employeeLeaveBalances(client,employer,r.employee_id,year),balance=data.balances.find(b=>b.category===r.leave_category);if(balance&&(!balance.enabled||data.policy.enforceBalances&&balance.configured&&(balance.available_days===null||balance.available_days<0)))throw Error('The leave policy or available balance has changed. Review pending requests and entitlements before approving.');}}
+export async function validateLeaveApproval(
+  client: PoolClient,
+  employer: string,
+  requestId: string,
+) {
+  const result = await client.query(
+    "SELECT employee_id,leave_category,start_date,end_date FROM employee_requests WHERE employer_id=$1 AND id::text=$2 AND request_type='leave' AND status='pending'",
+    [employer, requestId],
+  );
+  const r = result.rows[0];
+  if (!r?.start_date || !r.end_date || !r.leave_category) return;
+  await client.query(
+    "SELECT id FROM workforce_employees WHERE employer_id=$1 AND id=$2 FOR UPDATE",
+    [employer, r.employee_id],
+  );
+  for (
+    let year = Number(dayText(r.start_date).slice(0, 4));
+    year <= Number(dayText(r.end_date).slice(0, 4));
+    year++
+  ) {
+    const data = await employeeLeaveBalances(
+        client,
+        employer,
+        r.employee_id,
+        year,
+      ),
+      balance = data.balances.find((b) => b.category === r.leave_category);
+    if (
+      balance &&
+      (!balance.enabled ||
+        (data.policy.enforceBalances &&
+          balance.configured &&
+          (balance.available_days === null || balance.available_days < 0)))
+    )
+      throw Error(
+        "The leave policy or available balance has changed. Review pending requests and entitlements before approving.",
+      );
+  }
+}

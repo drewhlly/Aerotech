@@ -1,8 +1,183 @@
-import {NextResponse} from 'next/server';import {currentApplicant} from '@/lib/applicant-session';import {db} from '@/lib/employer-session';import {generateRoleAssessment} from '@/lib/role-assessment';import {grade,type Question} from '@/lib/ats';
-export const runtime='nodejs';const headers={'Cache-Control':'private, no-store'};const reply=(body:unknown,status=200)=>NextResponse.json(body,{status,headers});
-export async function GET(request:Request){const applicant=await currentApplicant();if(!applicant)return reply({error:'Applicant sign in required.'},401);const pool=db();try{if(new URL(request.url).searchParams.get('download')==='cv'){const file=await pool.query('SELECT cv_content FROM applicant_career_profiles WHERE applicant_id=$1',[applicant]);if(!file.rows[0]?.cv_content)return reply({error:'CV not found.'},404);return new NextResponse(new Uint8Array(file.rows[0].cv_content),{headers:{...headers,'Content-Type':'application/pdf','Content-Disposition':'attachment; filename="Aerotech-CV.pdf"','X-Content-Type-Options':'nosniff'}});}const r=await pool.query('SELECT skills,experience,education,cv_filename,cv_updated_at,reviewed_at,general_score,general_completed_at,general_questions FROM applicant_career_profiles WHERE applicant_id=$1',[applicant]);const profile=r.rows[0]||null;if(profile)profile.general_questions=(profile.general_questions||[]).map((q:Question)=>({prompt:q.prompt,options:q.options}));return reply({profile,verification:{phone:'unverified',identity:'not_requested'}});}catch{return reply({error:'Unable to load your career profile.'},503);}finally{await pool.end();}}
-export async function POST(request:Request){const applicant=await currentApplicant();if(!applicant)return reply({error:'Applicant sign in required.'},401);if(Number(request.headers.get('content-length'))>3000000)return reply({error:'Upload a PDF CV of 2 MB or less.'},413);const b=await request.json().catch(()=>null);if(!b||typeof b!=='object'||Array.isArray(b))return reply({error:'Invalid request.'},400);
-if(b.action==='extract_cv'){if(b.consent!==true||typeof b.cv_data!=='string'||b.cv_data.length>2800000)return reply({error:'Consent and a PDF CV are required.'},400);try{const {extractCV}=await import('@/lib/cv-extraction');return reply(await extractCV(Buffer.from(b.cv_data,'base64')));}catch{return reply({fields:null,status:'manual_review',message:'This CV could not be read automatically. Enter information manually or use a text-based PDF. No qualifications have been inferred.'});}}
-const pool=db(),c=await pool.connect();try{await c.query('BEGIN');await c.query('SELECT id FROM applicant_accounts WHERE id=$1 FOR UPDATE',[applicant]);const existing=(await c.query('SELECT * FROM applicant_career_profiles WHERE applicant_id=$1 FOR UPDATE',[applicant])).rows[0];
-if(b.action==='profile'){for(const k of ['skills','experience','education'])if(typeof b[k]!=='string'||!b[k].trim()||b[k].length>10000)return reply({error:'Complete skills, experience and education (maximum 10,000 characters each).'},400);if(b.reviewed!==true)return reply({error:'Confirm you reviewed this information.'},400);let cv:Buffer|null=null;if(b.cv_data!==undefined){if(b.consent!==true||typeof b.cv_data!=='string'||b.cv_data.length>2800000||typeof b.cv_filename!=='string'||!b.cv_filename.toLowerCase().endsWith('.pdf'))return reply({error:'Consent and a PDF CV are required.'},400);cv=Buffer.from(b.cv_data,'base64');if(cv.length<5||cv.length>2097152||cv.subarray(0,5).toString()!=='%PDF-')return reply({error:'Upload a valid PDF CV of 2 MB or less.'},400);}if(!cv&&!existing?.cv_content)return reply({error:'Upload your CV first.'},400);const questions=existing?.general_questions||generateRoleAssessment(b.skills,'',b.experience);await c.query(`INSERT INTO applicant_career_profiles(applicant_id,skills,experience,education,cv_filename,cv_content,cv_updated_at,reviewed_at,general_questions) VALUES($1,$2,$3,$4,$5,$6,CASE WHEN $6::bytea IS NOT NULL THEN NOW() END,NOW(),$7) ON CONFLICT(applicant_id) DO UPDATE SET skills=EXCLUDED.skills,experience=EXCLUDED.experience,education=EXCLUDED.education,cv_filename=COALESCE(EXCLUDED.cv_filename,applicant_career_profiles.cv_filename),cv_content=COALESCE(EXCLUDED.cv_content,applicant_career_profiles.cv_content),cv_updated_at=CASE WHEN EXCLUDED.cv_content IS NOT NULL THEN NOW() ELSE applicant_career_profiles.cv_updated_at END,reviewed_at=NOW(),updated_at=NOW()`,[applicant,b.skills.trim(),b.experience.trim(),b.education.trim(),cv?b.cv_filename.slice(0,160):null,cv,JSON.stringify(questions)]);
-}else if(b.action==='general_assessment'){if(!existing?.reviewed_at||!existing.cv_content)return reply({error:'Complete your profile and CV first.'},409);const q=existing.general_questions as Question[];if(existing.general_completed_at){if(JSON.stringify(existing.general_answers)===JSON.stringify(b.answers)){await c.query('COMMIT');return reply({ok:true,reused:true});}return reply({error:'Assessment complete. Contact support for a review or accommodation.'},409);}if(!q?.length||!Array.isArray(b.answers)||b.answers.length!==q.length||b.answers.some((a:unknown)=>!Number.isInteger(a)||Number(a)<0||Number(a)>3))return reply({error:'Answer each question.'},400);await c.query('UPDATE applicant_career_profiles SET general_answers=$2,general_score=$3,general_completed_at=NOW(),updated_at=NOW() WHERE applicant_id=$1',[applicant,JSON.stringify(b.answers),grade(q,b.answers)]);}else return reply({error:'Unknown action.'},400);await c.query('COMMIT');return reply({ok:true});}catch{return reply({error:'Unable to save your career profile.'},503);}finally{await c.query('ROLLBACK').catch(()=>{});c.release();await pool.end();}}
+import { NextResponse } from "next/server";
+import { currentApplicant } from "@/lib/applicant-session";
+import { db } from "@/lib/employer-session";
+import { generateRoleAssessment } from "@/lib/role-assessment";
+import { grade, type Question } from "@/lib/ats";
+export const runtime = "nodejs";
+const headers = { "Cache-Control": "private, no-store" };
+const reply = (body: unknown, status = 200) =>
+  NextResponse.json(body, { status, headers });
+export async function GET(request: Request) {
+  const applicant = await currentApplicant();
+  if (!applicant) return reply({ error: "Applicant sign in required." }, 401);
+  const pool = db();
+  try {
+    if (new URL(request.url).searchParams.get("download") === "cv") {
+      const file = await pool.query(
+        "SELECT cv_content FROM applicant_career_profiles WHERE applicant_id=$1",
+        [applicant],
+      );
+      if (!file.rows[0]?.cv_content)
+        return reply({ error: "CV not found." }, 404);
+      return new NextResponse(new Uint8Array(file.rows[0].cv_content), {
+        headers: {
+          ...headers,
+          "Content-Type": "application/pdf",
+          "Content-Disposition": 'attachment; filename="Aerotech-CV.pdf"',
+          "X-Content-Type-Options": "nosniff",
+        },
+      });
+    }
+    const r = await pool.query(
+      "SELECT skills,experience,education,cv_filename,cv_updated_at,reviewed_at,general_score,general_completed_at,general_questions FROM applicant_career_profiles WHERE applicant_id=$1",
+      [applicant],
+    );
+    const profile = r.rows[0] || null;
+    if (profile)
+      profile.general_questions = (profile.general_questions || []).map(
+        (q: Question) => ({ prompt: q.prompt, options: q.options }),
+      );
+    return reply({
+      profile,
+      verification: { phone: "unverified", identity: "not_requested" },
+    });
+  } catch {
+    return reply({ error: "Unable to load your career profile." }, 503);
+  } finally {
+    await pool.end();
+  }
+}
+export async function POST(request: Request) {
+  const applicant = await currentApplicant();
+  if (!applicant) return reply({ error: "Applicant sign in required." }, 401);
+  if (Number(request.headers.get("content-length")) > 3000000)
+    return reply({ error: "Upload a PDF CV of 2 MB or less." }, 413);
+  const b = await request.json().catch(() => null);
+  if (!b || typeof b !== "object" || Array.isArray(b))
+    return reply({ error: "Invalid request." }, 400);
+  if (b.action === "extract_cv") {
+    if (
+      b.consent !== true ||
+      typeof b.cv_data !== "string" ||
+      b.cv_data.length > 2800000
+    )
+      return reply({ error: "Consent and a PDF CV are required." }, 400);
+    try {
+      const { extractCV } = await import("@/lib/cv-extraction");
+      return reply(await extractCV(Buffer.from(b.cv_data, "base64")));
+    } catch {
+      return reply({
+        fields: null,
+        status: "manual_review",
+        message:
+          "This CV could not be read automatically. Enter information manually or use a text-based PDF. No qualifications have been inferred.",
+      });
+    }
+  }
+  const pool = db(),
+    c = await pool.connect();
+  try {
+    await c.query("BEGIN");
+    await c.query("SELECT id FROM applicant_accounts WHERE id=$1 FOR UPDATE", [
+      applicant,
+    ]);
+    const existing = (
+      await c.query(
+        "SELECT * FROM applicant_career_profiles WHERE applicant_id=$1 FOR UPDATE",
+        [applicant],
+      )
+    ).rows[0];
+    if (b.action === "profile") {
+      for (const k of ["skills", "experience", "education"])
+        if (typeof b[k] !== "string" || !b[k].trim() || b[k].length > 10000)
+          return reply(
+            {
+              error:
+                "Complete skills, experience and education (maximum 10,000 characters each).",
+            },
+            400,
+          );
+      if (b.reviewed !== true)
+        return reply({ error: "Confirm you reviewed this information." }, 400);
+      let cv: Buffer | null = null;
+      if (b.cv_data !== undefined) {
+        if (
+          b.consent !== true ||
+          typeof b.cv_data !== "string" ||
+          b.cv_data.length > 2800000 ||
+          typeof b.cv_filename !== "string" ||
+          !b.cv_filename.toLowerCase().endsWith(".pdf")
+        )
+          return reply({ error: "Consent and a PDF CV are required." }, 400);
+        cv = Buffer.from(b.cv_data, "base64");
+        if (
+          cv.length < 5 ||
+          cv.length > 2097152 ||
+          cv.subarray(0, 5).toString() !== "%PDF-"
+        )
+          return reply(
+            { error: "Upload a valid PDF CV of 2 MB or less." },
+            400,
+          );
+      }
+      if (!cv && !existing?.cv_content)
+        return reply({ error: "Upload your CV first." }, 400);
+      const questions =
+        existing?.general_questions ||
+        generateRoleAssessment(b.skills, "", b.experience);
+      await c.query(
+        `INSERT INTO applicant_career_profiles(applicant_id,skills,experience,education,cv_filename,cv_content,cv_updated_at,reviewed_at,general_questions) VALUES($1,$2,$3,$4,$5,$6,CASE WHEN $6::bytea IS NOT NULL THEN NOW() END,NOW(),$7) ON CONFLICT(applicant_id) DO UPDATE SET skills=EXCLUDED.skills,experience=EXCLUDED.experience,education=EXCLUDED.education,cv_filename=COALESCE(EXCLUDED.cv_filename,applicant_career_profiles.cv_filename),cv_content=COALESCE(EXCLUDED.cv_content,applicant_career_profiles.cv_content),cv_updated_at=CASE WHEN EXCLUDED.cv_content IS NOT NULL THEN NOW() ELSE applicant_career_profiles.cv_updated_at END,reviewed_at=NOW(),updated_at=NOW()`,
+        [
+          applicant,
+          b.skills.trim(),
+          b.experience.trim(),
+          b.education.trim(),
+          cv ? b.cv_filename.slice(0, 160) : null,
+          cv,
+          JSON.stringify(questions),
+        ],
+      );
+    } else if (b.action === "general_assessment") {
+      if (!existing?.reviewed_at || !existing.cv_content)
+        return reply({ error: "Complete your profile and CV first." }, 409);
+      const q = existing.general_questions as Question[];
+      if (existing.general_completed_at) {
+        if (
+          JSON.stringify(existing.general_answers) === JSON.stringify(b.answers)
+        ) {
+          await c.query("COMMIT");
+          return reply({ ok: true, reused: true });
+        }
+        return reply(
+          {
+            error:
+              "Assessment complete. Contact support for a review or accommodation.",
+          },
+          409,
+        );
+      }
+      if (
+        !q?.length ||
+        !Array.isArray(b.answers) ||
+        b.answers.length !== q.length ||
+        b.answers.some(
+          (a: unknown) =>
+            !Number.isInteger(a) || Number(a) < 0 || Number(a) > 3,
+        )
+      )
+        return reply({ error: "Answer each question." }, 400);
+      await c.query(
+        "UPDATE applicant_career_profiles SET general_answers=$2,general_score=$3,general_completed_at=NOW(),updated_at=NOW() WHERE applicant_id=$1",
+        [applicant, JSON.stringify(b.answers), grade(q, b.answers)],
+      );
+    } else return reply({ error: "Unknown action." }, 400);
+    await c.query("COMMIT");
+    return reply({ ok: true });
+  } catch {
+    return reply({ error: "Unable to save your career profile." }, 503);
+  } finally {
+    await c.query("ROLLBACK").catch(() => {});
+    c.release();
+    await pool.end();
+  }
+}
