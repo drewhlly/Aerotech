@@ -4,7 +4,7 @@ import { currentEmployee } from '@/lib/employee-auth';
 import { db } from '@/lib/employer-session';
 
 export const runtime = 'nodejs';
-const categories = ['annual', 'sick', 'maternity', 'paternity', 'compassionate', 'unpaid', 'other'];
+const categories = ['annual', 'sick', 'maternity', 'paternity', 'compassionate', 'study', 'unpaid', 'other'];
 const headers = { 'Cache-Control': 'private, no-store' };
 
 export async function GET() {
