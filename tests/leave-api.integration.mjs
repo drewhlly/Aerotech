@@ -6,7 +6,7 @@ const query=async(sql,params=[])=>{const r=await database.query(sql,params);retu
 const company='11111111-1111-4111-8111-111111111111',person='22222222-2222-4222-8222-222222222222',other='33333333-3333-4333-8333-333333333333';
 let employee=null,employer=null;
 mock.module(new URL('../src/lib/employee-auth.ts',import.meta.url).href,{namedExports:{currentEmployee:async()=>employee}});
-mock.module(new URL('../src/lib/employer-session.ts',import.meta.url).href,{namedExports:{currentEmployer:async()=>employer,db:()=>({query,end:async()=>{}})}});
+mock.module(new URL('../src/lib/employer-session.ts',import.meta.url).href,{namedExports:{currentEmployer:async()=>employer,db:()=>({query,connect:async()=>({query,release(){}}),end:async()=>{}})}});
 await database.exec(`CREATE TABLE workforce_employees(id uuid,employer_id uuid,first_name text,last_name text,employment_status text);CREATE TABLE employee_leave_balances(employer_id uuid,employee_id uuid,leave_year int,annual_allowance_days int,PRIMARY KEY(employer_id,employee_id,leave_year));CREATE TABLE employee_requests(id uuid,employer_id uuid,employee_id uuid,request_type text,leave_category text,start_date date,end_date date,details text,status text DEFAULT 'pending',review_note text,created_at timestamptz DEFAULT NOW());`);
 await query("INSERT INTO workforce_employees VALUES($1,$2,'Test','Employee','active'),($3,$3,'Other','Tenant','active')",[person,company,other]);
 const leave=await import('../src/app/api/leave/route.ts'),hr=await import('../src/app/api/hr/leave-balances/route.ts');
@@ -18,12 +18,24 @@ const year=new Date().getUTCFullYear(),monday=new Date(Date.UTC(year,0,1));monda
 const valid={category:'annual',startDate:monday.toISOString().slice(0,10),endDate:friday.toISOString().slice(0,10),details:'Test request'};
 assert.equal((await leave.POST(request({...valid,startDate:'2026-02-31'}))).status,400);
 assert.equal((await leave.POST(request(valid))).status,201);
+assert.equal((await leave.POST(request(valid))).status,409,'duplicate active leave must not be inserted');
 let result=await (await leave.GET()).json();assert.equal(result.requests.length,1);assert.equal(result.requests[0].leave_category,'annual');assert.equal(result.balance,null);
 employer=company;
 assert.equal((await hr.POST(request(null))).status,400);
 assert.equal((await hr.POST(request({employeeId:other,days:20}))).status,404);
 assert.equal((await hr.POST(request({employeeId:person,days:20}))).status,200);
+result=await (await leave.GET()).json();assert.equal(result.balance.pending_days,5);assert.equal(result.balance.remaining_days,20);assert.equal(result.balance.available_days,15);
+const legacy=await import('../src/app/api/employee/workspace/route.ts');
+assert.equal((await legacy.POST(request({...valid,type:'leave',category:undefined}))).status,400,'legacy endpoint must require a category');
+assert.equal((await legacy.POST(request({...valid,type:'leave'}))).status,409,'legacy endpoint must not bypass overlap checks');
+const hrRequests=await import('../src/app/api/hr/requests/route.ts');
+assert.equal((await hrRequests.POST(request({...valid,type:'leave',employeeId:person}))).status,409,'HR leave creation shares the overlap guard');
+assert.equal((await hrRequests.POST(request(null))).status,400);
+
 await query("UPDATE employee_requests SET status='approved' WHERE employer_id=$1",[company]);
-result=await (await leave.GET()).json();assert.equal(result.balance.annual_allowance_days,20);assert.equal(result.balance.used_days,5);
+result=await (await leave.GET()).json();assert.equal(result.balance.annual_allowance_days,20);assert.equal(result.balance.used_days,5);assert.equal(result.balance.pending_days,0);assert.equal(result.balance.available_days,15);
+await query("UPDATE employee_requests SET status='rejected' WHERE employer_id=$1",[company]);
+employee.manager_employee_id=null;assert.equal((await leave.POST(request(valid))).status,201,'HR can review leave when no manager is assigned');
+assert.equal((await leave.POST(request({...valid,endDate:`${year+2}-01-01`}))).status,400);
 employee={...employee,employer_id:other};result=await (await leave.GET()).json();assert.equal(result.requests.length,0);assert.equal(result.balance,null);
 await database.close();console.log('PASS: leave API auth, JSON/date/category validation, submission, HR allowance, annual balance and tenant isolation.');

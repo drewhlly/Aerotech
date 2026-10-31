@@ -240,7 +240,7 @@ export default function ProjectsWorkspace({
           {message}
         </p>
       )}
-      {loading && <p role="status">Loading work…</p>}
+      <div className="h-6 text-sm text-slate-600" role="status" aria-live="polite">{loading?'Loading work…':''}</div>
       {details&&projectId&&<ProjectFiles projectId={projectId} base={base}/>}
       {details && (
         <section className="aero-card space-y-4">

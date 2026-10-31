@@ -3,6 +3,8 @@
   "scores": [
     {
       "page": "home",
+      "indexing": "public",
+      "indexingBlocked": false,
       "url": "http://127.0.0.1:3100/",
       "performance": 98,
       "accessibility": 100,
@@ -11,40 +13,50 @@
     },
     {
       "page": "login",
+      "indexing": "public",
+      "indexingBlocked": false,
       "url": "http://127.0.0.1:3100/auth/login?role=applicant",
-      "performance": 99,
+      "performance": 98,
       "accessibility": 100,
       "best-practices": 100,
       "seo": 100
     },
     {
       "page": "projects",
+      "indexing": "private",
+      "indexingBlocked": true,
       "url": "http://127.0.0.1:3100/dashboard/employer/projects",
-      "performance": 99,
+      "performance": 100,
       "accessibility": 100,
       "best-practices": 100,
       "seo": 69
     },
     {
       "page": "meetings",
+      "indexing": "private",
+      "indexingBlocked": true,
       "url": "http://127.0.0.1:3100/dashboard/employer/meet",
       "performance": 98,
       "accessibility": 100,
-      "best-practices": 96,
+      "best-practices": 100,
       "seo": 69
     },
     {
       "page": "documents",
+      "indexing": "private",
+      "indexingBlocked": true,
       "url": "http://127.0.0.1:3100/dashboard/employer/documents",
-      "performance": 97,
+      "performance": 98,
       "accessibility": 100,
       "best-practices": 100,
       "seo": 69
     },
     {
       "page": "employee-tasks",
+      "indexing": "private",
+      "indexingBlocked": true,
       "url": "http://127.0.0.1:3100/employee/tasks",
-      "performance": 99,
+      "performance": 94,
       "accessibility": 100,
       "best-practices": 100,
       "seo": 69

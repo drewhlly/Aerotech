@@ -54,8 +54,12 @@ try {
       "docs/phase2/evidence/lighthouse-" + label + ".json",
       result.report,
     );
+    const privatePortal=path.startsWith('/dashboard/')||path.startsWith('/employee/');
+    const indexingBlocked=result.lhr.audits['is-crawlable']?.score===0;
     const row = {
       page: label,
+      indexing:privatePortal?'private':'public',
+      indexingBlocked,
       url: result.lhr.finalDisplayedUrl,
       ...Object.fromEntries(
         Object.entries(result.lhr.categories).map(([key, value]) => [
@@ -81,11 +85,11 @@ try {
   );
   if (
     scores.some((s) =>
-      ["performance", "accessibility", "best-practices", "seo"].some(
+      (s.indexing==='private'?["performance", "accessibility", "best-practices"]:["performance", "accessibility", "best-practices", "seo"]).some(
         (k) => s[k] < 90,
       ),
     )
-  )
+  || scores.some(s=>s.indexing==='private'&&!s.indexingBlocked))
     process.exitCode = 1;
 } finally {
   await browser.kill();

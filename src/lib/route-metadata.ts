@@ -98,6 +98,8 @@ const names:Record<string,string>={
   "/employee/documents": "Employee Documents",
   "/employee/leave": "Employee Leave",
   "/employee/notifications": "Employee Notifications",
+  "/employee/approvals": "My Approvals",
+  "/employee/approvals/payments": "Payment Authorisations",
   "/employee/payroll/approvals": "Employee Payroll Approvals",
   "/employee/payroll/payments": "Employee Payroll Payments",
   "/employee/payroll/statements": "Employee Payroll Statements",
