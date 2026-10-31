@@ -6,10 +6,11 @@ const company='11111111-1111-4111-8111-111111111111',other='22222222-2222-4222-8
 let actor=null;
 const query=async(sql,args=[])=>{const r=await database.query(sql,args);return {...r,rowCount:r.rows.length||r.affectedRows||0}};
 mock.module(new URL('../src/lib/employee-auth.ts',import.meta.url).href,{namedExports:{currentEmployee:async()=>actor}});
-mock.module(new URL('../src/lib/employer-session.ts',import.meta.url).href,{namedExports:{db:()=>({query,end:async()=>{}})}});
+mock.module(new URL('../src/lib/employer-session.ts',import.meta.url).href,{namedExports:{currentEmployer:async()=>company,db:()=>({query,connect:async()=>({query,release(){}}),end:async()=>{}})}});
 await database.exec(`CREATE TABLE workforce_employees(id uuid,employer_id uuid,manager_employee_id uuid,employment_status text,first_name text,last_name text);CREATE TABLE employee_requests(id uuid,employee_id uuid,employer_id uuid,request_type text,leave_category text,status text,start_date date,end_date date,details text,created_at timestamptz DEFAULT NOW(),reviewed_by_employee_id uuid,reviewed_at timestamptz,review_note text);`);
 await query("INSERT INTO workforce_employees VALUES($1,$2,$1,'active','Self','Manager'),($3,$2,$1,'active','Direct','Report')",[manager,company,staff]);
 await query("INSERT INTO employee_requests(id,employee_id,employer_id,request_type,status) VALUES($1,$2,$3,'leave','pending'),($2,$4,$3,'leave','pending')",[request,staff,company,manager]);
+await database.exec('ALTER TABLE employee_requests ADD COLUMN reviewed_by uuid;CREATE TABLE employee_notifications(id uuid,employer_id uuid,employee_id uuid,title text,body text,source_key text);CREATE UNIQUE INDEX notice_source ON employee_notifications(employer_id,employee_id,source_key) WHERE source_key IS NOT NULL;');
 const api=await import('../src/app/api/employee/manager/leave/route.ts');
 const req=id=>new Request('https://local.test/api/employee/manager/leave',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({requestId:id,decision:'approved',note:'Reviewed'})});
 assert.equal((await api.GET()).status,401);
@@ -18,4 +19,14 @@ actor={id:manager,employer_id:other};assert.equal((await api.GET()).status,403);
 actor={id:manager,employer_id:company};assert.equal((await api.POST(new Request('https://local.test/api/employee/manager/leave',{method:'POST',headers:{'content-type':'application/json'},body:'null'}))).status,400);const r=await api.GET();assert.equal(r.status,200);assert.equal((await r.json()).requests.length,1);
 assert.equal((await api.POST(req(staff))).status,404,'self-approval is forbidden');
 assert.equal((await api.POST(req(request))).status,200);assert.equal((await api.POST(req(request))).status,404,'review cannot be replayed');
+assert.equal((await query('SELECT COUNT(*)::int AS n FROM employee_notifications')).rows[0].n,1);
+const hr=await import('../src/app/api/hr/requests/[id]/review/route.ts');
+const review=body=>new Request('https://local.test/api/hr/requests/review',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});
+const params={params:Promise.resolve({id:staff})};
+assert.equal((await hr.POST(review(null),params)).status,400);
+assert.equal((await hr.POST(review({decision:'rejected'}),params)).status,400);
+assert.equal((await hr.POST(review({decision:'rejected',note:'Not available on these dates'}),params)).status,200);
+assert.equal((await hr.POST(review({decision:'approved'}),params)).status,409);
+assert.equal((await query('SELECT COUNT(*)::int AS n FROM employee_notifications')).rows[0].n,2);
+
 await database.close();console.log('PASS: manager permissions, company isolation, direct reports, self-approval denial and review replay protection.');

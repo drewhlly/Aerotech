@@ -1,3 +1,4 @@
+import {submitLeave,LeaveRequestError} from '@/lib/leave-requests';
 import {NextResponse} from "next/server";
 import {randomUUID} from "node:crypto";
 import {currentEmployer,db} from "@/lib/employer-session";
@@ -14,8 +15,13 @@ export async function GET(request:Request){
 export async function POST(request:Request){
  const employerId=await currentEmployer();if(!employerId)return NextResponse.json({error:"Unauthorized"},{status:401});
  let b:Record<string,unknown>;try{b=await request.json();}catch{return NextResponse.json({error:"Invalid JSON"},{status:400});}
+ if(!b||typeof b!=="object"||Array.isArray(b))return NextResponse.json({error:"Invalid request"},{status:400});
  const types=["leave","loan","salary_advance","redeployment","exit","document","expense"];
  if(typeof b.employeeId!=="string"||!types.includes(String(b.type))||typeof b.details!=="string"||!b.details.trim()||b.details.length>2500)return NextResponse.json({error:"Invalid employee, type or details"},{status:400});
+ if(b.type==='leave'){
+  try{const id=await submitLeave(employerId,b.employeeId,{category:b.category,startDate:b.startDate,endDate:b.endDate,details:b.details});return NextResponse.json({id,status:'pending'},{status:201});}
+  catch(error){return NextResponse.json({error:error instanceof LeaveRequestError?error.message:'Unable to submit request'},{status:error instanceof LeaveRequestError?error.status:503});}
+ }
  const validDate=(v:unknown)=>v===undefined||v===null||v===""||(typeof v==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(v));
  if(!validDate(b.startDate)||!validDate(b.endDate))return NextResponse.json({error:"Invalid dates"},{status:400});
  const pool=db();try{

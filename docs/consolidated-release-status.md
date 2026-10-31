@@ -74,3 +74,19 @@ The disposable PGlite socket fixture also reproduced a Parse/Bind protocol colli
 - These checks cover this checkpoint, not every feature in the full handoff. No production deploy was performed.
 
 - `npm run test:collaboration:browser`: all 18 broader browser checks passed, including public/login axe checks, employer projects/meetings/documents, employee isolation/tasks, notice history, cookie privacy controls, expired birthday notices and applicant/admin API boundaries. This does not constitute a crawl of every application route.
+
+## Additional changes prepared for the combined release
+
+- `src/lib/leave-requests.ts`: shared validated leave submission, tenant-scoped employee locking, bounded date ranges and rejection of overlapping pending/approved requests.
+- `src/app/api/leave/route.ts`: shared submission path; distinct pending annual days and available balance; preserves the legacy uncategorised warning.
+- `src/app/api/employee/workspace/route.ts`: old submission endpoint delegates to the same category and overlap validation.
+- `src/app/api/hr/requests/route.ts`: HR-created leave uses the same validation and overlap protection; null bodies return 400.
+- `src/lib/request-decision.ts`: deduplicated employee notification inside the decision transaction.
+- Manager and HR review APIs: commit decisions and notifications together; validate malformed bodies and require a rejection reason for HR decisions.
+- `src/app/dashboard/employer/requests/page.tsx`: branded request inbox, pending-first status filter, employee/type search, decision dialog, reason for rejection and clear response states.
+- `src/app/employee/leave/page.tsx`: allowance, approved, pending and available figures; accurate limits of existing policy calculations.
+- `src/app/employee/page.tsx`: removes duplicate inline manager approvals and the unassigned manager API call; assigned approvals remain in My approvals.
+- `package.json`: production build uses the verified webpack path explicitly.
+- Leave integration tests and consolidated browser checks cover duplicate submission, legacy/HR endpoint parity, pending balances, HR fallback without a manager and decision notifications.
+
+These changes need no new production migration and do not alter existing production records. Full accrual, carryover, configurable workweeks/holidays and the complete applicant identity/two-assessment journey remain outstanding. Release only after the updated checks pass; do not describe this as the entire handoff being complete.

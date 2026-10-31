@@ -41,6 +41,19 @@ try{
  const decision=(await pool.query('SELECT status,reviewed_by_employee_id FROM employee_requests WHERE id=$1',[request])).rows[0];assert.equal(decision.status,'approved');assert.equal(decision.reviewed_by_employee_id,fixture.employee);
  const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa','wcag22aa']).analyze();assert.deepEqual(axe.violations.filter(v=>['critical','serious'].includes(v.impact)).map(v=>v.id),[]);
  console.log('PASS assigned approvals, persisted leave decision, 360/768/1280 layouts and critical/serious axe checks');
+ await pool.query("INSERT INTO employee_leave_balances(employer_id,employee_id,leave_year,annual_allowance_days) VALUES($1,$2,EXTRACT(YEAR FROM CURRENT_DATE)::int,20) ON CONFLICT(employer_id,employee_id,leave_year) DO UPDATE SET annual_allowance_days=20",[fixture.employer,fixture.employee]);
+ const day=new Date();day.setUTCHours(0,0,0,0);while(day.getUTCDay()!==1)day.setUTCDate(day.getUTCDate()+1);
+ const date=day.toISOString().slice(0,10),leave={category:'annual',startDate:date,endDate:date,details:'Disposable concurrent leave check'};
+ const submissions=await Promise.all([employee.request.post('/api/leave',{data:leave,headers:{Origin:origin}}),employee.request.post('/api/leave',{data:leave,headers:{Origin:origin}})]);
+ assert.deepEqual(submissions.map(r=>r.status()).sort(),[201,409]);
+ const balance=await (await employee.request.get('/api/leave')).json();assert.equal(balance.balance.pending_days,1);assert.equal(balance.balance.available_days,19);
+ await page.setViewportSize({width:360,height:900});await page.goto(origin+'/employee/leave');await page.getByText('Available to request',{exact:true}).waitFor();assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth),false);
+ const hr=await employer.newPage();await hr.goto(origin+'/dashboard/employer/requests');await hr.getByRole('button',{name:'Reject',exact:true}).click();const review=hr.getByRole('dialog');await review.getByLabel('Decision note',{exact:true}).fill('Please choose alternative dates.');await review.getByRole('button',{name:'Confirm rejection',exact:true}).click();await hr.getByText('Decision recorded. The employee has been notified.',{exact:true}).waitFor();
+ const notifications=(await pool.query("SELECT COUNT(*)::int AS n FROM employee_notifications WHERE employer_id=$1 AND employee_id=$2 AND source_key LIKE 'request-decision:%'",[fixture.employer,fixture.employee])).rows[0].n;assert.equal(notifications,1);
+ assert.equal((await (await employee.request.get('/api/leave')).json()).balance.available_days,20);
+ const requestAxe=await new AxeBuilder({page:hr}).withTags(['wcag2a','wcag2aa','wcag21aa','wcag22aa']).analyze();assert.deepEqual(requestAxe.violations.filter(v=>['critical','serious'].includes(v.impact)).map(v=>v.id),[]);
+ await hr.close();console.log('PASS concurrent leave deduplication, pending balances, mobile leave view, HR decision and one employee notification');
+
  const receiver=await employer.newPage();await receiver.goto(origin+'/dashboard/employer/aerochat');await page.goto(origin+'/employee/aerochat');
  const text='Disposable browser delivery '+randomUUID();await page.getByLabel('Message your team',{exact:true}).fill(text);await page.getByRole('button',{name:'Send message',exact:true}).click();
  await page.getByText('Message sent.',{exact:true}).waitFor();await receiver.getByText(text,{exact:true}).waitFor({timeout:20000});
