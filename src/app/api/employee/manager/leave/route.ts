@@ -4,7 +4,7 @@ import {db} from "@/lib/employer-session";
 export const runtime="nodejs";
 export async function GET(){
  const manager=await currentEmployee();if(!manager)return NextResponse.json({error:"Unauthorized"},{status:401});
- const pool=db();try{const r=await pool.query("SELECT r.id,r.employee_id,r.start_date,r.end_date,r.details,r.created_at,e.first_name,e.last_name FROM employee_requests r JOIN workforce_employees e ON e.id=r.employee_id AND e.employer_id=r.employer_id WHERE r.employer_id=$1 AND e.manager_employee_id=$2 AND r.request_type='leave' AND r.status='pending' ORDER BY r.created_at ASC",[manager.employer_id,manager.id]);return NextResponse.json({requests:r.rows});}
+ const pool=db();try{const r=await pool.query("SELECT r.id,r.employee_id,r.start_date,r.end_date,r.leave_category,r.details,r.created_at,e.first_name,e.last_name FROM employee_requests r JOIN workforce_employees e ON e.id=r.employee_id AND e.employer_id=r.employer_id WHERE r.employer_id=$1 AND e.manager_employee_id=$2 AND r.request_type='leave' AND r.status='pending' ORDER BY r.created_at ASC",[manager.employer_id,manager.id]);return NextResponse.json({requests:r.rows});}
  catch{return NextResponse.json({error:"Leave approvals unavailable"},{status:503});}finally{await pool.end();}
 }
 export async function POST(request:Request){

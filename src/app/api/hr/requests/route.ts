@@ -7,7 +7,7 @@ export async function GET(request:Request){
  const status=new URL(request.url).searchParams.get("status");
  if(status&&!["pending","approved","rejected"].includes(status))return NextResponse.json({error:"Invalid status"},{status:400});
  const pool=db();try{
- const r=await pool.query("SELECT r.id,r.employee_id,r.request_type,r.details,r.start_date,r.end_date,r.status,r.created_at,e.first_name,e.last_name FROM employee_requests r JOIN workforce_employees e ON e.id=r.employee_id AND e.employer_id=r.employer_id WHERE r.employer_id=$1 AND ($2::text IS NULL OR r.status=$2) ORDER BY r.created_at DESC LIMIT 200",[employerId,status]);
+ const r=await pool.query("SELECT r.id,r.employee_id,r.request_type,r.leave_category,r.details,r.start_date,r.end_date,r.status,r.created_at,e.first_name,e.last_name FROM employee_requests r JOIN workforce_employees e ON e.id=r.employee_id AND e.employer_id=r.employer_id WHERE r.employer_id=$1 AND ($2::text IS NULL OR r.status=$2) ORDER BY r.created_at DESC LIMIT 200",[employerId,status]);
  return NextResponse.json({requests:r.rows});
  }catch{return NextResponse.json({error:"Requests database unavailable"},{status:503});}finally{await pool.end();}
 }
