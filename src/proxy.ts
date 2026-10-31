@@ -1,6 +1,7 @@
 import {NextRequest,NextResponse} from 'next/server';
 import {hostPortal,pagePortal,portalHomes} from './lib/portal-routing';
 import {workspaceLink} from './lib/portal-policy';
+import {employeeRequestCanApprove} from './lib/employee-approval-access';
 import {requestRole} from './lib/request-role';
 import {loginUrl} from './lib/auth-navigation';
 import {sameOrigin} from './lib/collaboration-policy';
@@ -34,6 +35,14 @@ export async function proxy(req:NextRequest){
  if(host&&destination&&destination!==host)return deny();
  if(path==='/support'||path==='/help')return forward(req);
  if(role&&home){
+  if(role==='employee'){
+   if(path==='/employee/opportunities'||path.startsWith('/employee/opportunities/'))return deny();
+   const approval=path==='/employee/approvals'||path.startsWith('/employee/approvals/')||path==='/employee/payroll/approvals'||path==='/employee/payroll/payments';
+   if(approval){
+    try{if(!await employeeRequestCanApprove(req.cookies.get('aerotech_employee_session')?.value,path.endsWith('/payments')))return deny();}
+    catch{return new NextResponse('Approval access is temporarily unavailable. Please retry.',{status:503});}
+   }
+  }
   if(path==='/billing'||path==='/pricing/checkout'||path==='/support/tickets'||path==='/meet'||path.startsWith('/meet/')||path==='/aerochat'){
    const target=role==='support'?home:path==='/support/tickets'&&role==='employer'?'/dashboard/employer/support-access':workspaceLink(role,path==='/pricing/checkout'?'/billing':path);
    url.pathname=target;return NextResponse.redirect(url);

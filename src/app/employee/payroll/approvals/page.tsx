@@ -1,12 +1,1 @@
-"use client";
-import {useFeedback} from "@/components/use-feedback";
-import { useEffect, useState } from "react";
-
-type Run={id:string;payroll_month:string;stage:string;status:string;gross_total:string;net_total:string};
-export default function PayrollReviewPage(){
- const [runs,setRuns]=useState<Run[]>([]),[message,setMessage]=useFeedback(),[busy,setBusy]=useState(false);
- async function load(){const r=await fetch("/api/employee/payroll/review");const data=await r.json();if(!r.ok)throw Error(data.error||"Unavailable");setRuns(data.awaitingReview||[]);}
- useEffect(()=>{void Promise.resolve().then(()=>{void load().catch(e=>setMessage(e.message));});},[setMessage]);
- async function review(runId:string,decision:"approved"|"rejected"){const note=window.prompt("Add your decision note:");if(note===null)return;setBusy(true);setMessage("");try{const r=await fetch("/api/employee/payroll/review",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({runId,decision,note})});const data=await r.json();if(!r.ok)throw Error(data.error||"Review failed");setMessage("Payroll "+decision+" for your assigned stage.");await load();}catch(e){setMessage(e instanceof Error?e.message:"Unable to review");}finally{setBusy(false);}}
- return <section className="mx-auto max-w-4xl p-6"><h1 className="mt-6 text-3xl font-bold">Payroll approvals</h1><p className="mt-2 text-sm text-slate-600">Only payroll awaiting your assigned approval stage appears here. Each decision is recorded against your employee account.</p>{message&&<p role="status" className="mt-5 text-sm">{message}</p>}<div className="mt-7 space-y-4">{runs.length===0?<div className="rounded-xl border bg-white p-6">No payroll runs awaiting your approval.</div>:runs.map(r=><article key={r.id} className="rounded-xl border bg-white p-6"><h2 className="font-semibold">{String(r.payroll_month).slice(0,7)} · {r.stage.toUpperCase()} review</h2><p className="mt-3 text-sm">Gross: ₦{Number(r.gross_total).toLocaleString("en-NG")} · Net: ₦{Number(r.net_total).toLocaleString("en-NG")}</p><div className="mt-4 flex gap-3"><button disabled={busy} onClick={()=>review(r.id,"approved")} className="rounded-lg bg-slate-900 px-4 py-2 text-white">Approve</button><button disabled={busy} onClick={()=>review(r.id,"rejected")} className="rounded-lg border px-4 py-2">Reject</button></div></article>)}</div></section>;
-}
+export {default} from '../../approvals/page';

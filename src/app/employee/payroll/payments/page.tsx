@@ -1,4 +1,8 @@
-import PayrollPayments from '@/components/payroll-payments';
+import {forbidden,redirect} from 'next/navigation';
 import {currentEmployee} from '@/lib/employee-auth';
-import {db} from '@/lib/employer-session';
-export default async function Page(){const employee=await currentEmployee();if(!employee)return null;const p=db();try{const assigned=(await p.query("SELECT 1 FROM payroll_stage_approvers WHERE employer_id=$1 AND employee_id=$2 AND stage='ceo'",[employee.employer_id,employee.id])).rowCount;if(!assigned)return <section className="aero-card"><h1 className="text-2xl font-bold">Salary payment authorisation</h1><p className="mt-4 text-slate-600">Only your organisation’s assigned CEO can release prepared salary payments. Your personal payslips remain available in your employee workspace.</p></section>;return <PayrollPayments/>}finally{await p.end()}}
+import {employeeApprovalStages} from '@/lib/employee-approval-access';
+export default async function LegacyPaymentAuthorisations(){
+ const employee=await currentEmployee();
+ if(!employee||!(await employeeApprovalStages(employee)).includes('ceo'))forbidden();
+ redirect('/employee/approvals/payments');
+}

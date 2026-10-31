@@ -12,7 +12,8 @@ export async function POST(request:Request){
  if(!employee)return NextResponse.json({error:"Employee sign-in required"},{status:401});
  let body:{runId?:string;decision?:string;note?:string};
  try{body=await request.json();}catch{return NextResponse.json({error:"Invalid request"},{status:400});}
- if(!body.runId||!["approved","rejected"].includes(body.decision||""))return NextResponse.json({error:"Run and decision required"},{status:400});
+ if(!body||typeof body!=="object"||Array.isArray(body)||body.note!==undefined&&(typeof body.note!=="string"||body.note.length>2000))return NextResponse.json({error:"Invalid decision note"},{status:400});
+ if(typeof body.runId!=="string"||!body.runId||!["approved","rejected"].includes(body.decision||""))return NextResponse.json({error:"Run and decision required"},{status:400});
  if(body.decision==="rejected"&&!body.note?.trim())return NextResponse.json({error:"Rejection reason required"},{status:400});
  const pool=db();const client=await pool.connect();
  try{

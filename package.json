@@ -17,7 +17,9 @@
     "test:recruitment": "node --experimental-test-module-mocks --import ./tests/helpers/ts-loader.mjs tests/recruitment-pipeline.integration.mjs",
     "test:events": "node --experimental-test-module-mocks --import ./tests/helpers/ts-loader.mjs tests/event-expiry.integration.mjs",
     "test:payouts": "node --experimental-test-module-mocks --import ./tests/helpers/ts-loader.mjs tests/payout-api.integration.mjs",
-    "test:billing": "node --experimental-test-module-mocks --import ./tests/helpers/ts-loader.mjs tests/subscription-billing.integration.mjs"
+    "test:billing": "node --experimental-test-module-mocks --import ./tests/helpers/ts-loader.mjs tests/subscription-billing.integration.mjs",
+    "test:integration": "node scripts/run-integration-tests.mjs",
+    "test:consolidated:browser": "node scripts/consolidated-browser-suite.mjs"
   },
   "repository": {
     "type": "git",
