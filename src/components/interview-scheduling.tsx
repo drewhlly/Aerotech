@@ -1,6 +1,7 @@
 "use client";
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useCallback, useState, type FormEvent } from "react";
 import Link from "next/link";
+import {useEventRefresh,useExpiryClock} from './use-event-refresh';
 type Slot = {
   id: string;
   job_id: string;
@@ -21,6 +22,7 @@ type Application = {
   interview_at: string | null;
   interview_room_id: string | null;
   interview_active: boolean;
+  interview_end_at?:string|null;
 };
 type Data = {
   role: string;
@@ -45,9 +47,10 @@ export default function InterviewScheduling({
     if (!r.ok) throw Error(d.error);
     setData(d);
   }, []);
-  useEffect(() => {
-    queueMicrotask(() => void load().catch((e) => setError(e.message)));
-  }, [load]);
+  const refresh=useCallback(()=>load().catch(e=>setError(e.message)),[load]);
+  useEventRefresh(refresh);
+  const now=useExpiryClock([...(data?.slots||[]).map(s=>s.ends_at),...(data?.applications||[]).map(a=>a.interview_end_at)]);
+
   async function action(body: unknown) {
     setBusy(true);
     setError("");
@@ -91,7 +94,7 @@ export default function InterviewScheduling({
   const application =
       data?.applications?.find((a) => a.id === selected) ||
       data?.applications?.[0],
-    slots = (data?.slots || []).filter(
+    slots = (data?.slots || []).filter(s=>Date.parse(s.ends_at)>now).filter(
       (s) => role === "employer" || s.job_id === application?.job_id,
     );
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -254,7 +257,7 @@ export default function InterviewScheduling({
                   </select>
                   {application?.interview_at &&
                     application.interview_room_id &&
-                    application.interview_active && (
+                    application.interview_active && Date.parse(application.interview_end_at||'')>now && (
                       <div className="mt-4 rounded-xl bg-blue-50 p-4">
                         <p className="text-sm font-semibold">
                           Booked:{" "}

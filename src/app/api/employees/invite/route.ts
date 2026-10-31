@@ -24,7 +24,7 @@ export async function GET(request: Request) {
   const pool = db();
   try {
     const e = await pool.query(
-      "SELECT e.id,EXISTS(SELECT 1 FROM employee_credentials c WHERE c.employee_id=e.id AND c.employer_id=e.employer_id) AS activated FROM workforce_employees e WHERE e.id=$1 AND e.employer_id=$2",
+      "SELECT e.id,e.employment_status,EXISTS(SELECT 1 FROM employee_credentials c WHERE c.employee_id=e.id AND c.employer_id=e.employer_id) AS activated FROM workforce_employees e WHERE e.id=$1 AND e.employer_id=$2",
       [id, employer],
     );
     if (!e.rowCount)
@@ -39,6 +39,7 @@ export async function GET(request: Request) {
     return NextResponse.json(
       {
         activated: e.rows[0].activated,
+        eligible:['active','probation','on_leave'].includes(e.rows[0].employment_status),
         delivery: j.rows[0] || null,
         configured: activationDeliveryConfigured(),
       },

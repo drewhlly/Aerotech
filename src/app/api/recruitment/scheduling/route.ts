@@ -43,7 +43,7 @@ export async function GET() {
       });
     }
     const applications = await pool.query(
-      "SELECT a.id,a.job_id,a.stage,a.interview_at,a.interview_room_id,a.interview_revision,COALESCE(m.status='scheduled' AND m.revoked_at IS NULL AND a.interview_at+m.duration_minutes*INTERVAL '1 minute'>NOW(),FALSE) AS interview_active,j.title,e.company_name FROM ats_applications a JOIN ats_jobs j ON j.id=a.job_id JOIN employer_accounts e ON e.id=j.employer_id LEFT JOIN meet_rooms m ON m.id=a.interview_room_id AND m.employer_id=j.employer_id WHERE a.applicant_id=$1 AND a.stage IN ('shortlisted','interview') AND a.interview_completed_at IS NULL ORDER BY a.created_at DESC LIMIT 100",
+      "SELECT a.id,a.job_id,a.stage,a.interview_at,a.interview_room_id,a.interview_revision,COALESCE(m.status='scheduled' AND m.revoked_at IS NULL AND a.interview_at+m.duration_minutes*INTERVAL '1 minute'>NOW(),FALSE) AS interview_active,a.interview_at+m.duration_minutes*INTERVAL '1 minute' AS interview_end_at,j.title,e.company_name FROM ats_applications a JOIN ats_jobs j ON j.id=a.job_id JOIN employer_accounts e ON e.id=j.employer_id LEFT JOIN meet_rooms m ON m.id=a.interview_room_id AND m.employer_id=j.employer_id WHERE a.applicant_id=$1 AND a.stage IN ('shortlisted','interview') AND a.interview_completed_at IS NULL ORDER BY a.created_at DESC LIMIT 100",
       [applicant],
     );
     const slots = await pool.query(

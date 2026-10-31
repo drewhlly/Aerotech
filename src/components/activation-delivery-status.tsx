@@ -1,5 +1,6 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
+import {useEventRefresh} from './use-event-refresh';
 export default function ActivationDeliveryStatus({
   employeeId,
 }: {
@@ -7,6 +8,7 @@ export default function ActivationDeliveryStatus({
 }) {
   const [data, setData] = useState<{
       activated: boolean;
+      eligible:boolean;
       configured: boolean;
       delivery: {
         status: string;
@@ -31,9 +33,8 @@ export default function ActivationDeliveryStatus({
       );
     }
   }, [employeeId]);
-  useEffect(() => {
-    queueMicrotask(() => void load());
-  }, [load]);
+  useEventRefresh(load);
+
   return (
     <section className="mt-5 rounded-xl border border-slate-200 bg-white p-4">
       <h2 className="font-semibold">Employee activation</h2>
@@ -48,7 +49,7 @@ export default function ActivationDeliveryStatus({
       ) : (
         <>
           <p className="mt-2 text-sm text-slate-700">
-            {data.activated
+            {!data.eligible?"Employee access is inactive. Activation is not available.":data.activated
               ? "Employee account activated."
               : data.delivery?.status === "done"
                 ? "Invitation accepted by the email provider. Inbox delivery is not guaranteed."

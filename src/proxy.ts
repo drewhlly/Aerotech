@@ -13,7 +13,7 @@ export async function proxy(req:NextRequest){
   if(!['GET','HEAD','OPTIONS'].includes(req.method)&&req.headers.has('origin')&&!sameOrigin(req.headers.get('origin')!,req.headers.get('host'),url.protocol))return NextResponse.json({error:'Invalid request origin'},{status:403});
   return forward(req);
  }
- if(path==='/forbidden')return forward(req);
+ if(path==='/forbidden'||path==='/auth/activate')return forward(req);
  let role;try{role=await requestRole(req)}catch{return new NextResponse('Workspace access is temporarily unavailable. Please retry.',{status:503})}
  const host=hostPortal(url.hostname,process.env.PORTAL_ROOT_DOMAIN),destination=pagePortal(path);
  const home=role==='support'?'/support-console':role?portalHomes[role]:null;
