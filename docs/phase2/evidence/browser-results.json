@@ -2,7 +2,7 @@
   "origin": "http://127.0.0.1:3100",
   "fixtureType": "Throwaway database, mock employees; no production services",
   "staffCount": 1000,
-  "projectFixture": "7582928b-3587-4f4e-aea5-88db1ea24be5",
+  "projectFixture": "bfd19338-9902-4570-8e0a-f47d60eee9d5",
   "results": [
     {
       "name": "Public homepage and real logo render, employee and applicant sign-ins remain visible",
@@ -61,7 +61,7 @@
       "status": "pass"
     },
     {
-      "name": "Employee recruitment stays local and saved settings close",
+      "name": "Employee recruitment is unavailable and saved settings close",
       "status": "pass"
     },
     {

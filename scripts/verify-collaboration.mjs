@@ -327,9 +327,12 @@ await check("Viewed notices leave active inbox and remain in history",async()=>{
  assert.equal(await ep.getByRole('article').filter({hasText:'Lifecycle test notice'}).count(),0);
  await ep.getByRole('button',{name:'History',exact:true}).click();await ep.getByRole('article').filter({hasText:'Lifecycle test notice'}).waitFor();
 });
-await check("Employee recruitment stays local and saved settings close",async()=>{
+await check("Employee recruitment is unavailable and saved settings close",async()=>{
  await ep.setViewportSize({width:1440,height:1100});await ep.goto(origin+'/employee/privacy',{waitUntil:'networkidle'});
- assert.equal(await ep.getByRole('link',{name:'Recruitment',exact:true}).getAttribute('href'),'/employee/opportunities');
+ assert.equal(await ep.getByRole('link',{name:'Recruitment',exact:true}).count(),0);
+ assert.equal((await ep.request.get(origin+'/employee/opportunities')).status(),403);
+ assert.equal(await ep.getByRole('button',{name:'Save choices',exact:true}).count(),0);
+ await ep.getByRole('button',{name:'Edit cookie preferences',exact:true}).click();
  await ep.getByRole('button',{name:'Save choices',exact:true}).click();await ep.getByRole('button',{name:'Edit cookie preferences',exact:true}).waitFor();
  await ep.getByRole('button',{name:'New privacy request',exact:true}).click();await ep.getByLabel('Request details',{exact:true}).fill('Please provide my additional account records for this isolated test.');await ep.getByRole('button',{name:'Submit privacy request',exact:true}).click();await ep.getByRole('button',{name:'New privacy request',exact:true}).waitFor();assert.equal(await ep.getByRole('button',{name:'Submit privacy request',exact:true}).count(),0);
 });

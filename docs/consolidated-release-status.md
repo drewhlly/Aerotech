@@ -39,6 +39,7 @@ The disposable PGlite socket fixture also reproduced a Parse/Bind protocol colli
 - `src/app/api/payroll/approve/route.ts`: malformed decision-body validation.
 - `src/lib/route-metadata.ts`: approval-page titles.
 - `package.json` and `scripts/run-integration-tests.mjs`: unified integration test command.
+- `scripts/phase2-browser-suite.mjs` and `scripts/verify-collaboration.mjs`: reuse the isolated single-session database adapter and test removal of employee recruitment and explicitly opened cookie preferences.
 - `scripts/consolidated-browser-suite.mjs`, `scripts/verify-consolidated-workflows.mjs`, `scripts/pglite-pool-preload.cjs`: disposable browser verification of the changed flows.
 - `tests/aerochat-delivery.integration.mjs`, `tests/employee-approval-access.integration.mjs`, `tests/employee-leave-approval.integration.mjs`: replay, responsibility and tenant-isolation regressions.
 - `tests/ai-api.integration.mjs`: current provider failure tests.
@@ -71,3 +72,5 @@ The disposable PGlite socket fixture also reproduced a Parse/Bind protocol colli
 - `npx tsc --noEmit`: passed.
 - `npm run test:consolidated:browser`: passed against disposable localhost database. Verified actual HTTP 403 access denials, assigned approval visibility, persisted manager decision, 360/768/1280 layouts, no critical/serious axe issues on the approvals view, two-session chat delivery and one stored row on retry. No runtime errors were observed on the tested employee pages.
 - These checks cover this checkpoint, not every feature in the full handoff. No production deploy was performed.
+
+- `npm run test:collaboration:browser`: all 18 broader browser checks passed, including public/login axe checks, employer projects/meetings/documents, employee isolation/tasks, notice history, cookie privacy controls, expired birthday notices and applicant/admin API boundaries. This does not constitute a crawl of every application route.

@@ -48,6 +48,7 @@ try {
     ],
     {
       DATABASE_URL: "postgres://test:test@127.0.0.1:55432/postgres",
+      NODE_OPTIONS: "--require ./scripts/pglite-pool-preload.cjs",
       DOCUMENT_ENCRYPTION_KEY: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
     },
     "/tmp/phase2-server-suite.log",
