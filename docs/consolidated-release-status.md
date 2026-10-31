@@ -115,3 +115,5 @@ The combined release was merged as `3898b66934748c3034db3477b2f2179b22736d7f` an
 - `tests/postgres-connection.test.mjs` covers strict aliases, encoded credentials, unrelated parameters, idempotence and local/explicit configurations.
 - Validation for the correction: clean build, lint, TypeScript, 58 unit tests, all 13 integration suites and the targeted browser suite passed. The browser checks again verified tenant/access boundaries, concurrent leave, balances, HR decisions, one notification and chat delivery.
 - The correction needs no migration and changes no production business records. Its deployment and subsequent log scan are recorded in the follow-up pull request.
+
+The final connection audit found two additional Pool constructors: applicant sessions and employer registration. Both now apply the same strict connection-string helper. The intermediate TLS deployment was cancelled before activation so the completed correction can deploy together. The existing combined UI/workflow release stays live during verification.

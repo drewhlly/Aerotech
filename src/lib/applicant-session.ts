@@ -1,3 +1,4 @@
+import {strictDatabaseConnectionString} from './postgres-connection';
 import {selectPortal} from './portal-selection';
 import { randomBytes, createHash } from "node:crypto";
 import { cookies } from "next/headers";
@@ -6,7 +7,7 @@ export const APPLICANT_COOKIE = "aerotech_applicant_session";
 const digest = (token: string) => createHash("sha256").update(token).digest("hex");
 export function applicantDB() {
  if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL missing");
- return new Pool({ connectionString: process.env.DATABASE_URL, max: 2, connectionTimeoutMillis: 5000 });
+ return new Pool({ connectionString: strictDatabaseConnectionString(process.env.DATABASE_URL), max: 2, connectionTimeoutMillis: 5000 });
 }
 export async function startApplicantSession(pool: Pool, applicantId: string) {
  await selectPortal('applicant');
