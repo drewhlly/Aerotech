@@ -11,7 +11,9 @@ export async function GET(){
 }
 export async function POST(request:Request){
  const employer=await currentEmployer();if(!employer)return NextResponse.json({error:"Unauthorized"},{status:401});
- let b:Record<string,unknown>;try{b=await request.json();}catch{return NextResponse.json({error:"Invalid JSON"},{status:400});}
+ let b:Record<string,unknown>;try{b=await request.json().catch(()=>null);
+ if(!b||typeof b!=='object'||Array.isArray(b))return NextResponse.json({error:'Request body must be a JSON object.'},{status:400});
+}catch{return NextResponse.json({error:"Invalid JSON"},{status:400});}
  if(typeof b.employeeId!=="string"||typeof b.title!=="string"||!b.title.trim()||b.title.length>200||typeof b.description!=="string"||b.description.length>2000||b.targetDate&&!(typeof b.targetDate==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(b.targetDate)))return NextResponse.json({error:"Invalid goal"},{status:400});
  const pool=db();try{
  const r=await pool.query("INSERT INTO hr_performance_goals(id,employer_id,employee_id,title,description,target_date) SELECT $1,$2,id,$3,$4,$5::date FROM workforce_employees WHERE id=$6 AND employer_id=$2 RETURNING id",[randomUUID(),employer,b.title.trim(),b.description,b.targetDate||null,b.employeeId]);

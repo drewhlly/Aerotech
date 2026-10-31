@@ -4,7 +4,9 @@ import {db} from "@/lib/employer-session";
 import {checkPassword,startEmployeeSession} from "@/lib/employee-auth";
 export const runtime="nodejs";
 export async function POST(request:Request){
- let b:{email?:unknown;password?:unknown};try{b=await request.json();}catch{return NextResponse.json({error:"Invalid request"},{status:400});}
+ let b:{email?:unknown;password?:unknown};try{b=await request.json().catch(()=>null);
+ if(!b||typeof b!=='object'||Array.isArray(b))return NextResponse.json({error:'Request body must be a JSON object.'},{status:400});
+}catch{return NextResponse.json({error:"Invalid request"},{status:400});}
  if(typeof b.email!=="string"||typeof b.password!=="string")return NextResponse.json({error:"Email and password required"},{status:400});
  if(b.email.length>254||b.password.length>256)return NextResponse.json({error:'Invalid email or password'},{status:400});
  const pool=db();try{

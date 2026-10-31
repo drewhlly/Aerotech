@@ -1,0 +1,180 @@
+{
+  "scope": "Disposable localhost fixtures; null JSON; exported POST/PATCH/PUT handlers; excludes logout, crons and re-exported handlers",
+  "routeMethods": 83,
+  "cases": 415,
+  "unhandled500": 34,
+  "failures": [
+    {
+      "method": "PATCH",
+      "route": "/api/employer/alerts",
+      "roles": [
+        "employer"
+      ]
+    },
+    {
+      "method": "PATCH",
+      "route": "/api/help/tickets",
+      "roles": [
+        "admin"
+      ]
+    },
+    {
+      "method": "PATCH",
+      "route": "/api/hr/surveys",
+      "roles": [
+        "employer"
+      ]
+    },
+    {
+      "method": "PATCH",
+      "route": "/api/workforce-documents",
+      "roles": [
+        "employer"
+      ]
+    },
+    {
+      "method": "POST",
+      "route": "/api/auth/activate/employee",
+      "roles": [
+        "admin",
+        "applicant",
+        "employee",
+        "employer",
+        "logged out"
+      ]
+    },
+    {
+      "method": "POST",
+      "route": "/api/auth/login/employee",
+      "roles": [
+        "admin",
+        "applicant",
+        "employee",
+        "employer",
+        "logged out"
+      ]
+    },
+    {
+      "method": "POST",
+      "route": "/api/company-feedback",
+      "roles": [
+        "employee"
+      ]
+    },
+    {
+      "method": "POST",
+      "route": "/api/employee/attendance",
+      "roles": [
+        "employee"
+      ]
+    },
+    {
+      "method": "POST",
+      "route": "/api/employee/surveys",
+      "roles": [
+        "employee"
+      ]
+    },
+    {
+      "method": "POST",
+      "route": "/api/employees/invite",
+      "roles": [
+        "employer"
+      ]
+    },
+    {
+      "method": "POST",
+      "route": "/api/help/tickets",
+      "roles": [
+        "applicant",
+        "employee",
+        "employer"
+      ]
+    },
+    {
+      "method": "POST",
+      "route": "/api/hr/attendance",
+      "roles": [
+        "employer"
+      ]
+    },
+    {
+      "method": "POST",
+      "route": "/api/hr/attendance/check-in",
+      "roles": [
+        "employer"
+      ]
+    },
+    {
+      "method": "POST",
+      "route": "/api/hr/attendance/sites",
+      "roles": [
+        "employer"
+      ]
+    },
+    {
+      "method": "POST",
+      "route": "/api/hr/departments",
+      "roles": [
+        "employer"
+      ]
+    },
+    {
+      "method": "POST",
+      "route": "/api/hr/exits",
+      "roles": [
+        "employer"
+      ]
+    },
+    {
+      "method": "POST",
+      "route": "/api/hr/goals",
+      "roles": [
+        "employer"
+      ]
+    },
+    {
+      "method": "POST",
+      "route": "/api/hr/shifts",
+      "roles": [
+        "employer"
+      ]
+    },
+    {
+      "method": "POST",
+      "route": "/api/hr/surveys",
+      "roles": [
+        "employer"
+      ]
+    },
+    {
+      "method": "POST",
+      "route": "/api/payroll/approvers",
+      "roles": [
+        "employer"
+      ]
+    },
+    {
+      "method": "POST",
+      "route": "/api/recruitment/import",
+      "roles": [
+        "employer"
+      ]
+    },
+    {
+      "method": "POST",
+      "route": "/api/workforce-documents",
+      "roles": [
+        "applicant",
+        "employee"
+      ]
+    },
+    {
+      "method": "PUT",
+      "route": "/api/admin/job-safety",
+      "roles": [
+        "admin"
+      ]
+    }
+  ]
+}

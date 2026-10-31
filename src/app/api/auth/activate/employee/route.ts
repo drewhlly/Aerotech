@@ -5,7 +5,9 @@ import {db} from "@/lib/employer-session";
 import {digest,hashPassword,startEmployeeSession} from "@/lib/employee-auth";
 export const runtime="nodejs";
 export async function POST(request:Request){
- let b:{token?:unknown;password?:unknown;acceptedPolicies?:unknown;policyVersion?:unknown};try{b=await request.json();}catch{return NextResponse.json({error:"Invalid request"},{status:400});}
+ let b:{token?:unknown;password?:unknown;acceptedPolicies?:unknown;policyVersion?:unknown};try{b=await request.json().catch(()=>null);
+ if(!b||typeof b!=='object'||Array.isArray(b))return NextResponse.json({error:'Request body must be a JSON object.'},{status:400});
+}catch{return NextResponse.json({error:"Invalid request"},{status:400});}
  if(typeof b.token!=="string"||! /^[0-9a-f]{64}$/.test(b.token)||typeof b.password!=="string"||b.password.length<12||b.password.length>128)return NextResponse.json({error:"Valid invitation and password of at least 12 characters required"},{status:400});
  if(!acceptsPolicies(b))return NextResponse.json({error:'Accept the current Terms and Privacy Policy.'},{status:400});
  const pool=db();const client=await pool.connect();

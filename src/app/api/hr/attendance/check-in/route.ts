@@ -7,7 +7,9 @@ export async function POST(request:Request){
  const employer=await currentEmployer();
  if(!employer)return NextResponse.json({error:"Employer sign-in required"},{status:401});
  let data:{employeeId?:string;siteId?:string;eventType?:string;latitude?:number;longitude?:number;accuracy?:number;faceVerification?:string};
- try{data=await request.json();}catch{return NextResponse.json({error:"Invalid request"},{status:400});}
+ try{data=await request.json().catch(()=>null);
+ if(!data||typeof data!=='object'||Array.isArray(data))return NextResponse.json({error:'Request body must be a JSON object.'},{status:400});
+}catch{return NextResponse.json({error:"Invalid request"},{status:400});}
  if(!data.employeeId||!data.siteId||!["clock_in","clock_out"].includes(data.eventType||""))return NextResponse.json({error:"Employee, site and attendance event required"},{status:400});
  if(typeof data.latitude!=="number"||typeof data.longitude!=="number"||typeof data.accuracy!=="number")return NextResponse.json({error:"Device GPS permission and reliable location required"},{status:400});
  // Never trust a client-provided biometric result. Face matching requires a server-verified provider.

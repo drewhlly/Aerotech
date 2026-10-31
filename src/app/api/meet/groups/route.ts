@@ -41,7 +41,9 @@ export async function POST(req: Request) {
   try {
     const a = await actor();
     if (a.employee) throw new AccessError("Employer access required");
-    const b = await req.json();
+    const b = await req.json().catch(()=>null);
+ if(!b||typeof b!=='object'||Array.isArray(b))return respond({error:'Request body must be a JSON object.'},400);
+
     return await transaction(async (c) => {
       const members = ids(b.members);
       if (

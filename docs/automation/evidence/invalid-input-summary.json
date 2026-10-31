@@ -1,0 +1,19 @@
+{
+  "scope": "Local disposable database only",
+  "routeMethods": 83,
+  "roles": 5,
+  "bodyShapes": [
+    "null",
+    "array",
+    "number",
+    "malformed",
+    "invalid field types"
+  ],
+  "checked": 2075,
+  "unhandled500": [],
+  "serviceUnavailable": [
+    "/api/billing/webhook",
+    "/api/payroll/payments/webhook/0d071311-b47a-4150-96e1-2c41e9b4b3b9",
+    "/api/employee/face"
+  ]
+}

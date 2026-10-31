@@ -1,0 +1,34 @@
+import assert from 'node:assert/strict';
+import {PGlite} from '@electric-sql/pglite';
+import {readFileSync} from 'node:fs';
+import {randomUUID} from 'node:crypto';
+import {activeWorkflowNotice,activeEmployeeNotice} from '../src/lib/notification-policy.ts';
+const database=await PGlite.create(),company=randomUUID(),employee=randomUUID(),document=randomUUID();
+const query=async(sql,args=[])=>{const r=await database.query(sql,args);return {...r,rowCount:r.rows.length||r.affectedRows||0}};
+for(const m of readFileSync('scripts/migrate.mjs','utf8').matchAll(/"(\d{3}_[^"]+\.sql)"/g))await database.exec(readFileSync('database/'+m[1],'utf8'));
+await query("INSERT INTO employer_accounts(id,company_name,company_email,admin_first_name,admin_last_name,phone,country,password_hash) VALUES($1,'Fixture','owner@example.test','Test','Owner','000','Nigeria','test-only')",[company]);
+await query("INSERT INTO workforce_employees(id,employer_id,employee_number,first_name,last_name,email,job_title,department,location,employment_status,hire_date) VALUES($1,$2,'EMP-1','Test','Employee','person@example.test','Engineer','Engineering','Lagos','probation',CURRENT_DATE-120)",[employee,company]);
+await query("INSERT INTO employee_document_records(id,employer_id,employee_id,title,expiry_date) VALUES($1,$2,$3,'Qualification',CURRENT_DATE+5)",[document,company,employee]);
+const date=(await query('SELECT expiry_date::text AS day FROM employee_document_records WHERE id=$1',[document])).rows[0].day,key='expiry:'+document+':'+date;
+await query("INSERT INTO workflow_alerts(employer_id,alert_key,title,details) VALUES($1,$2,'Document expiry needs attention','Recorded document')",[company,key]);
+await query("INSERT INTO employee_notifications(id,employer_id,employee_id,title,body,source_key) VALUES($1,$2,$3,'Document expiry reminder','Recorded document',$4)",[randomUUID(),company,employee,key]);
+const activeHR=async()=>Number((await query(`SELECT COUNT(*)::int AS n FROM workflow_alerts n WHERE n.employer_id=$1 AND (${activeWorkflowNotice})`,[company])).rows[0].n);
+const activeStaff=async()=>Number((await query(`SELECT COUNT(*)::int AS n FROM employee_notifications n WHERE n.employer_id=$1 AND n.employee_id=$2 AND (${activeEmployeeNotice})`,[company,employee])).rows[0].n);
+try{
+ assert.equal(await activeHR(),1);assert.equal(await activeStaff(),1);
+ await query('UPDATE employee_document_records SET expiry_date=CURRENT_DATE+90 WHERE id=$1',[document]);
+ assert.equal(await activeHR(),0,'renewed document must resolve the old HR reminder');assert.equal(await activeStaff(),0,'renewed document must resolve the old employee reminder');
+ const due=(await query('SELECT (hire_date+90)::text AS day FROM workforce_employees WHERE id=$1',[employee])).rows[0].day;
+ await query("INSERT INTO workflow_alerts(employer_id,alert_key,title,details) VALUES($1,$2,'Staff confirmation review due','Review required')",[company,'confirmation:'+employee+':'+due]);assert.equal(await activeHR(),1);
+ await query("INSERT INTO employee_confirmation_decisions(id,employer_id,employee_id,decision,effective_date,notes) VALUES($1,$2,$3,'confirmed',CURRENT_DATE,'HR approved')",[randomUUID(),company,employee]);assert.equal(await activeHR(),0,'completed confirmation must clear the old active reminder');
+ assert.equal((await query('SELECT COUNT(*)::int AS n FROM workflow_alerts WHERE employer_id=$1',[company])).rows[0].n,2,'history is retained');
+ const training=randomUUID(),goal=randomUUID();
+ await query("UPDATE workforce_employees SET hire_date=((NOW() AT TIME ZONE 'Africa/Lagos')::date-INTERVAL '2 years') WHERE id=$1",[employee]);
+ await query("INSERT INTO employee_training_records(id,employer_id,employee_id,title,due_date) VALUES($1,$2,$3,'Safety training',CURRENT_DATE-2)",[training,company,employee]);
+ await query("INSERT INTO hr_performance_goals(id,employer_id,employee_id,title,description,target_date) VALUES($1,$2,$3,'Delivery goal','Reviewed objective',CURRENT_DATE-2)",[goal,company,employee]);
+ const {syncOperationalReminders}=await import('../src/lib/operational-reminders.ts');await syncOperationalReminders({query},company);await syncOperationalReminders({query},company);
+ assert.equal(await activeStaff(),3,'one anniversary plus two overdue notices, despite repeated triggers');
+ assert.equal((await query("SELECT COUNT(*)::int AS n FROM employee_notifications WHERE source_key LIKE 'anniversary:%'")).rows[0].n,1);
+ await query("UPDATE employee_training_records SET status='completed' WHERE id=$1",[training]);await query("UPDATE hr_performance_goals SET status='completed',progress=100 WHERE id=$1",[goal]);assert.equal(await activeStaff(),1,'completed work resolves overdue notices');
+ console.log('PASS renewed document and resolved confirmation reminders leave active inboxes while history remains');
+}finally{await database.close()}

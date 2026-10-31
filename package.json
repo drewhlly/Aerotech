@@ -19,7 +19,9 @@
     "test:payouts": "node --experimental-test-module-mocks --import ./tests/helpers/ts-loader.mjs tests/payout-api.integration.mjs",
     "test:billing": "node --experimental-test-module-mocks --import ./tests/helpers/ts-loader.mjs tests/subscription-billing.integration.mjs",
     "test:integration": "node scripts/run-integration-tests.mjs",
-    "test:consolidated:browser": "node scripts/consolidated-browser-suite.mjs"
+    "test:consolidated:browser": "node scripts/consolidated-browser-suite.mjs",
+    "test:automation:browser": "node scripts/automation-browser-suite.mjs",
+    "test:api:invalid-input": "node scripts/invalid-input-suite.mjs"
   },
   "repository": {
     "type": "git",
