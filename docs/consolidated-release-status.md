@@ -105,3 +105,13 @@ The renewed instruction authorises deployment of the tested combined changes. Th
 - `scripts/phase2-lighthouse.mjs` separates public SEO checks from private indexing assertions. Updated score and browser summaries are in `docs/phase2/evidence`.
 - Credential-pattern scan found no OpenAI project keys or private-key PEMs in source, public assets or the built client assets. This is a scoped scan, not a certification of the entire repository history.
 - No new database migration, production test records, bank transfers or destructive cleanup is required by this release.
+
+## Post-deployment TLS correction
+
+The combined release was merged as `3898b66934748c3034db3477b2f2179b22736d7f` and reached READY on the production domains. All 19 unauthenticated production HTTP checks passed. A subsequent deployment-scoped runtime scan found a PostgreSQL SSL-alias warning on Careers; it was a driver warning rather than a failed page.
+
+- `src/lib/postgres-connection.ts` explicitly maps pg's current strict SSL aliases to `verify-full`; credentials, other parameters, local connections and explicit compatibility settings are preserved.
+- `src/lib/employer-session.ts` applies this normalisation before creating the existing connection pool.
+- `tests/postgres-connection.test.mjs` covers strict aliases, encoded credentials, unrelated parameters, idempotence and local/explicit configurations.
+- Validation for the correction: clean build, lint, TypeScript, 58 unit tests, all 13 integration suites and the targeted browser suite passed. The browser checks again verified tenant/access boundaries, concurrent leave, balances, HR decisions, one notification and chat delivery.
+- The correction needs no migration and changes no production business records. Its deployment and subsequent log scan are recorded in the follow-up pull request.

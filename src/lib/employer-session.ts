@@ -1,3 +1,4 @@
+import {strictDatabaseConnectionString} from './postgres-connection';
 import {planAllows} from './plan-access';
 import {selectPortal} from './portal-selection';
 import { randomBytes, createHash } from "node:crypto";
@@ -10,7 +11,7 @@ export const SESSION_COOKIE = "aerotech_employer_session";
 export const sessionDigest = (token: string) => createHash("sha256").update(token).digest("hex");
 export const db = () => {
   if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is not configured");
-  return new Pool({ connectionString: process.env.DATABASE_URL, max: 2, connectionTimeoutMillis: 5000 });
+  return new Pool({ connectionString: strictDatabaseConnectionString(process.env.DATABASE_URL), max: 2, connectionTimeoutMillis: 5000 });
 };
 export async function startEmployerSession(pool: Pool, employerId: string) {
  await selectPortal('employer');
