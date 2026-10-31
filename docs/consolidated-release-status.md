@@ -44,7 +44,7 @@ The disposable PGlite socket fixture also reproduced a Parse/Bind protocol colli
 - `tests/aerochat-delivery.integration.mjs`, `tests/employee-approval-access.integration.mjs`, `tests/employee-leave-approval.integration.mjs`: replay, responsibility and tenant-isolation regressions.
 - `tests/ai-api.integration.mjs`: current provider failure tests.
 
-## Release blockers still outstanding
+## Remaining requirements from the full handoff
 
 - The full ordered applicant journey is not implemented: verified identity/phone ownership, authorised NIN provider, CV extraction/correction, separate general and job-specific assessments, configurable 85% qualification, accommodations and review/appeal workflow.
 - Identity verification and SMS providers are not configured. Do not label NIN or phone numbers verified without a real successful provider result. Do not substitute possession of NIN for proof of identity.
@@ -90,3 +90,18 @@ The disposable PGlite socket fixture also reproduced a Parse/Bind protocol colli
 - Leave integration tests and consolidated browser checks cover duplicate submission, legacy/HR endpoint parity, pending balances, HR fallback without a manager and decision notifications.
 
 These changes need no new production migration and do not alter existing production records. Full accrual, carryover, configurable workweeks/holidays and the complete applicant identity/two-assessment journey remain outstanding. Release only after the updated checks pass; do not describe this as the entire handoff being complete.
+
+
+## Final candidate validation — 31 October 2026
+
+The renewed instruction authorises deployment of the tested combined changes. This report records candidate validation; production deployment is verified separately in Vercel. It does not certify completion of the entire handoff.
+
+- Clean `npm run build`, lint, 56 unit tests, all 13 integration suites and `tsc --noEmit` passed.
+- Targeted browser checks passed: actual 403 boundaries, assigned approvals, mobile layouts, concurrent leave submission (one 201 and one 409), pending/available balances, HR rejection, balance restoration, exactly one notification and two-session chat delivery.
+- All 18 broader browser checks passed with disposable data.
+- Final local Lighthouse performance: homepage 98, applicant sign-in 98, projects 100, meetings 98, documents 98, employee tasks 94. Accessibility and Best Practices are 100 across these six pages. Public-page SEO is 100.
+- Private portal SEO is 69 because indexing is intentionally blocked by meta tags and robots.txt. The gate requires private pages to remain blocked, rather than requiring public indexing to raise their SEO score.
+- `src/components/projects-workspace.tsx` reserves space for the loading status; the reproduced project layout shift fell from 0.184 to 0.018 in the measured run.
+- `scripts/phase2-lighthouse.mjs` separates public SEO checks from private indexing assertions. Updated score and browser summaries are in `docs/phase2/evidence`.
+- Credential-pattern scan found no OpenAI project keys or private-key PEMs in source, public assets or the built client assets. This is a scoped scan, not a certification of the entire repository history.
+- No new database migration, production test records, bank transfers or destructive cleanup is required by this release.

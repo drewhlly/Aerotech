@@ -2,7 +2,7 @@
   "origin": "http://127.0.0.1:3100",
   "fixtureType": "Throwaway database, mock employees; no production services",
   "staffCount": 1000,
-  "projectFixture": "bfd19338-9902-4570-8e0a-f47d60eee9d5",
+  "projectFixture": "f2f336c3-8e17-4287-8951-a0f6e29749cd",
   "results": [
     {
       "name": "Public homepage and real logo render, employee and applicant sign-ins remain visible",
