@@ -1,26 +1,120 @@
-import {NextResponse} from "next/server";
-import {randomUUID,randomBytes} from "node:crypto";
-import {currentEmployer,db} from "@/lib/employer-session";
-import {digest} from "@/lib/employee-auth";
-import {sendEmployeeInvitation} from "@/lib/invitation-email";
-export const runtime="nodejs";
-export async function POST(request:Request){
- const employer=await currentEmployer();if(!employer)return NextResponse.json({error:"Employer sign-in required"},{status:401});
- let b:{employeeId?:unknown};try{b=await request.json().catch(()=>null);
- if(!b||typeof b!=='object'||Array.isArray(b))return NextResponse.json({error:'Request body must be a JSON object.'},{status:400});
-}catch{return NextResponse.json({error:"Invalid JSON"},{status:400});}
- if(typeof b.employeeId!=="string")return NextResponse.json({error:"Employee required"},{status:400});
- const pool=db();try{
- const employee=await pool.query("SELECT e.id,e.email,e.first_name, c.employee_id AS activated FROM workforce_employees e LEFT JOIN employee_credentials c ON c.employee_id=e.id WHERE e.id=$1 AND e.employer_id=$2",[b.employeeId,employer]);
- if(!employee.rowCount)return NextResponse.json({error:"Employee not found"},{status:404});
- if(employee.rows[0].activated)return NextResponse.json({error:"Employee account already activated"},{status:409});
- const base=process.env.APP_BASE_URL;
- if(!base||!/^https:\/\//.test(base)||!process.env.RESEND_API_KEY||!process.env.INVITATION_FROM_EMAIL)return NextResponse.json({error:"Set APP_BASE_URL, RESEND_API_KEY and INVITATION_FROM_EMAIL on hosting before sending invitations."},{status:503});
- const token=randomBytes(32).toString("hex");
- await pool.query("INSERT INTO employee_invitations(id,employer_id,employee_id,token_hash,expires_at) VALUES($1,$2,$3,$4,NOW()+INTERVAL '48 hours')",[randomUUID(),employer,b.employeeId,digest(token)]);
- const link=new URL("/auth/activate",base);link.searchParams.set("token",token);
- try{await sendEmployeeInvitation(employee.rows[0].email,employee.rows[0].first_name,link.toString());}
- catch{return NextResponse.json({error:"Invitation email could not be delivered. Check email service configuration."},{status:502});}
- return NextResponse.json({sent:true,employeeEmail:employee.rows[0].email,expiresInHours:48},{status:201});
- }catch{return NextResponse.json({error:"Unable to create invitation"},{status:503});}finally{await pool.end();}
+import { NextResponse } from "next/server";
+import { randomUUID } from "node:crypto";
+import { currentEmployer, db } from "@/lib/employer-session";
+import {
+  queueEmployeeActivation,
+  activationDeliveryConfigured,
+} from "@/lib/activation-delivery";
+import { uuid } from "@/lib/collaboration-policy";
+export const runtime = "nodejs";
+const headers = { "Cache-Control": "private, no-store" };
+export async function GET(request: Request) {
+  const employer = await currentEmployer();
+  if (!employer)
+    return NextResponse.json(
+      { error: "Employer sign in required." },
+      { status: 401, headers },
+    );
+  const id = new URL(request.url).searchParams.get("employeeId");
+  if (!uuid(id))
+    return NextResponse.json(
+      { error: "Choose an employee." },
+      { status: 400, headers },
+    );
+  const pool = db();
+  try {
+    const e = await pool.query(
+      "SELECT e.id,EXISTS(SELECT 1 FROM employee_credentials c WHERE c.employee_id=e.id AND c.employer_id=e.employer_id) AS activated FROM workforce_employees e WHERE e.id=$1 AND e.employer_id=$2",
+      [id, employer],
+    );
+    if (!e.rowCount)
+      return NextResponse.json(
+        { error: "Employee not found." },
+        { status: 404, headers },
+      );
+    const j = await pool.query(
+      "SELECT status,attempts,created_at,last_error FROM collaboration_jobs WHERE employer_id=$1 AND kind='employee_activation' AND payload->>'employee'=$2 ORDER BY created_at DESC LIMIT 1",
+      [employer, id],
+    );
+    return NextResponse.json(
+      {
+        activated: e.rows[0].activated,
+        delivery: j.rows[0] || null,
+        configured: activationDeliveryConfigured(),
+      },
+      { headers },
+    );
+  } catch {
+    return NextResponse.json(
+      { error: "Unable to load delivery status." },
+      { status: 503, headers },
+    );
+  } finally {
+    await pool.end();
+  }
+}
+export async function POST(request: Request) {
+  const employer = await currentEmployer();
+  if (!employer)
+    return NextResponse.json(
+      { error: "Employer sign in required." },
+      { status: 401, headers },
+    );
+  const b = await request.json().catch(() => null);
+  if (!b || typeof b !== "object" || Array.isArray(b) || !uuid(b.employeeId))
+    return NextResponse.json(
+      { error: "Choose an employee." },
+      { status: 400, headers },
+    );
+  const pool = db(),
+    c = await pool.connect();
+  try {
+    await c.query("BEGIN");
+    const e = await c.query(
+      "SELECT id,email FROM workforce_employees WHERE employer_id=$1 AND id=$2 AND employment_status IN ('active','probation','on_leave') FOR UPDATE",
+      [employer, b.employeeId],
+    );
+    if (!e.rowCount)
+      return NextResponse.json(
+        { error: "Active employee not found." },
+        { status: 404, headers },
+      );
+    if (
+      (
+        await c.query(
+          "SELECT 1 FROM employee_credentials WHERE employer_id=$1 AND employee_id=$2",
+          [employer, b.employeeId],
+        )
+      ).rowCount
+    )
+      return NextResponse.json(
+        { error: "Employee already activated." },
+        { status: 409, headers },
+      );
+    const job = await queueEmployeeActivation(
+      c,
+      employer,
+      b.employeeId,
+      "manual:" + randomUUID(),
+    );
+    await c.query("COMMIT");
+    return NextResponse.json(
+      {
+        queued: true,
+        jobId: job,
+        employeeEmail: e.rows[0].email,
+        configured: activationDeliveryConfigured(),
+      },
+      { status: 202, headers },
+    );
+  } catch {
+    return NextResponse.json(
+      { error: "Unable to queue invitation." },
+      { status: 503, headers },
+    );
+  } finally {
+    await c.query("ROLLBACK").catch(() => {});
+    c.release();
+    await pool.end();
+  }
 }

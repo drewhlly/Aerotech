@@ -35,6 +35,7 @@ await database.exec(readFileSync("database/037_collaboration.sql", "utf8"));
 await database.exec("CREATE TABLE IF NOT EXISTS workflow_alerts(employer_id UUID,alert_key TEXT,title TEXT,created_at TIMESTAMPTZ DEFAULT NOW(),read_at TIMESTAMPTZ);CREATE TABLE IF NOT EXISTS employee_notifications(employer_id UUID,employee_id UUID,title TEXT,created_at TIMESTAMPTZ DEFAULT NOW(),read_at TIMESTAMPTZ)");
 await database.exec(readFileSync("database/038_notification_lifecycle.sql","utf8"));
 await database.exec(readFileSync("database/039_guest_meetings.sql","utf8"));
+await database.exec("CREATE TABLE ats_applications(id UUID,job_id UUID,stage TEXT,interview_completed_at TIMESTAMPTZ,interview_room_id UUID,interview_at TIMESTAMPTZ,interview_revision INT DEFAULT 0)");
 const owner = randomUUID(),
   other = randomUUID(),
   employee = randomUUID(),

@@ -12,7 +12,7 @@ export async function POST(request:Request){
  if(!acceptsPolicies(b))return NextResponse.json({error:'Accept the current Terms and Privacy Policy.'},{status:400});
  const pool=db();const client=await pool.connect();
  try{await client.query("BEGIN");
- const r=await client.query("SELECT i.id,i.employee_id,i.employer_id FROM employee_invitations i WHERE token_hash=$1 AND accepted_at IS NULL AND expires_at>NOW() FOR UPDATE",[digest(b.token)]);
+ const r=await client.query("SELECT i.id,i.employee_id,i.employer_id FROM employee_invitations i JOIN workforce_employees w ON w.id=i.employee_id AND w.employer_id=i.employer_id WHERE i.token_hash=$1 AND i.accepted_at IS NULL AND i.expires_at>NOW() AND w.employment_status IN ('active','probation','on_leave') FOR UPDATE OF i",[digest(b.token)]);
  if(!r.rowCount){await client.query("ROLLBACK");return NextResponse.json({error:"Invitation expired or already used"},{status:410});}
  const i=r.rows[0],hash=await hashPassword(b.password);
  await client.query("INSERT INTO employee_credentials(employee_id,employer_id,password_hash) VALUES($1,$2,$3)",[i.employee_id,i.employer_id,hash]);
