@@ -1,6 +1,6 @@
 # Interview scheduling, assessment review and hire activation
 
-Baseline: production `b89e49dafad64aaef2ba82670ce2dc62e20ed80e` (PR 62). Work in progress until the PR records deployment verification.
+Baseline: production `b89e49dafad64aaef2ba82670ce2dc62e20ed80e` (PR 62). Release verification is recorded below; production status is recorded on PR 63 after merge.
 
 ## Audit and changes
 
@@ -43,3 +43,17 @@ Expired availability/reminders leave active views, while business/audit records 
 Run build, lint, tsc, unit/integration suites, malformed-input probes and disposable browser-to-database checks. Confirm the exact merged commit and live domain, role/next redirects, API denials and deployment-scoped runtime logs.
 
 Manual steps: HR previews/reviews questions; publishes slots; candidate books, downloads calendar and reschedules; old room must deny access; another candidate cannot book the taken slot. Cancel and verify cancellation calendar/revision. Record hire, inspect queued activation, activate only from the invitation, verify correct employee portal/tenant and existing onboarding. Retry requests and failed delivery without creating duplicate identities, employee records or notifications.
+
+## Verified release checks
+
+- Production Next.js build, zero-warning ESLint, and TypeScript noEmit: passed.
+- Unit tests: 58 passed; integration suites: 29 passed.
+- Invalid-input HTTP checks: 2,150 across 86 endpoints; zero unhandled 500 responses. Provider-dependent billing webhook, payout webhook and face service return configured-unavailable responses in local fixtures.
+- Browser-to-database workflow: HR content review, availability publication, candidate booking/rescheduling, revoked previous room, hiring and token activation into the correct employee tenant all passed. No actual email was sent.
+- Scheduling views at 360/768/1280px: no overflow; axe no serious/critical findings.
+- Local Lighthouse: applicant scheduling performance 95, employer scheduling 93; accessibility/best practices 100; CLS 0. SEO 69 is expected for private noindex portals.
+- Migration 044 applied twice to the existing preview branch; employees/applications/jobs counts and pre-existing record fingerprints unchanged. Checksum: `2fb3d0b8b53f0a9b6898756576b591ec89deb1dcdeb355f749005cae8830ac85`.
+- Fixed a midnight-dependent test expectation: the employee attention widget correctly limits meetings to today's Lagos date; a future interview can be tomorrow.
+- Test runner emits Node experimental-module-mock/deprecation notices; npm emits the runtime's http-proxy configuration notice. These are tooling notices, not lint/build findings.
+
+The activation regression also verifies that the invitation transaction releases its connection before opening a session. This avoids pool exhaustion, preserves one-use invitations, rejects inactive employees and clears the applicant session during the deliberate role transition.

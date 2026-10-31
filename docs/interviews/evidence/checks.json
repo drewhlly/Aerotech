@@ -1,0 +1,18 @@
+{
+  "unit": 58,
+  "integration_suites": 29,
+  "invalid_input_requests": 2150,
+  "invalid_input_routes": 86,
+  "unhandled_500": 0,
+  "build": "pass",
+  "lint": "pass, zero warnings",
+  "typescript": "pass",
+  "widths": [
+    360,
+    768,
+    1280
+  ],
+  "axe_serious_critical": 0,
+  "provider_calls": "mocked; no production test email or identity",
+  "migration_checksum": "2fb3d0b8b53f0a9b6898756576b591ec89deb1dcdeb355f749005cae8830ac85"
+}
