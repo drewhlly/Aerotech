@@ -1,0 +1,10 @@
+{
+  "origin": "http://127.0.0.1:3100",
+  "fixture": "Disposable local data; no production writes",
+  "results": [
+    "Applicant PDF extraction, reviewed profile, private CV and general assessment",
+    "Apply then role assessment, automatic 85% shortlist and HR screening report",
+    "HR policy save synchronises calculated employee balances and permitted calendar",
+    "360/768/1280 layouts, no critical/serious axe findings and no page errors"
+  ]
+}

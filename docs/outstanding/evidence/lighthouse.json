@@ -1,0 +1,29 @@
+{
+  "environment": "Local production build and disposable signed-in fixtures. Portal SEO intentionally noindex.",
+  "scores": [
+    {
+      "path": "/applicant/profile",
+      "performance": 98,
+      "accessibility": 100,
+      "best-practices": 100,
+      "seo": 69,
+      "CLS": 0
+    },
+    {
+      "path": "/employee/leave",
+      "performance": 99,
+      "accessibility": 100,
+      "best-practices": 100,
+      "seo": 69,
+      "CLS": 0
+    },
+    {
+      "path": "/dashboard/employer/leave-policies",
+      "performance": 98,
+      "accessibility": 100,
+      "best-practices": 100,
+      "seo": 69,
+      "CLS": 0
+    }
+  ]
+}

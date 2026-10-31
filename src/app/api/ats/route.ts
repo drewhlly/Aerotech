@@ -1,3 +1,4 @@
+import {assessmentPolicy,publicAssessmentPolicy,screeningStage} from '@/lib/recruitment-screening';
 import {scheduleInterview,retireInterview} from '@/lib/recruitment-interviews';
 import {employerPipeline,pipelineBounds} from '@/lib/recruitment-query';
 import {activeMeeting} from '@/lib/notification-policy';
@@ -30,13 +31,14 @@ export async function GET(request:Request){
  if(!employer)for(const j of jobs.rows)j.questions=j.questions.map((q:Question)=>({prompt:q.prompt,options:q.options}));
  let applications:Record<string,unknown>[]=[];
  if(employer||applicant){const r=await pool.query(`SELECT a.*,m.starts_at+m.duration_minutes*INTERVAL '1 minute' AS interview_end_at,COALESCE((${activeMeeting}),FALSE) AS interview_active,(SELECT s.id FROM workforce_submissions s WHERE s.application_id=a.id AND s.title='Application CV' ORDER BY s.created_at DESC LIMIT 1) AS cv_document_id,j.title,j.questions,e.company_name,p.first_name,p.last_name,p.email,COALESCE((SELECT jsonb_agg(jsonb_build_object('stage',v.stage,'message',v.message,'created_at',v.created_at) ORDER BY v.created_at) FROM ats_events v WHERE v.application_id=a.id),'[]') AS events FROM ats_applications a JOIN ats_jobs j ON j.id=a.job_id JOIN employer_accounts e ON e.id=j.employer_id JOIN applicant_accounts p ON p.id=a.applicant_id LEFT JOIN meet_rooms m ON m.id=a.interview_room_id AND m.employer_id=j.employer_id WHERE ${employer?'j.employer_id=$1':'a.applicant_id=$1'} ORDER BY a.created_at DESC`,[employer||applicant]);applications=r.rows;
- if(!employer)for(const a of applications){a.questions=(a.questions as Question[]).map(q=>({prompt:q.prompt,options:q.options}));delete a.answers;}}
+ if(!employer)for(const a of applications){const policy=publicAssessmentPolicy(a.assessment_policy);a.questions=policy?.questions||(a.questions as Question[]).map(q=>({prompt:q.prompt,options:q.options}));a.assessment_policy=policy;delete a.answers;}}
  return NextResponse.json({jobs:jobs.rows,applications});
  }catch{return bad('Recruitment data unavailable. Please retry.',503)}finally{await pool.end()}
 }
 export async function POST(request:Request){
  if(Number(request.headers.get('content-length'))>3000000)return bad('CV upload exceeds 2 MB',413);
  let b;try{b=await request.json()}catch{return bad('Invalid request')}
+ if(!b||typeof b!=='object'||Array.isArray(b))return bad('Invalid request');
  const employer=await currentEmployer();const applicant=employer?null:await currentApplicant();
  if(!employer&&!applicant)return bad('Sign in as an applicant to apply, or as an employer to manage hiring.',401);
  const pool=db();const c=await pool.connect();try{
@@ -48,7 +50,8 @@ export async function POST(request:Request){
  if(!['draft','published'].includes(b.status))return bad('Invalid status');
  const questions=b.questions?.length?b.questions:generateRoleAssessment(b.title,b.department,b.requirements);
  if(!Array.isArray(questions)||questions.length>20||questions.some(q=>!q||typeof q.prompt!=='string'||!q.prompt.trim()||q.prompt.length>2000||!Array.isArray(q.options)||q.options.length!==4||q.options.some((o:unknown)=>typeof o!=='string'||!o.trim()||o.length>1000)||!Number.isInteger(q.correct)||q.correct<0||q.correct>3))return bad('Each assessment question needs four choices and a correct answer');
- const id=randomUUID();await c.query('INSERT INTO ats_jobs(id,employer_id,title,department,location,country,employment_type,description,requirements,status,questions) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)',[id,employer,b.title,b.department,b.location,b.country,b.employment_type,b.description,String(b.requirements||'').slice(0,20000),'draft',JSON.stringify(questions)]);
+ const threshold=b.qualifying_score===undefined?85:Number(b.qualifying_score);if(!Number.isInteger(threshold)||threshold<0||threshold>100)return bad('Qualifying score must be from 0 to 100.');
+ const id=randomUUID();await c.query('INSERT INTO ats_jobs(id,employer_id,title,department,location,country,employment_type,description,requirements,status,questions,qualifying_score) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)',[id,employer,b.title,b.department,b.location,b.country,b.employment_type,b.description,String(b.requirements||'').slice(0,20000),'draft',JSON.stringify(questions),threshold]);
  if(b.status==='published')await publishJob(c,employer,id,b);
  await c.query('COMMIT');return NextResponse.json({id},{status:201});
  }
@@ -61,36 +64,26 @@ export async function POST(request:Request){
  if(!changed.rowCount)return bad('Vacancy not found',404);
  await c.query('COMMIT');return NextResponse.json({ok:true});
  }
+ if(b.action==='threshold'){if(!employer)return bad('Employer access required',403);if(!Number.isInteger(b.threshold)||b.threshold<0||b.threshold>100)return bad('Qualifying score must be from 0 to 100.');const job=await c.query('SELECT id FROM ats_jobs WHERE employer_id=$1 AND id::text=$2 FOR UPDATE',[employer,String(b.id)]);if(!job.rowCount)return bad('Vacancy not found',404);if((await c.query('SELECT 1 FROM ats_applications WHERE job_id=$1 LIMIT 1',[job.rows[0].id])).rowCount)return bad('Threshold locked because applications have begun.',409);await c.query('UPDATE ats_jobs SET qualifying_score=$2 WHERE id=$1',[job.rows[0].id,b.threshold]);await c.query('COMMIT');return NextResponse.json({ok:true});}
  if(b.action==='apply'){
- if(!applicant)return bad('Please use your independent applicant account',403);
- if(typeof b.cv_data!=='string'||b.cv_data.length>2800000||typeof b.cv_filename!=='string'||!b.cv_filename.toLowerCase().endsWith('.pdf'))return bad('Upload your CV as a PDF (maximum 2 MB)');
- const cv=Buffer.from(b.cv_data,'base64');if(cv.length<5||cv.length>2097152||cv.subarray(0,5).toString()!=='%PDF-')return bad('Upload a valid PDF CV (maximum 2 MB)');
- const job=await c.query("SELECT * FROM ats_jobs WHERE id=$1 AND status='published' AND expires_at>NOW() AND (deadline IS NULL OR deadline>NOW()) FOR SHARE",[b.job_id]);if(!job.rowCount)return bad('Job is no longer open',404);
- const questions=job.rows[0].questions as Question[];
- if(!questions.length)return bad('Assessment is being prepared. Please contact the employer.',409);
- if(!Array.isArray(b.answers)||b.answers.length!==questions.length||b.answers.some((n:unknown)=>!Number.isInteger(n)||Number(n)<0||Number(n)>3))return bad('Complete the role assessment before submitting your application');
- const score=grade(questions,b.answers);
- const id=randomUUID();const stage='screening';
- await c.query('INSERT INTO ats_applications(id,job_id,applicant_id,cv_text,stage) VALUES($1,$2,$3,$4,$5)',[id,b.job_id,applicant,'CV uploaded: '+b.cv_filename.slice(0,160),stage]);
- await c.query('INSERT INTO ats_events(id,application_id,stage,message) VALUES($1,$2,$3,$4)',[randomUUID(),id,stage,'Assessment scored automatically. Awaiting employer checks.']);
- await c.query('UPDATE ats_applications SET assessment_score=$1,answers=$2 WHERE id=$3',[score,JSON.stringify(b.answers),id]);
- await c.query('INSERT INTO workforce_submissions(id,employer_id,applicant_id,application_id,title,filename,mime,content) VALUES($1,$2,$3,$4,$5,$6,$7,$8)',[randomUUID(),job.rows[0].employer_id,applicant,id,'Application CV',b.cv_filename.slice(0,160),'application/pdf',cv]);
- await c.query('COMMIT');return NextResponse.json({id},{status:201});
+ if(!applicant)return bad('Use your independent applicant account',403);await c.query('SELECT id FROM applicant_accounts WHERE id=$1 FOR UPDATE',[applicant]);const profile=(await c.query('SELECT * FROM applicant_career_profiles WHERE applicant_id=$1',[applicant])).rows[0];if(!profile?.general_completed_at||!profile.cv_content||!profile.reviewed_at)return bad('Complete your career profile, CV and general assessment before applying.',422);if(b.consent!==true)return bad('Confirm sharing your profile, CV and assessments with this employer.');const job=await c.query("SELECT * FROM ats_jobs WHERE id::text=$1 AND status='published' AND expires_at>NOW() AND (deadline IS NULL OR deadline>NOW()) FOR SHARE",[String(b.job_id)]);if(!job.rowCount)return bad('Job is no longer open',404);const questions=job.rows[0].questions as Question[];if(!questions.length)return bad('The employer is preparing this assessment.',409);const id=randomUUID(),stage='assessment',policy={version:1,threshold:job.rows[0].qualifying_score,questions,general_score:profile.general_score,profile:{skills:profile.skills,experience:profile.experience,education:profile.education},submitted_at:new Date().toISOString()};await c.query('INSERT INTO ats_applications(id,job_id,applicant_id,cv_text,stage,assessment_policy) VALUES($1,$2,$3,$4,$5,$6)',[id,job.rows[0].id,applicant,'CV uploaded: '+profile.cv_filename,stage,JSON.stringify(policy)]);await c.query('INSERT INTO ats_events(id,application_id,stage,message) VALUES($1,$2,$3,$4)',[randomUUID(),id,stage,'Application submitted. Complete the job-specific assessment next. Qualifying score: '+policy.threshold+'%.']);await c.query('INSERT INTO workforce_submissions(id,employer_id,applicant_id,application_id,title,filename,mime,content) VALUES($1,$2,$3,$4,$5,$6,$7,$8)',[randomUUID(),job.rows[0].employer_id,applicant,id,'Application CV',profile.cv_filename,'application/pdf',profile.cv_content]);await c.query('COMMIT');return NextResponse.json({id},{status:201});
  }
  const record=await c.query('SELECT a.*,j.employer_id,j.questions,j.title,j.department,j.location,p.first_name,p.last_name,p.email,p.phone FROM ats_applications a JOIN ats_jobs j ON j.id=a.job_id JOIN applicant_accounts p ON p.id=a.applicant_id LEFT JOIN meet_rooms m ON m.id=a.interview_room_id AND m.employer_id=j.employer_id WHERE a.id=$1 FOR UPDATE OF a',[b.id]);
  const a=record.rows[0];if(!a||employer&&a.employer_id!==employer||applicant&&a.applicant_id!==applicant)return bad('Application not found',404);
  let stage=a.stage;let message='';
  if(b.action==='accept_offer'){if(!applicant||a.stage!=='offer'||b.confirm!==true)return bad('A confirmed offer is required',409);stage='hired';message='Applicant accepted the employer offer. Onboarding started.';
  }else if(b.action==='assessment'){
- if(!applicant||a.stage!=='assessment'||a.assessment_score!==null)return bad('Assessment is not available',409);
- const q=a.questions as Question[];
+ if(!applicant)return bad('Applicant access required',403);if(a.assessment_score!==null){if(JSON.stringify(a.answers)===JSON.stringify(b.answers)){await c.query('COMMIT');return NextResponse.json({ok:true,reused:true});}return bad('Assessment complete. Contact support for review.',409);}if(a.stage!=='assessment')return bad('Assessment is not available',409);
+ const policy=assessmentPolicy(a.assessment_policy);const q=policy?.questions||a.questions as Question[];
  if(!q.length||!Array.isArray(b.answers)||b.answers.length!==q.length||b.answers.some((n:unknown)=>!Number.isInteger(n)||Number(n)<0||Number(n)>3))return bad('Answer every question');
- const score=grade(q,b.answers);stage='screening';message='Assessment completed. Awaiting HR review.';
+ const score=grade(q,b.answers);stage=policy?screeningStage(score,policy.threshold):'screening';message=policy?'Assessment scored '+score+'%. Qualifying score: '+policy.threshold+'%. '+(stage==='shortlisted'?'Eligible for interview; HR makes the final decision.':'Below the standard shortlist threshold. You may request a human review through support.'):'Assessment completed. Awaiting HR review.';
  await c.query('UPDATE ats_applications SET assessment_score=$1,answers=$2 WHERE id=$3',[score,JSON.stringify(b.answers),a.id]);
  }else if(b.action==='update'){
  if(!employer)return bad('Employer access required',403);
  if(b.expected_stage!==undefined&&b.expected_stage!==a.stage)return bad('This candidate has changed. Refresh the pipeline before saving.',409);
- if(!stages.includes(b.stage))return bad('Invalid hiring stage');const newlyScheduled=!!b.interview_at;b.interview_at=b.interview_at||a.interview_at;
+ if(!stages.includes(b.stage))return bad('Invalid hiring stage');const policy=assessmentPolicy(a.assessment_policy),target=b.checks_passed===true?'shortlisted':b.stage;
+ if(policy&&['shortlisted','interview','offer','hired'].includes(target)&&(a.assessment_score===null||a.assessment_score<policy.threshold)&&!policy.review){if(a.assessment_score===null)return bad('Complete the job-specific assessment before advancing.',422);if(typeof b.review_reason!=='string'||b.review_reason.trim().length<20||b.review_reason.length>2000)return bad('Record a job-related human review reason (20–2000 characters) to advance below the qualifying score.',422);policy.review={reason:b.review_reason.trim(),at:new Date().toISOString()};await c.query('UPDATE ats_applications SET assessment_policy=$2 WHERE id=$1',[a.id,JSON.stringify(policy)]);await c.query("INSERT INTO collaboration_audit(employer_id,actor,action,resource_id,details) VALUES($1,'employer','assessment_review_override',$2,$3)",[employer,a.id,JSON.stringify({reason:policy.review.reason,threshold:policy.threshold,score:a.assessment_score})]);}if(policy&&['offer','hired'].includes(target)&&!a.interview_completed_at)return bad('Record interview feedback before an offer or hire.',422);
+ const newlyScheduled=!!b.interview_at;b.interview_at=b.interview_at||a.interview_at;
  if(a.stage==='hired'&&b.stage!=='hired')return bad('Manage this person through Employees after hiring',409);
  if(b.stage==='assessment'&&!a.questions.length)return bad('This vacancy has no assessment questions');
  if(b.stage==='interview'&&(!b.interview_at||!Number.isFinite(Date.parse(b.interview_at))))return bad('Set an interview date and time');

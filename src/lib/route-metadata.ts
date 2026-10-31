@@ -6,6 +6,7 @@ const names:Record<string,string>={
   "/admin": "Admin",
   "/aerochat": "Team chat",
   "/applicant": "Applicant",
+  "/applicant/profile": "Career profile",
   "/applicant/applications": "Applicant Applications",
   "/applicant/assessments": "Applicant Assessments",
   "/applicant/documents": "Applicant Documents",
