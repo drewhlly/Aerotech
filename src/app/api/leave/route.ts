@@ -30,6 +30,7 @@ export async function POST(request: Request) {
   if (!employee) return NextResponse.json({ error: 'Sign in required.' }, { status: 401, headers });
   let body: { category?: unknown; startDate?: unknown; endDate?: unknown; details?: unknown };
   try { body = await request.json(); } catch { return NextResponse.json({ error: 'Invalid request.' }, { status: 400, headers }); }
+  if (!body || typeof body !== 'object' || Array.isArray(body)) return NextResponse.json({ error: 'Invalid request.' }, { status: 400, headers });
   const validDate = (v: unknown): v is string => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(v+'T00:00:00Z')) && new Date(v+'T00:00:00Z').toISOString().slice(0,10) === v;
   if (typeof body.category !== 'string' || !categories.includes(body.category) || !validDate(body.startDate) || !validDate(body.endDate) || body.startDate > body.endDate || typeof body.details !== 'string' || !body.details.trim() || body.details.length > 2000) return NextResponse.json({ error: 'Choose a leave type and provide valid dates and a reason.' }, { status: 400, headers });
   if (!employee.manager_employee_id) return NextResponse.json({ error: 'No line manager is assigned. Contact HR.' }, { status: 422, headers });
