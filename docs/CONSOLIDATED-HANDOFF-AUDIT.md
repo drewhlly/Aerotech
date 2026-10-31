@@ -15,7 +15,7 @@ Repository: drewhlly/Aerotech. Last observed production deployment: bec8274d00a5
 | CV processing | CV/document handling exists | Extraction, structured profile correction, duplicate detection and format-specific tests not verified. |
 | Employee navigation | Recruitment and Salary payments links remain | Remove recruitment routes; move assigned approval responsibilities to permission-controlled My Approvals. Payment access and CEO release need coordinated redesign, not only hidden links. |
 | Leave | Previously deployed page submits generic leave and shows no balance | Draft adds categories, annual allowance management, annual used-day query and legacy warnings. Full configurable policies, accrual, carryover, holidays, nonstandard workweeks, cancellation and attendance/payroll synchronisation remain. |
-| Leave migration | Production Neon branch quota reached | No production schema changed. Test migration in isolated Neon branch before approval and release. Do not delete preview branches without approval. |
+| Leave migration | Production Neon branch quota reached | Resolved for the leave-category migration: isolated test passed, approved production migration applied and recorded in the ledger. |
 | Employee data | Tenant-aware query patterns exist | Full backend/API access matrix and cross-company tests remain. |
 | Projects and tasks | Shared workspace with assignments and progress exists | Draft aligns header styling; dependencies, duplicate triggers and employer-to-employee delivery still require full workflow verification. |
 | Confirmation | Confirmation queue and decision component both render page heroes | Draft removes second hero; decision feedback, probation/performance reminders and notification verification remain. |
@@ -43,9 +43,13 @@ Repository: drewhlly/Aerotech. Last observed production deployment: bec8274d00a5
 - Default Turbopack build: failed opening its local persistent cache; webpack was used to confirm compilation.
 - Local PGlite leave integration test: passed migration, balance query, tenant isolation, legacy warning and invalid-category constraint.
 - No live applicant verification, two-assessment flow, signed-in desktop/mobile QA or salary transaction was performed.
-- No draft changes have been merged or deployed.
+- Application deployment is pending the limited release; the complete handoff remains unimplemented.
 
-## Release gates
+## Release checkpoint — approved limited release
+
+The user authorised deployment of the tested leave-category migration and matching implementation. The approved preview database branch was deleted. The migration was tested on an isolated Neon branch, then applied to production with explicit approval and recorded in the migration ledger. The application release remains pending until the matching PR is merged and its production deployment is ready. This limited release does not certify the full consolidated handoff. The earlier observations below describe the audit state before this checkpoint.
+
+## Remaining release gates for the full handoff
 
 1. Expand leave from the draft annual calculation to employer-configurable policies, opening/accrual/pending/carryover and synchronisation.
 2. Test schema on an isolated branch; resolve Neon branch quota with explicit permission before deleting any branch.
