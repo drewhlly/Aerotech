@@ -1,6 +1,9 @@
 import {strictDatabaseConnectionString} from '@/lib/postgres-connection';
 import {acceptsPolicies,POLICY_VERSION} from '@/lib/policy';
 import { NextResponse } from "next/server";
+import { after } from "next/server";
+import { sendRegistrationWelcomeEmail } from "@/lib/registration-welcome-email";
+
 import { randomUUID, scrypt as callbackScrypt, randomBytes } from "node:crypto";
 import { promisify } from "node:util";
 import { Pool } from "pg";
@@ -56,6 +59,7 @@ export async function POST(request: Request) {
       ]
     );
  await c.query('INSERT INTO policy_acceptances(id,account_role,account_id,policy_version) VALUES($1,$2,$3,$4)',[randomUUID(),'employer',result.rows[0].id,POLICY_VERSION]);await c.query('COMMIT');
+    after(() => sendRegistrationWelcomeEmail({role:"employer",to:email,firstName:(body.firstName as string).trim(),accountId:result.rows[0].id}));
     await startEmployerSession(pool, result.rows[0].id);
     return NextResponse.json({ employerId: result.rows[0].id }, { status: 201 });
   } catch (error: unknown) {
