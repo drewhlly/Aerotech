@@ -1,6 +1,9 @@
 import {acceptsPolicies,POLICY_VERSION} from '@/lib/policy';
 import {countries} from '@/lib/countries';
 import { NextResponse } from "next/server";
+import { after } from "next/server";
+import { sendRegistrationWelcomeEmail } from "@/lib/registration-welcome-email";
+
 import { randomUUID, randomBytes, scrypt as rawScrypt } from "node:crypto";
 import { promisify } from "node:util";
 import { applicantDB, startApplicantSession } from "@/lib/applicant-session";
@@ -25,6 +28,7 @@ export async function POST(request: Request) {
   await c.query('BEGIN');
   const result=await c.query("INSERT INTO applicant_accounts(id,first_name,last_name,email,phone,password_hash,country) VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING id",[randomUUID(),(body.firstName as string).trim(),(body.lastName as string).trim(),email,(body.phone as string).trim(),`scrypt:${salt}:${hash}`,body.country]);
  await c.query('INSERT INTO policy_acceptances(id,account_role,account_id,policy_version) VALUES($1,$2,$3,$4)',[randomUUID(),'applicant',result.rows[0].id,POLICY_VERSION]);await c.query('COMMIT');
+  after(() => sendRegistrationWelcomeEmail({role:"applicant",to:email,firstName:(body.firstName as string).trim(),accountId:result.rows[0].id}));
   await startApplicantSession(pool,result.rows[0].id);
   return NextResponse.json({ok:true},{status:201});
  } catch(err:unknown) {
