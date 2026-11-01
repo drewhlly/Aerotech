@@ -1,3 +1,4 @@
+import Script from "next/script";
 import {pageMetadata,siteUrl} from "@/lib/seo";
 import "./globals.css";
 import {InstallProvider} from "@/components/install-app";
@@ -14,7 +15,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en-GB">
-      <body><noscript><p className="bg-amber-50 px-5 py-3 text-sm text-amber-950">Enable JavaScript to submit forms and use workspace tools. Contact support if a form cannot load.</p></noscript><a className="skip-link" href="#main-content">Skip to content</a><div id="main-content" tabIndex={-1}><InstallProvider>{children}</InstallProvider></div></body>
+      <body><noscript><p className="bg-amber-50 px-5 py-3 text-sm text-amber-950">Enable JavaScript to submit forms and use workspace tools. Contact support if a form cannot load.</p></noscript><a className="skip-link" href="#main-content">Skip to content</a><div id="main-content" tabIndex={-1}><InstallProvider>{children}</InstallProvider></div><Script id="cloudflare-web-analytics" src="https://static.cloudflareinsights.com/beacon.min.js" strategy="afterInteractive" data-cf-beacon={JSON.stringify({token:"5c4153df82914b1988e153111990043d",spa:true})} /></body>
     </html>
   );
 }
