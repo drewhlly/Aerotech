@@ -228,3 +228,6 @@ progress::-webkit-progress-bar{background:#e2e8f0;border-radius:8px}progress::-w
 .workspace-search-trigger,.workspace-account-trigger{transition:none}
 .workspace-content .text-slate-500{color:#52647c}
 [data-theme="dark"] .workspace-content .text-slate-500{color:#cbd5e1}
+[data-theme="dark"] .workspace-content .text-emerald-800,[data-theme="dark"] .workspace-content .text-emerald-900{color:#6ee7b7}
+[data-theme="dark"] .workspace-content .text-red-800{color:#fca5a5}
+[data-theme="dark"] .workspace-content .text-amber-900{color:#fcd34d}
