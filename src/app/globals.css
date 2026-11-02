@@ -205,7 +205,7 @@ progress::-webkit-progress-bar{background:#e2e8f0;border-radius:8px}progress::-w
 .workspace-content .aero-card{border-color:#dfe6f0;box-shadow:0 3px 16px -10px #183b5650;border-radius:18px}
 .workspace-content .aero-input{background:#fbfcfe;border-color:#d4deeb;border-radius:10px;min-height:44px}
 .workspace-content .aero-input:focus{outline:2px solid #bfdbfe;outline-offset:2px;border-color:#2563eb}
-.workspace-content .aero-button{border-radius:10px;font-weight:600;transition:background .15s,box-shadow .15s}
+.workspace-content .aero-button{border-radius:10px;font-weight:600;transition:box-shadow .15s}
 .workspace-content table th{background:#f1f5fb;color:#415a7c;font-size:11px;letter-spacing:.04em}
 .workspace-content table td{border-color:#e8edf5}
 .workspace-content table tbody tr:hover{background:#f7faff}
@@ -223,3 +223,8 @@ progress::-webkit-progress-bar{background:#e2e8f0;border-radius:8px}progress::-w
 [data-theme="dark"] .workspace-content table th{background:#15243e;color:#c7d8ef}
 [data-theme="dark"] .workspace-content table tbody tr:hover{background:#15243e}
 [data-theme="dark"] .workspace-eyebrow{color:#93c5fd}
+
+/* Theme switches must not animate a light background underneath dark-theme text. */
+.workspace-search-trigger,.workspace-account-trigger{transition:none}
+.workspace-content .text-slate-500{color:#52647c}
+[data-theme="dark"] .workspace-content .text-slate-500{color:#cbd5e1}
