@@ -27,6 +27,8 @@ jobs:
         run: npm run test:events
       - name: Verify recruitment pipeline and transitions
         run: npm run test:recruitment
+      - name: Verify communications consent and delivery queue
+        run: node --experimental-test-module-mocks --import ./tests/helpers/ts-loader.mjs tests/communications.integration.mjs
       - name: Build production app
         run: npm run build
       - name: Type-check

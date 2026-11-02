@@ -23,9 +23,10 @@ export async function POST(request:Request){
  await client.query("UPDATE employee_invitations SET accepted_at=NOW() WHERE employee_id=$1 AND accepted_at IS NULL",[i.employee_id]);
  await client.query('INSERT INTO policy_acceptances(id,account_role,account_id,policy_version) VALUES($1,$2,$3,$4)',[randomUUID(),'employee',i.employee_id,POLICY_VERSION]);
  await client.query("COMMIT");committed=true;
- after(() => sendRegistrationWelcomeEmail({role:"employee",to:employeeEmail,firstName:employeeFirstName,accountId:i.employee_id}));
  client.release();released=true;
  await startEmployeeSession(pool,i.employee_id);
+ // Optional post-response email scheduling must not interrupt activation or session creation.
+ try{after(() => sendRegistrationWelcomeEmail({role:"employee",to:employeeEmail,firstName:employeeFirstName,accountId:i.employee_id}));}catch{console.warn("Employee welcome email scheduling unavailable");}
  return NextResponse.json({ok:true},{status:201});
  }catch(error){if(!committed)await client.query("ROLLBACK").catch(()=>{});const code=typeof (error as {code?:unknown})?.code==='string'&&/^[0-9A-Z]{5}$/.test((error as {code:string}).code)?(error as {code:string}).code:'ACTIVATION_ERROR';console.error('Employee activation failed',{code,phase:committed?'session':'transaction'});if(committed)return NextResponse.json({ok:true,requiresSignIn:true});return NextResponse.json({error:code==='23505'?'Employee account already activated. Sign in or reset your password.':'Unable to activate employee account. Please retry.'},{status:code==='23505'?409:503});}
  finally{if(!released)client.release();await pool.end();}

@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+/* Shared visual language: calm blue surfaces, clear controls, consistent portal hierarchy. */
+.landing-stage{background:radial-gradient(ellipse at 0 0,#e6efff 0,transparent 52%),linear-gradient(135deg,#f5f8ff,#fff 70%)}
+.landing-slide-arrow{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border:1px solid #cbd5e1;background:white;border-radius:50%;color:#0b2149;cursor:pointer}
+.landing-slide-arrow:hover{background:#eaf1ff;border-color:#93b4ef}
+.workspace-eyebrow{font-size:11px;letter-spacing:.15em;text-transform:uppercase;font-weight:700;color:#2458a6}
+
 :root {
   --aero-cyan: #00d4ff;
   --aero-blue: #6366f1;
@@ -182,3 +188,38 @@ progress::-webkit-progress-bar{background:#e2e8f0;border-radius:8px}progress::-w
 
 .recruit-workspace #recruit-candidates>.aero-card{border:0;background:transparent;box-shadow:none;padding:24px 0}
 [data-theme="dark"] .recruit-candidate-name{color:#93c5fd}
+
+/* Workspace refresh shared by employer, applicant, employee, and administrator. */
+.portal-frame{background:#f3f6fb}
+.portal-sidebar{background:linear-gradient(165deg,#0b2149,#08172f 80%);border-right:1px solid #182e50}
+.portal-sidebar nav>section>h2{font-size:10px;letter-spacing:.14em;color:#9fb4d5;padding-top:4px}
+.portal-sidebar nav a{font-size:13px;border:1px solid transparent;transition:background .15s,border-color .15s}
+.portal-sidebar nav a[aria-current="page"]{background:#1e52aa;border-color:#4076ce;box-shadow:0 4px 16px #00000018}
+.portal-sidebar nav a:hover{border-color:#ffffff1f}
+.portal-sidebar>div>div:first-child{min-height:76px;background:#ffffff03}
+.portal-sidebar>div>div:last-child{background:#06142a;border-top:1px solid #ffffff14;padding-bottom:max(12px,env(safe-area-inset-bottom))}
+.portal-sidebar>div>div:last-child a:hover,.portal-sidebar>div>div:last-child button:hover{background:#ffffff0d;color:white}
+.workspace-topbar{background:rgba(255,255,255,.96);box-shadow:0 1px 12px #0b214904}
+.workspace-content>.space-y-6>header,.workspace-content>.space-y-7>header{padding-bottom:8px}
+.workspace-content h1{font-weight:650;letter-spacing:-.035em}
+.workspace-content .aero-card{border-color:#dfe6f0;box-shadow:0 3px 16px -10px #183b5650;border-radius:18px}
+.workspace-content .aero-input{background:#fbfcfe;border-color:#d4deeb;border-radius:10px;min-height:44px}
+.workspace-content .aero-input:focus{outline:2px solid #bfdbfe;outline-offset:2px;border-color:#2563eb}
+.workspace-content .aero-button{border-radius:10px;font-weight:600;transition:background .15s,box-shadow .15s}
+.workspace-content table th{background:#f1f5fb;color:#415a7c;font-size:11px;letter-spacing:.04em}
+.workspace-content table td{border-color:#e8edf5}
+.workspace-content table tbody tr:hover{background:#f7faff}
+.workspace-account-trigger{border-color:#e2e8f0;background:#fbfcfe}
+.workspace-account-menu{z-index:70;max-height:calc(100dvh - 100px);overflow-y:auto}
+.workspace-account-menu-item{min-height:44px}
+@media(min-width:1024px){.workspace-content{padding-top:28px}.workspace-content>nav[aria-label="Breadcrumb"]{margin-bottom:24px}}
+@media(max-width:639px){.landing-preview{border-radius:24px}.workspace-content{padding-bottom:max(24px,env(safe-area-inset-bottom))}.workspace-account-menu{position:fixed;top:70px;right:12px;left:auto;max-width:calc(100vw - 24px);margin-top:0}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.portal-sidebar,.landing-slide-arrow,.portal-sidebar nav a,.workspace-content .aero-button{transition:none}}
+[data-theme="dark"] .portal-frame{background:#0b1426}
+[data-theme="dark"] .workspace-topbar{background:#111e34}
+[data-theme="dark"] .workspace-account-trigger{background:#15243e;border-color:#3d5272}
+[data-theme="dark"] .workspace-content .aero-card{background:#111e34;border-color:#3d5272}
+[data-theme="dark"] .workspace-content .aero-input{background:#0c172b;border-color:#526583;color:#f1f5f9}
+[data-theme="dark"] .workspace-content table th{background:#15243e;color:#c7d8ef}
+[data-theme="dark"] .workspace-content table tbody tr:hover{background:#15243e}
+[data-theme="dark"] .workspace-eyebrow{color:#93c5fd}
