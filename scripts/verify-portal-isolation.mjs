@@ -32,6 +32,25 @@ try{
    assert.match(await page.locator('meta[name="robots"]').getAttribute('content'),/noindex/);
    if(!path.endsWith('/support')){assert.equal(await page.getByRole('link',{name:'Aerotech home'}).getAttribute('href'),home);if(width===360){const open=page.getByRole('button',{name:'Open navigation',exact:true});await open.click();await page.getByRole('navigation',{name:'Workspace navigation'}).waitFor();await page.keyboard.press('Escape');assert.equal(await open.getAttribute('aria-expanded'),'false')}}
    if(role==='employee')assert.equal(await page.getByRole('link',{name:/vacancy approvals/i}).count(),0);
+   // Exercise the previously unresponsive account controls with real signed-in browser sessions.
+   if(path===home&&width===1280){
+    const trigger=page.getByRole('button',{name:role+' account menu',exact:true});
+    await trigger.click();assert.equal(await trigger.getAttribute('aria-expanded'),'true');
+    const panel=page.locator('#workspace-account-panel');
+    const profile=role==='employer'?home+'/account':role==='admin'?home:home+'/profile';
+    assert.equal(await panel.getByRole('link',{name:'Account & profile',exact:true}).getAttribute('href'),profile);
+    await panel.getByRole('link',{name:'Account & profile',exact:true}).click();await page.waitForURL(base+profile);
+    if(role!=='admin'){
+     await trigger.click();await page.locator('#workspace-account-panel').getByRole('link',{name:'Email preferences',exact:true}).click();
+     await page.getByRole('button',{name:'Save preferences',exact:true}).waitFor();
+     const newsletter=page.getByRole('checkbox',{name:/Aerotech newsletter/});await newsletter.check();
+     await page.getByRole('button',{name:'Save preferences',exact:true}).click();
+     await page.getByRole('status').filter({hasText:'Your email preferences have been saved.'}).waitFor();
+     await page.reload();await page.getByRole('button',{name:'Save preferences',exact:true}).waitFor();assert.equal(await page.getByRole('checkbox',{name:/Aerotech newsletter/}).isChecked(),true);
+    }
+    await page.goto(path,{waitUntil:'networkidle'});
+   }
+
    if(width===1280){const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa','wcag22aa']).analyze();const significant=axe.violations.filter(v=>v.impact==='critical'||v.impact==='serious');if(significant.length)issues.push({path,role,violations:significant.map(v=>({id:v.id,nodes:v.nodes.map(n=>n.target)}))});await page.screenshot({path:out+'/'+role+'-'+path.replace(/\W/g,'_')+'.png',fullPage:true});if(!path.endsWith('/support')){await page.getByRole('button',{name:'Use dark mode',exact:true}).click();const dark=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa','wcag22aa']).analyze();const failures=dark.violations.filter(v=>v.impact==='critical'||v.impact==='serious');if(failures.length)issues.push({path,role,theme:'dark',violations:failures.map(v=>({id:v.id,nodes:v.nodes.map(n=>n.target)}))});await page.screenshot({path:out+'/'+role+'-'+path.replace(/\W/g,'_')+'-dark.png',fullPage:true});await page.getByRole('button',{name:'Use light mode',exact:true}).click()}}
    checks.push({role,path,width,status:r.status(),links:links.length});
   }

@@ -3,7 +3,7 @@ import Link from 'next/link';
 import {usePathname} from 'next/navigation';
 import type {LucideIcon} from 'lucide-react';
 type NavLink=readonly [string,string,LucideIcon];
-function group(href:string){if(/\/privacy$|\/support$|\/account$|\/safeguards$/.test(href))return 'Settings & help';if(/\/meet$|\/aerochat$|\/surveys$|\/birthdays$|\/notifications$/.test(href))return 'Connect';if(/\/payroll|\/payslips|\/compliance|\/reports/.test(href))return 'Pay & reporting';if(/\/recruitment|\/opportunities|\/applications|\/assessments|\/interviews/.test(href))return 'Recruitment';if(/\/employees|\/onboarding|\/confirmations|\/attendance|\/requests|\/training|\/performance|\/documents|\/profile|\/leave|\/exits|\/automation/.test(href))return 'People & work';return 'Workspace'}
+function group(href:string){if(/\/email-preferences$|\/communications$|\/privacy$|\/support$|\/account$|\/safeguards$/.test(href))return 'Settings & help';if(/\/meet$|\/aerochat$|\/surveys$|\/birthdays$|\/notifications$/.test(href))return 'Connect';if(/\/payroll|\/payslips|\/compliance|\/reports/.test(href))return 'Pay & reporting';if(/\/recruitment|\/opportunities|\/applications|\/assessments|\/interviews/.test(href))return 'Recruitment';if(/\/employees|\/onboarding|\/confirmations|\/attendance|\/requests|\/training|\/performance|\/documents|\/profile|\/leave|\/exits|\/automation/.test(href))return 'People & work';return 'Workspace'}
 export default function PortalNav({links,close}:{links:readonly NavLink[];close:()=>void}){
  const path=usePathname();
  const active=[...links].sort((a,b)=>b[0].length-a[0].length).find(([href])=>path===href||path.startsWith(href+'/'))?.[0];

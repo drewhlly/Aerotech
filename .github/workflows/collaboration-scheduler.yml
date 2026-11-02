@@ -28,7 +28,7 @@ jobs:
           const r=await fetch(url,{headers:{Authorization:'Bearer '+process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN},signal:AbortSignal.timeout(15000)});
           if(!r.ok)throw Error('Identity request failed: '+r.status);
           const {value}=await r.json();if(!value)throw Error('Identity token missing');
-          const response=await fetch(endpoint,{headers:{Authorization:'Bearer '+value},signal:AbortSignal.timeout(70000)});
+          const response=await fetch(endpoint,{headers:{Authorization:'Bearer '+value},signal:AbortSignal.timeout(110000)});
           if(!response.ok)throw Error('Scheduler failed: '+response.status);
           const result=await response.json();console.log(JSON.stringify({processed:result.processed,failed:result.failed}));
           if(result.failed)throw Error('Background jobs failed; inspect the queue');

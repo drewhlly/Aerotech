@@ -1,3 +1,4 @@
+import LandingShowcase from '@/components/landing-showcase';
 import Link from "next/link";
 import CookieNotice from "@/components/cookie-notice";
 import {
@@ -5,12 +6,8 @@ import {
   BriefcaseBusiness,
   UserRound,
   Building2,
-  Check,
   Compass,
-  CalendarDays,
   FileText,
-  Layers3,
-  ShieldCheck,
   Wallet,
   MessageSquareText,
 } from "lucide-react";
@@ -63,109 +60,7 @@ export default function Home() {
           __html: JSON.stringify(organisationSchema).replace(/</g, "\\u003c"),
         }}
       />
-      <section className="relative overflow-hidden border-b border-blue-100 bg-gradient-to-br from-[#f3f7ff] via-white to-[#edf4ff] px-5 py-16 sm:px-8 sm:py-24">
-        <div
-          className="pointer-events-none absolute -right-32 top-0 h-[540px] w-[540px] rounded-full border-[75px] border-blue-100/50"
-          aria-hidden="true"
-        />
-        <div className="relative mx-auto grid max-w-7xl gap-12 lg:grid-cols-[1.15fr_.85fr] lg:items-center">
-          <div>
-            <p className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white px-3 py-2 text-xs font-semibold text-blue-900">
-              <span className="h-2 w-2 rounded-full bg-blue-700" />
-              Built around the people behind the work
-            </p>
-            <h1 className="mt-7 max-w-3xl text-[42px] font-semibold leading-[1.08] tracking-[-.04em] sm:text-6xl xl:text-[72px]">
-              Your next role.
-              <br />
-              Your best team.
-              <br />
-              <span className="text-blue-700">A better workday.</span>
-            </h1>
-            <p className="mt-6 max-w-lg text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-              Good work starts with a clear path. Find your opportunity, connect
-              with your company or bring your people together.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                href="/careers"
-                className="aero-button bg-[#06163F] text-white hover:bg-blue-800"
-              >
-                Find your next role <ArrowRight size={17} />
-              </Link>
-              <Link
-                href="/auth/signup/employer"
-                className="aero-button border border-slate-300 bg-white"
-              >
-                Build your team
-              </Link>
-            </div>
-            <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-xs text-slate-600">
-              <span className="inline-flex items-center gap-2">
-                <Check size={15} />
-                Free applicant accounts
-              </span>
-              <span className="inline-flex items-center gap-2">
-                <Check size={15} />
-                Company-sponsored employee access
-              </span>
-            </div>
-          </div>
-          <div className="rounded-[28px] border border-blue-100 bg-white p-6 shadow-[0_24px_70px_rgba(18,57,130,0.10)] sm:p-8">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-5">
-              <span className="text-sm font-semibold">
-                A little more clarity.
-              </span>
-              <Layers3 size={20} className="text-blue-700" />
-            </div>
-            <h2 className="mt-6 text-2xl font-semibold tracking-tight">
-              Less chasing.
-              <br />
-              More moving forward.
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-slate-600">
-              Keep the important parts of working life within reach.
-            </p>
-            <div className="mt-6 space-y-3">
-              {[
-                {
-                  Icon: BriefcaseBusiness,
-                  title: "Find your next step",
-                  text: "Opportunities, applications and interviews.",
-                },
-                {
-                  Icon: UserRound,
-                  title: "Stay connected to work",
-                  text: "Documents, payslips and company updates.",
-                },
-                {
-                  Icon: CalendarDays,
-                  title: "Bring the right people together",
-                  text: "Meetings, projects and a shared direction.",
-                },
-              ].map(({ Icon, title, text }) => (
-                <div
-                  key={title}
-                  className="flex gap-4 rounded-2xl border border-slate-100 bg-slate-50/80 p-4"
-                >
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-blue-100 bg-white text-blue-800">
-                    <Icon size={20} />
-                  </span>
-                  <div>
-                    <h3 className="text-sm font-semibold">{title}</h3>
-                    <p className="mt-1 text-xs leading-5 text-slate-600">
-                      {text}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <p className="mt-5 flex items-center gap-2 text-xs text-slate-600">
-              <ShieldCheck size={15} />
-              Dedicated access for every workspace
-            </p>
-          </div>
-        </div>
-      </section>
+      <LandingShowcase/>
       <section
         id="choose-your-path"
         className="mx-auto max-w-7xl scroll-mt-40 px-5 py-20 sm:px-8"
@@ -175,7 +70,7 @@ export default function Home() {
             <p className="text-xs font-semibold uppercase tracking-[.16em] text-blue-800">
               A place for you
             </p>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight">
+            <h2 className="mt-3 text-3xl font-semibold tracking-[-.035em]">
               Where would you like to start?
             </h2>
           </div>
@@ -258,13 +153,13 @@ export default function Home() {
           )}
         </div>
       </section>
-      <section className="border-y border-slate-200 bg-[#f7f9fd] px-5 py-20 sm:px-8">
+      <section className="border-y border-slate-200 bg-[#f3f6fc] px-5 py-20 sm:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="max-w-2xl">
             <p className="text-xs font-semibold uppercase tracking-[.16em] text-blue-800">
               A more connected working day
             </p>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
+            <h2 className="mt-3 text-3xl font-semibold tracking-[-.035em] sm:text-4xl">
               The details matter.
               <br />
               Keep them together.
@@ -321,7 +216,7 @@ export default function Home() {
           <p className="text-xs font-semibold uppercase tracking-[.16em] text-blue-800">
             A clear way forward
           </p>
-          <h2 className="mt-3 text-3xl font-semibold tracking-tight">
+          <h2 className="mt-3 text-3xl font-semibold tracking-[-.035em]">
             Start simply.
             <br />
             Build from there.
@@ -363,7 +258,7 @@ export default function Home() {
             <p className="text-xs font-semibold uppercase tracking-[.16em] text-blue-200">
               For growing organisations
             </p>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight">
+            <h2 className="mt-3 text-3xl font-semibold tracking-[-.035em]">
               Make room for better work.
             </h2>
             <p className="mt-4 max-w-xl text-sm leading-7 text-slate-200">
