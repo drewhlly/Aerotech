@@ -11,6 +11,7 @@ const applicant=(await pool.query("SELECT id FROM applicant_accounts WHERE email
 const job=(await pool.query('SELECT id FROM ats_jobs WHERE employer_id=$1 ORDER BY created_at DESC LIMIT 1',[company])).rows[0].id;
 const application=(await pool.query('SELECT id,interview_room_id FROM ats_applications WHERE applicant_id=$1 LIMIT 1',[applicant])).rows[0];
 await pool.query("UPDATE ats_applications SET stage='interview' WHERE id=$1",[application.id]);
+await pool.query("UPDATE meet_rooms SET starts_at=NOW(),duration_minutes=60,status='scheduled',revoked_at=NULL WHERE id=$1 AND employer_id=$2",[application.interview_room_id,company]);
 await pool.query('INSERT INTO meet_participants(employer_id,room_id,employee_id) VALUES($1,$2,$3) ON CONFLICT DO NOTHING',[company,application.interview_room_id,employee]);
 const document=(await pool.query('SELECT id FROM employee_document_records WHERE employer_id=$1 LIMIT 1',[company])).rows[0]?.id||employee;
 const task=(await pool.query('SELECT id FROM employee_onboarding_tasks WHERE employer_id=$1 LIMIT 1',[company])).rows[0]?.id||employee;

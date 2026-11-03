@@ -47,6 +47,7 @@ jobs:
           node scripts/verify-signed-in.mjs
       - name: Verify extended portal audits
         run: |
+          node scripts/verify-landing-motion.mjs
           node scripts/verify-phase2.mjs
           node scripts/verify-pwa.mjs
           node scripts/verify-portal-isolation.mjs

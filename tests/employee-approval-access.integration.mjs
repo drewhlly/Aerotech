@@ -20,6 +20,8 @@ await query("INSERT INTO payroll_runs(id,employer_id,payroll_month,status,gross_
 const response=await api.GET();assert.equal(response.status,200);assert.equal((await response.json()).awaitingReview.length,1);assert.deepEqual(await access.employeeApprovalStages(employee),['finance']);
 employee={id,employer_id:other};assert.equal((await api.GET()).status,403);assert.deepEqual(await access.employeeApprovalStages(employee),[]);
 await database.exec('CREATE TABLE employee_sessions(token_hash text,employee_id uuid,expires_at timestamptz);CREATE TABLE workforce_employees(id uuid,employer_id uuid,manager_employee_id uuid,employment_status text);');
+await database.exec("CREATE TABLE company_subscriptions(employer_id uuid,status text,paid_until timestamptz)");
+await query("INSERT INTO company_subscriptions VALUES($1,'active',NOW()+INTERVAL '1 day')",[company]);
 await query("INSERT INTO workforce_employees VALUES($1,$2,NULL,'active')",[id,company]);
 await query("INSERT INTO employee_sessions VALUES($1,$2,NOW()+INTERVAL '1 day')",[createHash('sha256').update('local-fixture').digest('hex'),id]);
 assert.equal(await access.employeeRequestCanApprove(undefined),false);
