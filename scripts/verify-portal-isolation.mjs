@@ -41,7 +41,7 @@ try{
     assert.equal(await panel.getByRole('link',{name:'Account & profile',exact:true}).getAttribute('href'),profile);
     await panel.getByRole('link',{name:'Account & profile',exact:true}).click();await page.waitForURL(base+profile);
     if(role!=='admin'){
-     await trigger.click();await page.locator('#workspace-account-panel').getByRole('link',{name:'Email preferences',exact:true}).click();
+     await trigger.click();assert.equal(await page.getByRole('link',{name:'Email preferences',exact:true}).count(),0);await page.goto(home+'/email-preferences');
      await page.getByRole('button',{name:'Save preferences',exact:true}).waitFor();
      const newsletter=page.getByRole('checkbox',{name:/Aerotech newsletter/});await newsletter.check();
      await page.getByRole('button',{name:'Save preferences',exact:true}).click();

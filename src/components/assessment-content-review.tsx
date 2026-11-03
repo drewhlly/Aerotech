@@ -60,7 +60,7 @@ export default function AssessmentContentReview({
             </li>
           ))}
         </ol>
-        <form onSubmit={submit} className="mt-4 space-y-3">
+        <form method="post" onSubmit={submit} className="mt-4 space-y-3">
           <label className="block text-sm font-semibold">
             Job-related criteria and review notes
             <textarea

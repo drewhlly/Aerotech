@@ -24,9 +24,9 @@ export async function startEmployeeSession(pool:Pool,employeeId:string){
  const token=randomBytes(32).toString("hex");await pool.query("INSERT INTO employee_sessions(token_hash,employee_id,expires_at) VALUES($1,$2,NOW()+INTERVAL '7 days')",[digest(token),employeeId]);
  (await cookies()).set(EMPLOYEE_COOKIE,token,{httpOnly:true,secure:process.env.NODE_ENV==="production",sameSite:"lax",path:"/",maxAge:604800});
 }
-export async function currentEmployee(){
+export async function currentEmployee(requireService=true){
  const token=(await cookies()).get(EMPLOYEE_COOKIE)?.value;if(!token)return null;
- const pool=db();try{const r=await pool.query("SELECT e.id,e.employer_id,e.first_name,e.last_name,e.email,e.department,e.manager_employee_id FROM employee_sessions s JOIN workforce_employees e ON e.id=s.employee_id WHERE s.token_hash=$1 AND s.expires_at>NOW() AND e.employment_status IN ('active','probation','on_leave')",[digest(token)]);
+ const pool=db();try{const r=await pool.query("SELECT e.id,e.employer_id,e.first_name,e.last_name,e.email,e.department,e.manager_employee_id FROM employee_sessions s JOIN workforce_employees e ON e.id=s.employee_id WHERE s.token_hash=$1 AND s.expires_at>NOW() AND e.employment_status IN ('active','probation','on_leave') AND (NOT $2::boolean OR EXISTS(SELECT 1 FROM company_subscriptions sub WHERE sub.employer_id=e.employer_id AND sub.status='active' AND sub.paid_until>NOW() AND sub.plan IN ('basic','professional','business','enterprise')))",[digest(token),requireService]);
  return r.rows[0] as {id:string;employer_id:string;first_name:string;last_name:string;email:string;department:string;manager_employee_id:string|null}|undefined || null;
  }finally{await pool.end();}
 }

@@ -21,6 +21,7 @@ await db.query(
   "INSERT INTO employer_accounts(id,company_name,company_email,admin_first_name,admin_last_name,phone,country,password_hash,subscription_required) VALUES($1,'Phase2 Test','company@example.test','Test','Owner','000','Nigeria','test-only',FALSE),($2,'Other company','other@example.test','Other','Owner','000','Nigeria','test-only',FALSE)",
   [employer, foreign],
 );
+await db.query("INSERT INTO company_subscriptions(employer_id,plan,status,currency,paid_until,reference) VALUES($1,'business','active','NGN',NOW()+INTERVAL '1 day',$3),($2,'business','active','NGN',NOW()+INTERVAL '1 day',$4)",[employer,foreign,'fixture-'+employer,'fixture-'+foreign]);
 const staff = [
   employee,
   nonmember,

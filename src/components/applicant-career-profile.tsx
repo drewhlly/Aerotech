@@ -196,7 +196,7 @@ export default function ApplicantCareerProfile() {
       ) : (
         loaded && (
           <>
-            <form ref={formRef} onSubmit={save} className="aero-card space-y-5">
+            <form method="post" ref={formRef} onSubmit={save} className="aero-card space-y-5">
               <h2 className="text-xl font-bold">Professional background</h2>
               <p className="text-sm text-slate-600">
                 Extract recognised sections from a text-based PDF, then review
@@ -304,7 +304,7 @@ export default function ApplicantCareerProfile() {
                   </Link>
                 </>
               ) : profile ? (
-                <form onSubmit={assess} className="mt-5 space-y-5">
+                <form method="post" onSubmit={assess} className="mt-5 space-y-5">
                   <p className="text-sm leading-6 text-slate-600">
                     One scored attempt, based on your stated professional focus.
                     This result is separate from the vacancy qualifying score.

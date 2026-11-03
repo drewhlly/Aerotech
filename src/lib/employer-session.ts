@@ -29,6 +29,6 @@ export async function currentEmployer(requireService=true) {
   const pool = db();
   try {
     const result = await pool.query("SELECT s.employer_id,a.subscription_required,sub.plan,sub.status,sub.paid_until FROM employer_sessions s JOIN employer_accounts a ON a.id=s.employer_id LEFT JOIN company_subscriptions sub ON sub.employer_id=a.id WHERE s.token_hash = $1 AND s.expires_at > NOW()", [sessionDigest(token)]);
-    const row=result.rows[0];if(!row)return null;if(requireService&&row.subscription_required){if(row.status!=='active'||!row.paid_until||new Date(row.paid_until)<=new Date())return null;const path=(await headers()).get('x-aerotech-service-path')||'';if(!planAllows(row.plan,path))return null}return row.employer_id as string;
+    const row=result.rows[0];if(!row)return null;if(requireService){if(row.status!=='active'||!row.paid_until||new Date(row.paid_until)<=new Date())return null;const path=(await headers()).get('x-aerotech-service-path')||'';if(!planAllows(row.plan,path))return null}return row.employer_id as string;
   } finally { await pool.end(); }
 }

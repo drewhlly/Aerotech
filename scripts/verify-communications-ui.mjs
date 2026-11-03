@@ -22,7 +22,7 @@ try{
    await p.setViewportSize({width,height:900});await p.goto(home);
    await p.getByRole('button',{name:role+' account menu'}).click();assert.equal(await p.getByRole('button',{name:role+' account menu'}).getAttribute('aria-expanded'),'true');
    await p.locator('#workspace-account-panel').getByRole('link',{name:'Account & profile',exact:true}).click();await p.waitForURL(home+(role==='employer'?'/account':'/profile'));assert.equal(await p.getByRole('button',{name:role+' account menu'}).getAttribute('aria-expanded'),'false');
-   await p.getByRole('button',{name:role+' account menu'}).click();await p.locator('#workspace-account-panel').getByRole('link',{name:'Email preferences',exact:true}).click();await p.getByRole('heading',{name:'Email preferences',exact:true}).waitFor();await p.getByRole('button',{name:'Save preferences',exact:true}).waitFor();
+   await p.getByRole('button',{name:role+' account menu'}).click();assert.equal(await p.getByRole('link',{name:'Email preferences',exact:true}).count(),0);await p.goto(home+'/email-preferences');await p.getByRole('heading',{name:'Email preferences',exact:true}).waitFor();await p.getByRole('button',{name:'Save preferences',exact:true}).waitFor();
    await p.getByRole('checkbox',{name:/Aerotech newsletter/}).check();await p.getByRole('button',{name:'Save preferences',exact:true}).click();await p.getByRole('status').filter({hasText:'Your email preferences have been saved.'}).waitFor();
    await p.reload();await p.getByRole('button',{name:'Save preferences',exact:true}).waitFor();assert.equal(await p.getByRole('checkbox',{name:/Aerotech newsletter/}).isChecked(),true);
    assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'preferences overflow '+role+' '+width);
