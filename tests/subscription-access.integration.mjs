@@ -31,15 +31,18 @@ const {currentApplicant}=await import('../src/lib/applicant-session.ts');
 const {employeeRequestCanApprove}=await import('../src/lib/employee-approval-access.ts');
 const people=await import('../src/app/api/employees/route.ts');
 const workspace=await import('../src/app/api/employee/workspace/route.ts');
+const attention=await import('../src/app/api/workspace/attention/route.ts');
 async function assertBlocked(label){
  jar={aerotech_employer_session:'employer'};path='/api/employees';
  assert.equal(await currentEmployer(),null,label+' employer guard');
  assert.equal(await currentEmployer(false),company,label+' billing/support identity');
  assert.equal((await people.GET()).status,401,label+' direct employer API');
+ assert.equal((await attention.GET()).status,401,label+' employer attention API');
  jar={aerotech_employee_session:'employee'};
  assert.equal(await currentEmployee(),null,label+' employee guard');
  assert.equal((await currentEmployee(false)).id,employee,label+' privacy/support identity');
  assert.equal((await workspace.GET()).status,401,label+' direct employee API');
+ assert.equal((await attention.GET()).status,401,label+' employee attention API');
  assert.equal(await employeeRequestCanApprove('employee'),false,label+' approval route');
  jar={aerotech_applicant_session:'applicant'};
  assert.equal(await currentApplicant(),applicant,label+' free applicant identity');
