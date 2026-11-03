@@ -21,6 +21,7 @@ try{
  await carousel.getByRole('link',{name:'Find your next role'}).focus();await page.clock.runFor(14000);assert.equal(await current(),headings[0],'keyboard focus pauses');
  await unfocus();await page.clock.runFor(7000);assert.equal(await current(),headings[1]);
  await page.getByRole('button',{name:'Employers',exact:true}).click();await unfocus();await page.clock.runFor(14000);assert.equal(await current(),headings[2],'manual navigation stays selected');
+ await page.getByRole('button',{name:'Next workspace slide',exact:true}).focus();await page.keyboard.press('Enter');assert.equal(await page.getByRole('button',{name:'Next workspace slide',exact:true}).evaluate(e=>e===document.activeElement),true,'manual arrows retain keyboard focus');
  for(const width of [360,768,1280]){await page.setViewportSize({width,height:900});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'carousel overflow at '+width)}
  const reduced=await browser.newContext({baseURL:base,reducedMotion:'reduce'}),quiet=await reduced.newPage();
  await quiet.clock.install();await quiet.goto('/');await quiet.getByText('Motion reduced',{exact:true}).waitFor();await quiet.clock.runFor(14000);assert.equal(await quiet.locator('#workspace-slide h1').innerText(),headings[0]);
