@@ -1,0 +1,72 @@
+name: Deploy Aerotech Cloudflare preview
+
+on:
+  push:
+    branches:
+      - infra/cloudflare-migration-20261109
+    paths:
+      - '.github/workflows/cloudflare-preview-deploy.yml'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.*'
+      - 'wrangler.jsonc'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: aerotech-cloudflare-migration-preview
+  cancel-in-progress: true
+
+jobs:
+  deploy-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout migration branch
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      - name: Set up Node 24
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24'
+      - name: Install current dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Check vinext compatibility
+        run: npx --yes vinext check
+      - name: Initialize Cloudflare adapter in isolated CI workspace
+        run: |
+          CI=1 npx --yes vinext init --yes
+          test -f wrangler.jsonc || test -f wrangler.json || test -f wrangler.toml
+      - name: Force isolated preview Worker identity (never attach production domain)
+        run: |
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const f=['wrangler.jsonc','wrangler.json','wrangler.toml'].find(fs.existsSync);
+          if(!f) throw Error('vinext did not generate Workers config');
+          if(f.endsWith('.toml')){
+            let t=fs.readFileSync(f,'utf8');
+            if(/^name\\s*=/m.test(t)) t=t.replace(/^name\\s*=.*$/m,'name = "aerotech-migration-preview"');
+            else t='name = "aerotech-migration-preview"\\n'+t;
+            t=t.replace(/^routes?\\s*=.*$/gm,'');
+            fs.writeFileSync(f,t);
+          } else {
+            const s=fs.readFileSync(f,'utf8');
+            const t=s.replace(/("name"\\s*:\\s*)"[^"]*"/,'$1"aerotech-migration-preview"')
+              .replace(/"routes?"\\s*:\\s*\\[[^\\]]*\\]\\s*,?/g,'');
+            if(!t.includes('"aerotech-migration-preview"')) throw Error('Could not pin Worker name safely');
+            fs.writeFileSync(f,t);
+          }
+          JS
+      - name: Build Cloudflare Worker
+        run: npm run build:vinext
+      - name: Deploy isolated preview only
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: 3144bf081a43f5ca5bc88b60e956a9ce
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "::error::CLOUDFLARE_API_TOKEN is not configured in GitHub Actions secrets."
+            exit 1
+          fi
+          npx --yes @vinext/cloudflare deploy
