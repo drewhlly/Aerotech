@@ -44,6 +44,7 @@ await query(
   "INSERT INTO employer_accounts(id,email) VALUES($1,'owner@example.test'),($2,'other@example.test')",
   [owner, other],
 );
+await query("INSERT INTO company_subscriptions VALUES($1,'business','active',NOW()+INTERVAL '1 day'),($2,'business','active',NOW()+INTERVAL '1 day')",[owner,other]);
 for (const e of [employee, nonmember])
   await query(
     "INSERT INTO workforce_employees VALUES($1,$2,'EMP','Test','User',$3,'Engineer','Engineering','Lagos','active',NULL)",

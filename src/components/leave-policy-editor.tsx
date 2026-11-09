@@ -106,7 +106,7 @@ export default function LeavePolicyEditor() {
           Loading policy…
         </p>
       ) : (
-        <form onSubmit={save} className="mt-5 space-y-5">
+        <form method="post" onSubmit={save} className="mt-5 space-y-5">
           <fieldset>
             <legend className="text-sm font-semibold">Working days</legend>
             <div className="mt-2 flex flex-wrap gap-2">

@@ -231,3 +231,7 @@ progress::-webkit-progress-bar{background:#e2e8f0;border-radius:8px}progress::-w
 [data-theme="dark"] .workspace-content .text-emerald-800,[data-theme="dark"] .workspace-content .text-emerald-900{color:#6ee7b7}
 [data-theme="dark"] .workspace-content .text-red-800{color:#fca5a5}
 [data-theme="dark"] .workspace-content .text-amber-900{color:#fcd34d}
+
+@keyframes landing-slide-enter { from { transform: translateY(12px); } to { transform: translateY(0); } }
+.landing-slide-content { animation: landing-slide-enter 500ms ease-out both; }
+@media (prefers-reduced-motion: reduce) { .landing-slide-content { animation: none; } }

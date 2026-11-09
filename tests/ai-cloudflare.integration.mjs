@@ -16,6 +16,7 @@ await query("INSERT INTO company_subscriptions VALUES($1,'basic','active',NOW()+
 for(const [token,id] of [['owner',owner],['basic',basic]])await query("INSERT INTO employer_sessions VALUES($1,$2,NOW()+INTERVAL '1 day')",[hash(token),id]);
 await query('INSERT INTO workforce_employees VALUES($1,$2),($3,$4),($5,$4)',[randomUUID(),owner,randomUUID(),other,randomUUID()]);
 await query("INSERT INTO employee_requests VALUES($1,$2,'pending')",[randomUUID(),owner]);
+await query("INSERT INTO company_subscriptions VALUES($1,'business','active',NOW()+INTERVAL '1 day')",[owner]);
 const ai=await import('../src/app/api/ai/ask/route.ts');
 const req=body=>new Request('https://local.test/api/ai/ask',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});
 assert.equal((await ai.GET()).status,401);

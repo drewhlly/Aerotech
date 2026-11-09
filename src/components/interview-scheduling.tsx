@@ -146,7 +146,7 @@ export default function InterviewScheduling({
             downloads use UTC and update the same event when re-imported.
           </p>
           {role === "employer" ? (
-            <form
+            <form method="post"
               onSubmit={create}
               className="aero-card grid gap-4 sm:grid-cols-2"
             >

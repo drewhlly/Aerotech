@@ -9,8 +9,11 @@ import SupportLayout from "@/components/support-layout";
 import {redirect} from "next/navigation";
 import {currentEmployee} from "@/lib/employee-auth";
 export default async function EmployeeLayout({children}:{children:React.ReactNode}){
- const employee=await currentEmployee();if(!employee)redirect(loginUrl('employee',(await headers()).get('x-aerotech-return-path')||undefined));
+ const employee=await currentEmployee(false);if(!employee)redirect(loginUrl('employee',(await headers()).get('x-aerotech-return-path')||undefined));
  if((await headers()).get('x-aerotech-service-path')?.endsWith('/support'))return <SupportLayout>{children}</SupportLayout>;
+ const path=(await headers()).get('x-aerotech-service-path');
+ if(path==='/employee/access'||path==='/employee/privacy'||path==='/employee/email-preferences')return <SupportLayout>{children}</SupportLayout>;
+ if(!await currentEmployee())redirect('/employee/access');
  const [stages,canReviewLeave]=await Promise.all([employeeApprovalStages(employee),employeeCanReviewLeave(employee)]);
  const canApprove=stages.length>0||canReviewLeave;
  return <PortalFrame role="employee" navigation={EmployeeNav} navigationProps={{canApprove}}>{children}</PortalFrame>;

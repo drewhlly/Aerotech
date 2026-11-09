@@ -23,16 +23,8 @@ jobs:
         run: npm run lint
       - name: Run smoke tests
         run: npm test
-      - name: Verify subscription billing and capacity
-        run: npm run test:billing
-      - name: Verify isolated payout connection and transfer safety
-        run: npm run test:payouts
-      - name: Verify event expiry and active reminders
-        run: npm run test:events
-      - name: Verify recruitment pipeline and transitions
-        run: npm run test:recruitment
-      - name: Verify communications consent and delivery queue
-        run: node --experimental-test-module-mocks --import ./tests/helpers/ts-loader.mjs tests/communications.integration.mjs
+      - name: Verify all workflow integration suites
+        run: npm run test:integration
       - name: Build production app
         run: npm run build
       - name: Type-check

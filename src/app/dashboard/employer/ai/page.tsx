@@ -70,7 +70,7 @@ export default function AIPage() {
         {status === 'unavailable' && <p role="status" className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">Aerotech AI is not available yet. Please contact your administrator.</p>}
         {status === 'error' && <p role="alert" className="mt-6 rounded-xl bg-red-50 p-4 text-sm text-red-800">Could not check availability. Refresh the page to retry.</p>}
 
-        <form onSubmit={ask} className="mt-6 space-y-4">
+        <form method="post" onSubmit={ask} className="mt-6 space-y-4">
           <label htmlFor="ai-question" className="block text-sm font-semibold text-slate-900">Your question</label>
           <textarea id="ai-question" value={prompt} onChange={event => setPrompt(event.target.value)} maxLength={2000} minLength={2} required rows={5} placeholder="What would you like help with today?" className="aero-input w-full" />
           <div className="flex flex-wrap items-center justify-between gap-4">
