@@ -3,6 +3,7 @@ name: Deploy Aerotech Cloudflare preview
 on:
   push:
     branches:
+      - main
       - infra/cloudflare-migration-20261109
     paths:
       - '.github/workflows/cloudflare-preview-deploy.yml'
