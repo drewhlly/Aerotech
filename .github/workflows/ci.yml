@@ -4,6 +4,10 @@ on:
   push:
     branches: [main]
   pull_request:
+  schedule:
+    # 03:00 Africa/Lagos (UTC+1) daily; GitHub may delay scheduled starts.
+    - cron: '0 2 * * *'
+  workflow_dispatch:
 
 jobs:
   verify:
