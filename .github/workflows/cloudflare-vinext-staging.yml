@@ -1,0 +1,46 @@
+name: Cloudflare Workers staging deployment
+
+on:
+  push:
+    branches:
+      - infra/cloudflare-vinext-deploy-20261109
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: aerotech-cloudflare-vinext-staging
+  cancel-in-progress: false
+
+jobs:
+  deploy-staging:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      CLOUDFLARE_ACCOUNT_ID: 3144bf081a43f5ca5bc88b60e956a9ce
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CI: "1"
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      - name: Set up Node 24
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: "24"
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Check Cloudflare compatibility
+        run: npx --yes vinext check
+      - name: Initialize isolated Cloudflare Worker
+        run: npx --yes vinext init --platform=cloudflare --name=aerotech-vinext-staging --cdn-cache=none --data-cache=none --image-optimization=none
+      - name: Build Cloudflare Worker
+        run: npm run build:vinext
+      - name: Validate Cloudflare deployment credentials
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "::error::GitHub Actions secret CLOUDFLARE_API_TOKEN is missing; build was run but deployment cannot proceed."
+            exit 1
+          fi
+      - name: Deploy Cloudflare staging Worker (no custom domain)
+        run: npx @vinext/cloudflare deploy
