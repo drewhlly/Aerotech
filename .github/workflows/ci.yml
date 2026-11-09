@@ -4,6 +4,10 @@ on:
   push:
     branches: [main]
   pull_request:
+  schedule:
+    # 03:00 Africa/Lagos (UTC+1) daily; GitHub may delay scheduled starts.
+    - cron: '0 2 * * *'
+  workflow_dispatch:
 
 jobs:
   verify:
@@ -19,18 +23,8 @@ jobs:
         run: npm run lint
       - name: Run smoke tests
         run: npm test
-      - name: Verify subscription access for all company accounts and employees
-        run: node --experimental-test-module-mocks --import ./tests/helpers/ts-loader.mjs tests/subscription-access.integration.mjs
-      - name: Verify subscription billing and capacity
-        run: npm run test:billing
-      - name: Verify isolated payout connection and transfer safety
-        run: npm run test:payouts
-      - name: Verify event expiry and active reminders
-        run: npm run test:events
-      - name: Verify recruitment pipeline and transitions
-        run: npm run test:recruitment
-      - name: Verify communications consent and delivery queue
-        run: node --experimental-test-module-mocks --import ./tests/helpers/ts-loader.mjs tests/communications.integration.mjs
+      - name: Verify all workflow integration suites
+        run: npm run test:integration
       - name: Build production app
         run: npm run build
       - name: Type-check

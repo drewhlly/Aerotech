@@ -7,7 +7,7 @@ const context=await browser.newContext({baseURL:base});
 try{
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto('/install');await page.evaluate(()=>navigator.serviceWorker.ready);await page.reload();
- assert.equal(await page.title(),'Install Aerotech | Aerotech');
+ assert.equal(await page.title(),'Install Aerotech | Aerotech HR');
  const manifest=await (await context.request.get('/manifest.webmanifest')).json();assert.equal(manifest.display,'standalone');assert.equal(manifest.start_url,'/');assert.equal(manifest.scope,'/');
  for(const icon of manifest.icons){const r=await context.request.get(icon.src);assert.equal(r.status(),200);const png=await r.body();const size=Number(icon.sizes.split('x')[0]);assert.equal(png.readUInt32BE(16),size);assert.equal(png.readUInt32BE(20),size)}
  const sw=await context.request.get('/sw.js');assert.match(sw.headers()['cache-control'],/no-store/);
