@@ -47,14 +47,14 @@ jobs:
           if(!f) throw Error('vinext did not generate Workers config');
           if(f.endsWith('.toml')){
             let t=fs.readFileSync(f,'utf8');
-            if(/^name\\s*=/m.test(t)) t=t.replace(/^name\\s*=.*$/m,'name = "aerotech-migration-preview"');
-            else t='name = "aerotech-migration-preview"\\n'+t;
-            t=t.replace(/^routes?\\s*=.*$/gm,'');
+            if(/^name\s*=/m.test(t)) t=t.replace(/^name\s*=.*$/m,'name = "aerotech-migration-preview"');
+            else t='name = "aerotech-migration-preview"\n'+t;
+            t=t.replace(/^routes?\s*=.*$/gm,'');
             fs.writeFileSync(f,t);
           } else {
             const s=fs.readFileSync(f,'utf8');
-            const t=s.replace(/("name"\\s*:\\s*)"[^"]*"/,'$1"aerotech-migration-preview"')
-              .replace(/"routes?"\\s*:\\s*\\[[^\\]]*\\]\\s*,?/g,'');
+            const t=s.replace(/("name"\s*:\s*)"[^"]*"/,'$1"aerotech-migration-preview"')
+              .replace(/"routes?"\s*:\s*\[[^\]]*\]\s*,?/g,'');
             if(!t.includes('"aerotech-migration-preview"')) throw Error('Could not pin Worker name safely');
             fs.writeFileSync(f,t);
           }
