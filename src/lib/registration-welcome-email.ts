@@ -59,7 +59,7 @@ export async function sendRegistrationWelcomeEmail({
   const text = [
     `Hello ${name},`,
     "",
-    "Welcome to Aerotech! Your " + details.label + " account has been created successfully.",
+    "Welcome to Aerotech! Your " + details.label + (role === "employer" ? " registration has been received. Payment is required to activate your account." : " account has been created successfully."),
     "",
     details.nextStep,
     "",
