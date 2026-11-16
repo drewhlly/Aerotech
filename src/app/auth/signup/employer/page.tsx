@@ -61,7 +61,7 @@ export default function EmployerSignupPage() {const router=useRouter();
         return;
       }
       window.localStorage.setItem("aerotech_employer_country", values.country.trim());
-      window.location.assign(safeReturnTo(new URLSearchParams(window.location.search).get('next'),'employer'));
+      router.replace('/dashboard/employer/billing/plans');
     } catch {
       setError("Unable to connect to Aerotech right now. Please try again.");
     } finally {
@@ -76,7 +76,7 @@ export default function EmployerSignupPage() {const router=useRouter();
         <div className="mx-auto mt-10 max-w-3xl rounded-3xl border border-slate-200 bg-white p-7 shadow-sm sm:p-10">
           <div className="text-sm font-black uppercase tracking-widest text-[#2563eb]">Employer setup</div>
           <h1 className="mt-3 text-3xl font-black text-[#07152c] sm:text-4xl">Build your workforce on Aerotech.</h1>
-          <p className="mt-3 text-slate-500">Create your company account, choose a plan and activate paid services when live billing is available.</p>
+          <p className="mt-3 text-slate-500">Provide your company details and complete secure payment to activate your employer workspace.</p>
           <form method="post" onSubmit={submit}>
             <div className="mt-8 grid gap-4 sm:grid-cols-2">
               {fields.map((field) => (
@@ -111,7 +111,7 @@ export default function EmployerSignupPage() {const router=useRouter();
             </div>
             {error && <p role="alert" className="mt-5 rounded-xl bg-red-50 p-4 text-sm font-medium text-red-700">{error}</p>}
             <button type="submit" disabled={busy} className="mt-7 flex w-full items-center justify-center gap-2 rounded-xl bg-[#07152c] px-5 py-4 font-black text-white disabled:opacity-60">
-              {busy ? "Creating workspace..." : "Create employer workspace"} <ArrowRight size={18} />
+              {busy ? "Saving your registration..." : "Continue to subscription payment"} <ArrowRight size={18} />
             </button>
           <PolicyAcceptance/></form>
           <div className="mt-5 text-center text-sm text-slate-500">

@@ -5,6 +5,8 @@ import {employeeRequestCanApprove} from './lib/employee-approval-access';
 import {requestRole} from './lib/request-role';
 import {loginUrl} from './lib/auth-navigation';
 import {sameOrigin} from './lib/collaboration-policy';
+import {employerHasPaidAccess} from './lib/employer-payment-guard';
+import {EMPLOYER_BILLING_PATH,employerMustCompleteBilling} from './lib/employer-payment-policy';
 function forward(req:NextRequest){const h=new Headers(req.headers);h.set('x-aerotech-service-path',req.nextUrl.pathname);h.set('x-aerotech-return-path',req.nextUrl.pathname+req.nextUrl.search);return NextResponse.next({request:{headers:h}})}
 export async function proxy(req:NextRequest){
  const path=req.nextUrl.pathname,url=req.nextUrl.clone();
@@ -17,6 +19,18 @@ export async function proxy(req:NextRequest){
  let role;try{role=await requestRole(req)}catch{return new NextResponse('Workspace access is temporarily unavailable. Please retry.',{status:503})}
  const host=hostPortal(url.hostname,process.env.PORTAL_ROOT_DOMAIN),destination=pagePortal(path);
  const home=role==='support'?'/support-console':role?portalHomes[role]:null;
+ // An unpaid signup has a session only to complete secure billing.
+ // Never let it navigate into an employer workspace or another portal.
+ if(role==='employer'){
+  let paid=false;
+  try{paid=await employerHasPaidAccess(req)}
+  catch{return new NextResponse('Subscription verification is temporarily unavailable. Please retry.',{status:503})}
+  if(employerMustCompleteBilling(path,paid)){
+   url.pathname=EMPLOYER_BILLING_PATH;
+   url.search='';
+   return NextResponse.redirect(url);
+  }
+ }
  const deny = () =>
     new NextResponse(
       '<!doctype html><html lang="en"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Workspace access restricted | Aerotech</title><body style="font-family:system-ui;background:#f5f8ff;color:#06163f;padding:40px"><main style="max-width:600px;margin:10vh auto;background:white;padding:32px;border-radius:20px"><h1>Workspace access restricted</h1><p>Your account does not have access to this workspace.</p>' +

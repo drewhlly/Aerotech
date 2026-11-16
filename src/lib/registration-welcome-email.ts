@@ -15,7 +15,7 @@ type WelcomeDetails = {
 const roleInfo: Record<RegistrationRole, { label: string; nextStep: string }> = {
   employer: {
     label: "employer",
-    nextStep: "Sign in to your employer workspace to explore workforce management. A subscription is required to access paid employer features.",
+    nextStep: "Your company registration is pending. Sign in to complete secure subscription payment. Your employer workspace becomes available only after payment is verified.",
   },
   employee: {
     label: "employee",
@@ -59,7 +59,7 @@ export async function sendRegistrationWelcomeEmail({
   const text = [
     `Hello ${name},`,
     "",
-    "Welcome to Aerotech! Your " + details.label + " account has been created successfully.",
+    "Welcome to Aerotech! Your " + details.label + (role === "employer" ? " registration has been received. Payment is required to activate your account." : " account has been created successfully."),
     "",
     details.nextStep,
     "",
@@ -74,7 +74,7 @@ export async function sendRegistrationWelcomeEmail({
     '<div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:auto;color:#0a1f47;line-height:1.6">',
     '<h1 style="font-size:26px;color:#166ae9">Welcome to Aerotech</h1>',
     `<p>Hello ${escapeHtml(name)},</p>`,
-    `<p>Your <strong>${details.label}</strong> account has been created successfully.</p>`,
+    `<p>${role === "employer" ? "Your company registration has been received. Payment is required to activate your employer workspace." : `Your <strong>${details.label}</strong> account has been created successfully.`}</p>`,
     `<p>${escapeHtml(details.nextStep)}</p>`,
     `<p><a href="${loginUrl}" style="background:#166ae9;color:#ffffff;display:inline-block;padding:12px 20px;border-radius:6px;text-decoration:none">Sign in to Aerotech</a></p>`,
     '<p style="font-size:13px;color:#556987">If you did not create this account, contact support@aerotechhr.app.</p>',
@@ -92,7 +92,7 @@ export async function sendRegistrationWelcomeEmail({
       body: JSON.stringify({
         from,
         to: [to],
-        subject: "Welcome to Aerotech — your account is ready",
+        subject: role === "employer" ? "Aerotech registration received — complete payment" : "Welcome to Aerotech — your account is ready",
         text,
         html,
       }),
