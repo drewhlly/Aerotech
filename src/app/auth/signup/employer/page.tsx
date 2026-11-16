@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import PasswordInput from "@/components/password-input";
+import {safeReturnTo} from "@/lib/auth-navigation";
 
 import {countries} from '@/lib/countries';
 
