@@ -61,7 +61,10 @@ export default function EmployerSignupPage() {const router=useRouter();
         return;
       }
       window.localStorage.setItem("aerotech_employer_country", values.country.trim());
-      router.replace('/dashboard/employer/billing/plans');
+      const next = new URLSearchParams(window.location.search).get('next');
+      const nextPlan = next ? new URL(next, window.location.origin).searchParams.get('plan') : null;
+      const plan = nextPlan && ['basic','professional','business','enterprise'].includes(nextPlan) ? nextPlan : null;
+      router.replace('/dashboard/employer/billing/plans' + (plan ? '?plan=' + encodeURIComponent(plan) : ''));
     } catch {
       setError("Unable to connect to Aerotech right now. Please try again.");
     } finally {
