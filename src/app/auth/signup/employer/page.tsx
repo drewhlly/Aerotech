@@ -60,7 +60,7 @@ export default function EmployerSignupPage() {const router=useRouter();
         return;
       }
       window.localStorage.setItem("aerotech_employer_country", values.country.trim());
-      window.location.assign('/dashboard/employer/billing/plans');
+      router.replace('/dashboard/employer/billing/plans');
     } catch {
       setError("Unable to connect to Aerotech right now. Please try again.");
     } finally {
