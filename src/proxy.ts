@@ -5,7 +5,8 @@ import {employeeRequestCanApprove} from './lib/employee-approval-access';
 import {requestRole} from './lib/request-role';
 import {loginUrl} from './lib/auth-navigation';
 import {sameOrigin} from './lib/collaboration-policy';
-import {EMPLOYER_BILLING_PATH,employerHasPaidAccess,employerMustCompleteBilling} from './lib/employer-payment-guard';
+import {employerHasPaidAccess} from './lib/employer-payment-guard';
+import {EMPLOYER_BILLING_PATH,employerMustCompleteBilling} from './lib/employer-payment-policy';
 function forward(req:NextRequest){const h=new Headers(req.headers);h.set('x-aerotech-service-path',req.nextUrl.pathname);h.set('x-aerotech-return-path',req.nextUrl.pathname+req.nextUrl.search);return NextResponse.next({request:{headers:h}})}
 export async function proxy(req:NextRequest){
  const path=req.nextUrl.pathname,url=req.nextUrl.clone();
