@@ -12,7 +12,7 @@ process.env.DATABASE_URL='postgres://isolated-subscription-access-fixtures';
 globalThis.fetch=()=>{throw Error('No provider requests are permitted in this test')};
 await database.exec(`CREATE TABLE employer_accounts(id UUID PRIMARY KEY,subscription_required BOOLEAN);
 CREATE TABLE employer_sessions(token_hash TEXT,employer_id UUID,expires_at TIMESTAMPTZ);
-CREATE TABLE company_subscriptions(employer_id UUID PRIMARY KEY,plan TEXT,status TEXT,paid_until TIMESTAMPTZ);
+CREATE TABLE company_subscriptions(employer_id UUID PRIMARY KEY,plan TEXT,status TEXT,paid_until TIMESTAMPTZ,reference TEXT);
 CREATE TABLE workforce_employees(id UUID PRIMARY KEY,employer_id UUID,first_name TEXT,last_name TEXT,email TEXT,department TEXT,manager_employee_id UUID,employment_status TEXT);
 CREATE TABLE employee_sessions(token_hash TEXT,employee_id UUID,expires_at TIMESTAMPTZ);
 CREATE TABLE applicant_sessions(token_hash TEXT,applicant_id UUID,expires_at TIMESTAMPTZ);
