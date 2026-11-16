@@ -2,8 +2,6 @@ import { createHash } from 'node:crypto';
 import type { NextRequest } from 'next/server';
 import { db } from './employer-session';
 
-export const EMPLOYER_BILLING_PATH = '/dashboard/employer/billing/plans';
-
 /**
  * An employer registration may be stored before checkout, but the employer
  * workspace must stay locked until Paystack has verified an unexpired plan.
@@ -31,8 +29,4 @@ export async function employerHasPaidAccess(request: NextRequest): Promise<boole
   } finally {
     await pool.end();
   }
-}
-
-export function employerMustCompleteBilling(path: string, hasPaidAccess: boolean): boolean {
-  return !hasPaidAccess && path !== EMPLOYER_BILLING_PATH;
 }
