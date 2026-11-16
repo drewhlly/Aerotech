@@ -1,5 +1,6 @@
 import {strictDatabaseConnectionString} from './postgres-connection';
 import {planAllows} from './plan-access';
+import {isActiveDemoSubscription,demoMayAccessService} from './demo-access';
 import {selectPortal} from './portal-selection';
 import { randomBytes, createHash } from "node:crypto";
 import { Pool,types } from "pg";
@@ -28,7 +29,7 @@ export async function currentEmployer(requireService=true) {
   if (!token) return null;
   const pool = db();
   try {
-    const result = await pool.query("SELECT s.employer_id,a.subscription_required,sub.plan,sub.status,sub.paid_until FROM employer_sessions s JOIN employer_accounts a ON a.id=s.employer_id LEFT JOIN company_subscriptions sub ON sub.employer_id=a.id WHERE s.token_hash = $1 AND s.expires_at > NOW()", [sessionDigest(token)]);
-    const row=result.rows[0];if(!row)return null;if(requireService){if(row.status!=='active'||!row.paid_until||new Date(row.paid_until)<=new Date())return null;const path=(await headers()).get('x-aerotech-service-path')||'';if(!planAllows(row.plan,path))return null}return row.employer_id as string;
+    const result = await pool.query("SELECT s.employer_id,a.subscription_required,sub.plan,sub.status,sub.paid_until,sub.reference FROM employer_sessions s JOIN employer_accounts a ON a.id=s.employer_id LEFT JOIN company_subscriptions sub ON sub.employer_id=a.id WHERE s.token_hash = $1 AND s.expires_at > NOW()", [sessionDigest(token)]);
+    const row=result.rows[0];if(!row)return null;if(requireService){const demo=isActiveDemoSubscription(row,row.employer_id);const paid=row.status==='active'&&row.paid_until&&new Date(row.paid_until)>new Date();if(!paid&&!demo)return null;const path=(await headers()).get('x-aerotech-service-path')||'';if(demo&&!demoMayAccessService(path))return null;if(!planAllows(row.plan,path))return null}return row.employer_id as string;
   } finally { await pool.end(); }
 }
