@@ -31,8 +31,23 @@ jobs:
           node-version: '24'
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
-      - name: Apply mechanical ESLint fixes
-        run: npx eslint . --fix || true
+      - name: Apply mechanical ESLint fixes to allowlisted UI folders only
+        id: repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          allowed=(components/ui src/components/ui app/components/ui src/app/components/ui)
+          existing=()
+          for dir in "${allowed[@]}"; do
+            [[ ! -d "$dir" ]] || existing+=("$dir")
+          done
+          if [[ ${#existing[@]} -eq 0 ]]; then
+            echo "No allowlisted UI directories found; nothing to repair." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          # ESLint may report remaining issues; those will be caught by the
+          # mandatory full-project verification if an autofix is proposed.
+          npx eslint "${existing[@]}" --fix || true
       - name: Limit changes to safe presentation files
         id: changes
         shell: bash
@@ -49,7 +64,7 @@ jobs:
           while IFS= read -r path; do
             if [[ ! "$path" =~ ^(components/ui/|src/components/ui/|app/components/ui/|src/app/components/ui/) ]]; then
               echo "Non-allowlisted file changed: $path; discarding all proposed changes."
-              git reset --hard HEAD
+              git restore --worktree -- .
               echo "changed=false" >> "$GITHUB_OUTPUT"
               exit 0
             fi
