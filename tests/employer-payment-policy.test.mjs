@@ -14,3 +14,14 @@ test('paid employer sessions can navigate normally',()=>{
     assert.equal(employerMustCompleteBilling(path,true),false,path);
   }
 });
+
+test('unpaid employer retains help, scoped support and privacy without unlocking modules',()=>{
+  for(const path of ['/help','/support','/support/tickets','/dashboard/employer/support',
+    '/dashboard/employer/support-access','/dashboard/employer/privacy']){
+    assert.equal(employerMustCompleteBilling(path,false),false,path);
+  }
+  for(const path of ['/dashboard/employer/support-access/other','/dashboard/employer/privacy-extra',
+    '/employee/support','/applicant/privacy','/dashboard/employer/recruitment']){
+    assert.equal(employerMustCompleteBilling(path,false),true,path);
+  }
+});
