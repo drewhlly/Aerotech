@@ -1,5 +1,6 @@
 import {workspaceMetadata} from '@/lib/route-metadata';
 export const generateMetadata=workspaceMetadata;
+import {employerMayAccessWithoutSubscription} from '@/lib/employer-payment-policy';
 import {loginUrl} from '@/lib/auth-navigation';
 import {headers} from 'next/headers';import {requiredPlan} from '@/lib/plan-access';
 import {PortalFrame} from "@/components/workspace-shell";
@@ -12,7 +13,7 @@ export default async function EmployerLayout({ children }: { children: React.Rea
   const employerId = await currentEmployer(false);
   if (!employerId) redirect(loginUrl('employer',(await headers()).get('x-aerotech-return-path')||undefined));
   if((await headers()).get('x-aerotech-service-path')?.endsWith('/support'))return <SupportLayout>{children}</SupportLayout>;
-  if((await headers()).get('x-aerotech-service-path')?.includes('/billing/')||(await headers()).get('x-aerotech-service-path')==='/dashboard/employer/privacy')return <PortalFrame role="employer" navigation={EmployerNav}>{children}</PortalFrame>;
+  if(employerMayAccessWithoutSubscription((await headers()).get('x-aerotech-service-path')||''))return <PortalFrame role="employer" navigation={EmployerNav}>{children}</PortalFrame>;
   if(!await currentEmployer())redirect('/dashboard/employer/billing/plans?required='+requiredPlan((await headers()).get('x-aerotech-service-path')||''));
   return <PortalFrame role="employer" navigation={EmployerNav}>{children}</PortalFrame>;
 }

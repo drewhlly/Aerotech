@@ -1,7 +1,9 @@
 import {mock} from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';import {randomUUID} from 'node:crypto';import {PGlite} from '@electric-sql/pglite';
 const database=await PGlite.create(),company=randomUUID(),other=randomUUID(),probation=randomUUID(),leaver=randomUUID(),outside=randomUUID();let failOther=false;
 const query=async(sql,args=[])=>{if(failOther&&sql==='SELECT id FROM employer_accounts WHERE id=$1 FOR UPDATE'&&args[0]===other)throw Error('Synthetic tenant failure');const r=await database.query(sql,args);return {...r,rowCount:r.rows.length||r.affectedRows||0}};
-mock.module(new URL('../src/lib/employer-session.ts',import.meta.url).href,{namedExports:{db:()=>({query,connect:async()=>({query,release(){}}),end:async()=>{}})}});
+let clientBusy=false;
+const clientQuery=async(sql,args=[])=>{assert.equal(clientBusy,false,'transaction client queries must not overlap');clientBusy=true;try{return await query(sql,args)}finally{clientBusy=false}};
+mock.module(new URL('../src/lib/employer-session.ts',import.meta.url).href,{namedExports:{db:()=>({query,connect:async()=>({query:clientQuery,release(){}}),end:async()=>{}})}});
 for(const m of readFileSync('scripts/migrate.mjs','utf8').matchAll(/"(\d{3}_[^"]+\.sql)"/g))await database.exec(readFileSync('database/'+m[1],'utf8'));
 for(const id of [company,other])await query("INSERT INTO employer_accounts(id,company_name,company_email,admin_first_name,admin_last_name,phone,country,password_hash) VALUES($1,'Fixture',$2,'Test','Owner','000','Nigeria','test-only')",[id,id+'@example.test']);
 for(const [id,tenant,status] of [[probation,company,'probation'],[leaver,company,'active'],[outside,other,'active']])await query("INSERT INTO workforce_employees(id,employer_id,employee_number,first_name,last_name,email,job_title,department,location,employment_status,hire_date) VALUES($1,$2,$3,'Test','Employee',$4,'Engineer','Engineering','Lagos',$5,CURRENT_DATE-120)",[id,tenant,id,id+'@example.test',status]);
@@ -15,6 +17,8 @@ try{
  const first=await cron.GET(req(process.env.CRON_SECRET));assert.equal(first.status,200);assert.equal((await first.json()).processed,2);
  assert.equal((await query('SELECT employment_status FROM workforce_employees WHERE id=$1',[probation])).rows[0].employment_status,'active');assert.equal((await query('SELECT employment_status FROM workforce_employees WHERE id=$1',[leaver])).rows[0].employment_status,'terminated');assert.equal((await query('SELECT employment_status FROM workforce_employees WHERE id=$1',[outside])).rows[0].employment_status,'active');
  assert.equal((await query('SELECT COUNT(*)::int AS n FROM employee_sessions WHERE employee_id=$1',[leaver])).rows[0].n,0);assert.equal((await query('SELECT active FROM payroll_employees WHERE workforce_employee_id=$1',[leaver])).rows[0].active,false);
+ const {workflowOverview}=await import('../src/lib/workflow-automation.ts');
+ const overview=await workflowOverview({query:clientQuery},company);assert.ok(overview.people.some(p=>p.id===probation),'overview retains confirmed staff with sequential queries');
  const before=await query('SELECT id,generated_at FROM workforce_report_snapshots ORDER BY id');assert.equal(before.rows.length,2);
  await query("UPDATE workforce_report_snapshots SET generation_source='on_request'");await query("UPDATE workflow_alerts SET read_at=NOW() WHERE alert_key LIKE 'report:%'");assert.equal((await cron.GET(req(process.env.CRON_SECRET))).status,200);
  const after=await query('SELECT id,generated_at FROM workforce_report_snapshots ORDER BY id');assert.deepEqual(after.rows,before.rows);assert.equal((await query("SELECT COUNT(*)::int AS n FROM workflow_alerts WHERE alert_key LIKE 'report:%' AND read_at IS NULL")).rows[0].n,0,'scheduler retry does not rearm report notices');
