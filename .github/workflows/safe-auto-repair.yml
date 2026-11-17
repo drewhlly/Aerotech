@@ -1,0 +1,86 @@
+name: Safe automated code repair
+
+# Automatically proposes conservative ESLint repairs.
+# This workflow NEVER merges or deploys changes.
+on:
+  schedule:
+    - cron: '30 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: safe-repair
+  cancel-in-progress: false
+
+jobs:
+  propose-safe-repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Check out main
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: main
+          persist-credentials: true
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24'
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Apply mechanical ESLint fixes
+        run: npx eslint . --fix || true
+      - name: Limit changes to safe presentation files
+        id: changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only > /tmp/aerotech-fixed-files.txt
+          if [[ ! -s /tmp/aerotech-fixed-files.txt ]]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No mechanical repairs are available." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          # Do not propose changes to business logic, auth, billing, payroll,
+          # databases, deployment settings, scripts, or other sensitive paths.
+          while IFS= read -r path; do
+            if [[ ! "$path" =~ ^(components/ui/|src/components/ui/|app/components/ui/|src/app/components/ui/) ]]; then
+              echo "Non-allowlisted file changed: $path; discarding all proposed changes."
+              git reset --hard HEAD
+              echo "changed=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          done < /tmp/aerotech-fixed-files.txt
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+      - name: Verify lint, tests, build, and types
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          npm run lint
+          npm test
+          npm run test:integration
+          npm run build
+          npx tsc --noEmit
+      - name: Open a reviewable repair pull request
+        if: steps.changes.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          branch="automation/eslint-fixes-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git add -- components/ui src/components/ui app/components/ui src/app/components/ui 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "No eligible fixes to commit." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          git commit -m "fix: apply verified ESLint autofixes to UI components"
+          git push origin "$branch"
+          gh pr create --base main --head "$branch" \
+            --title "fix: verified safe UI lint repairs" \
+            --body "Automatically proposed mechanical ESLint fixes restricted to UI components. Lint, smoke tests, integration tests, production build, and type-check all passed in this workflow. **Human review required. This workflow does not merge or deploy.**"
