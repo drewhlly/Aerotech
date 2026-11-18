@@ -42,7 +42,7 @@ export function Dropdown({title,groups}:{title:string;groups:{heading:string;lin
   onMouseLeave={()=>{if(window.matchMedia('(hover: hover) and (pointer: fine)').matches)scheduleClose()}}
   onBlur={e=>{if(!e.currentTarget.contains(e.relatedTarget))close()}}
   onKeyDown={e=>{if(e.key==='ArrowDown'||e.key==='ArrowUp'){if(!open){show();requestAnimationFrame(()=>root.current?.querySelector<HTMLAnchorElement>('.marketing-dropdown-panel a')?.focus());e.preventDefault()}else moveFocus(e,e.key==='ArrowDown'?1:-1)}else if(e.key==='Home'&&open){e.preventDefault();root.current?.querySelector<HTMLAnchorElement>('.marketing-dropdown-panel a')?.focus()}else if(e.key==='End'&&open){e.preventDefault();const items=root.current?.querySelectorAll<HTMLAnchorElement>('.marketing-dropdown-panel a');items?.[items.length-1]?.focus()}}}>
-  <button ref={trigger} type="button" className="marketing-dropdown-trigger" aria-haspopup="menu" aria-expanded={open} aria-controls={panelId} onClick={()=>open?close():show()}>{title}<ChevronDown size={16} aria-hidden /></button>
+  <button ref={trigger} type="button" className="marketing-dropdown-trigger" aria-haspopup="menu" aria-expanded={open} aria-controls={panelId} onClick={()=>{if(window.matchMedia('(hover: hover) and (pointer: fine)').matches){show()}else if(open){close()}else{show()}}}>{title}<ChevronDown size={16} aria-hidden /></button>
   <div id={panelId} className="marketing-dropdown-panel" role="menu" aria-hidden={!open} inert={!open}>{groups.map(g=><div key={g.heading}><p className="marketing-eyebrow">{g.heading}</p>{g.links.map(l=><Link role="menuitem" key={l.href} href={l.href} onClick={close}>{l.label}</Link>)}</div>)}</div>
  </div>;
 }
