@@ -28,4 +28,4 @@ npm run build    # next build --webpack
 npx tsc --noEmit
 ```
 
-The command sequence is now part of CI; the connected execution container cannot clone this repository directly for a separate local terminal run. CI and Vercel platform provisioning are separate gates.
+A clean clone was executed in an isolated Vercel Linux sandbox on Node.js 24.22.3. At commit `c852e249`, `npm ci`, `npm run lint` (zero warnings), `npx tsc --noEmit`, `npm test`, and `npm run build` all completed successfully. The initial clone exposed a real `lucide-react` TypeScript import error and a homepage smoke-test navigation failure; both were corrected before the successful build. A subsequent integration run found 31 passing suites and one attendance `DATE` casting failure, which was repaired and whose targeted regression passed. GitHub CI subsequently passed on the combined PR. CI and Vercel resource provisioning remain distinct release gates.
