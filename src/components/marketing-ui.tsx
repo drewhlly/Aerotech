@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import {usePathname} from 'next/navigation';
-import {useEffect,useId,useRef,useState,type ReactNode} from 'react';
+import {useCallback,useEffect,useId,useRef,useState,type ReactNode} from 'react';
 import {ArrowRight,ChevronDown,ChevronLeft,ChevronRight} from 'lucide-react';
 export function Container({children,className=''}:{children:ReactNode;className?:string}){return <div className={'marketing-container '+className}>{children}</div>}
 export function SectionHeader({eyebrow,title,description}:{eyebrow:string;title:string;description?:string}){return <div className="marketing-section-heading"><p className="marketing-eyebrow">{eyebrow}</p><h2>{title}</h2>{description&&<p className="marketing-description">{description}</p>}</div>}
@@ -16,8 +16,8 @@ export function Dropdown({title,groups}:{title:string;groups:{heading:string;lin
  const closeTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
  const panelId=useId();
  const pathname=usePathname();
- const cancelClose=()=>{if(closeTimer.current!==null){clearTimeout(closeTimer.current);closeTimer.current=null;}};
- const close=()=>{cancelClose();setOpen(false);};
+ const cancelClose=useCallback(()=>{if(closeTimer.current!==null){clearTimeout(closeTimer.current);closeTimer.current=null;}},[]);
+ const close=useCallback(()=>{cancelClose();setOpen(false);},[cancelClose]);
  const show=()=>{cancelClose();window.dispatchEvent(new CustomEvent('aerotech:public-dropdown-open',{detail:title}));setOpen(true);};
  useEffect(()=>{const timer=window.setTimeout(()=>setOpen(false),0);return()=>clearTimeout(timer)},[pathname]);
  useEffect(()=>{
@@ -28,7 +28,7 @@ export function Dropdown({title,groups}:{title:string;groups:{heading:string;lin
   document.addEventListener('keydown',escape);
   window.addEventListener('aerotech:public-dropdown-open',other);
   return()=>{document.removeEventListener('pointerdown',outside);document.removeEventListener('keydown',escape);window.removeEventListener('aerotech:public-dropdown-open',other);cancelClose()};
- },[title]);
+ },[title,close,cancelClose]);
  const scheduleClose=()=>{cancelClose();closeTimer.current=setTimeout(()=>setOpen(false),150)};
  const moveFocus=(e:React.KeyboardEvent, direction:number)=>{
   const items=Array.from(root.current?.querySelectorAll<HTMLAnchorElement>('.marketing-dropdown-panel a')||[]);
