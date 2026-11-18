@@ -115,7 +115,7 @@ try {
   }
   await page.goto(base + "/employee/face-enroll");
   await page
-    .getByText("Ready. Camera frames stay on this device.", { exact: true })
+    .getByRole("status").filter({ hasText: "Ready. Camera frames stay on this device." })
     .waitFor();
   await page
     .getByLabel("I have read this notice and consent to face enrollment.", {
@@ -188,7 +188,7 @@ try {
     .getByRole("button", { name: "Open front camera", exact: true })
     .click();
   await page
-    .getByText("No face found. Face the camera in good light.", { exact: true })
+    .getByRole("status").filter({ hasText: "No face found. Face the camera in good light." })
     .waitFor({ timeout: 60000 });
   await page.getByRole("dialog").press("Escape");
   assert.equal(
