@@ -3,7 +3,7 @@ import BrandLogo from '@/components/brand-logo';
 import {Camera,ArrowUp} from 'lucide-react';
 import {Container} from '@/components/marketing-ui';
 const groups=[
- {title:'Company',links:[['/about','About Aerotech'],['/solutions','Solutions'],['/pricing','Company plans'],['/contact','Contact us'],['/locations','Locations']]},
+ {title:'Company',links:[['/about','About Aerotech'],['/solutions','Solutions'],['/contact','Contact us'],['/locations','Locations']]},
  {title:'Explore',links:[['/careers','Careers'],['/insights','Insights'],['/auth/login','Login'],['/support','Help and support'],['/install','Get the app']]},
  {title:'Website & legal',links:[['/privacy','Privacy policy'],['/terms','Terms'],['/cookies','Cookie notice']]}
 ];
