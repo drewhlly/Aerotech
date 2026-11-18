@@ -23,7 +23,7 @@ export function PublicNav() {
  const path=usePathname();
  useEffect(()=>{Promise.resolve().then(()=>{setOpen(false);setSubmenu(null)})},[path]);
  useEffect(()=>{const onKey=(e:KeyboardEvent)=>{if(e.key==='Escape'){setOpen(false);setSubmenu(null)}};document.addEventListener('keydown',onKey);return()=>document.removeEventListener('keydown',onKey)},[]);
- const company=[{heading:'The platform',links:[{label:'About Aerotech',href:'/about'},{label:'Solutions',href:'/solutions'},{label:'Pricing',href:'/pricing'}]},{heading:'Connect with us',links:[{label:'Contact',href:'/contact'},{label:'Support',href:'/support'}]}];
+ const company=[{heading:'The platform',links:[{label:'About Aerotech',href:'/about'},{label:'Solutions',href:'/solutions'},]},{heading:'Connect with us',links:[{label:'Contact',href:'/contact'},{label:'Support',href:'/support'}]}];
  const insights=[{heading:'Knowledge centre',links:[{label:'All insights',href:'/insights'},{label:'Recruitment',href:'/insights/a-more-consistent-recruitment-journey'},{label:'Attendance',href:'/insights/attendance-that-earns-trust'}]}];
  const close=()=>{setOpen(false);setSubmenu(null)};
  const mobileLink=(href:string,label:string)=><Link key={href} href={href} onClick={close} className="flex min-h-12 items-center justify-between border-b border-slate-100 py-3 text-base font-semibold text-slate-800">{label}<ChevronRight size={16} aria-hidden/></Link>;
@@ -48,7 +48,7 @@ export function PublicNav() {
     {mobileLink('/solutions','Solutions')}
     <button type="button" className="flex w-full min-h-12 items-center justify-between border-b border-slate-100 text-left font-semibold text-slate-800" onClick={()=>setSubmenu('insights')}>Insights<ChevronRight size={17}/></button>
     <button type="button" className="flex w-full min-h-12 items-center justify-between border-b border-slate-100 text-left font-semibold text-slate-800" onClick={()=>setSubmenu('about')}>About Us<ChevronRight size={17}/></button>
-    {mobileLink('/locations','Locations')}{mobileLink('/contact','Contact Us')}{mobileLink('/auth/login','Login')}{mobileLink('/pricing','Company plans')}
+    {mobileLink('/locations','Locations')}{mobileLink('/contact','Contact Us')}{mobileLink('/auth/login','Login')}
     <div className="mt-5 flex flex-col gap-2">{mobileLink('/auth/login?role=employee','Employee sign in')}{mobileLink('/auth/login?role=applicant','Applicant sign in')}{mobileLink('/auth/login?role=employer','Employer sign in')}</div>
    </div>}
   </nav></>}
