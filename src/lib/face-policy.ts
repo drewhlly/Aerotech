@@ -4,11 +4,10 @@ export const FACE_CONSENT_TEXT =
 export type FaceAction = "blink" | "left" | "right" | "smile";
 export type FacePurpose = "enroll" | "clock_in" | "clock_out";
 export class FaceError extends Error {
-  constructor(
-    message: string,
-    public status = 400,
-  ) {
+  status: number;
+  constructor(message: string, status = 400) {
     super(message);
+    this.status = status;
   }
 }
 export function boundedNumber(
