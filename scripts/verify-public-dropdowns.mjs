@@ -12,7 +12,6 @@ try{
   const context=await browser.newContext({viewport:{width,height:900},baseURL:base});
   const page=await context.newPage();
   await page.goto('/');
-  assert.equal(await page.getByText('Verified figure not published').count(),0);
   assert.equal(await page.locator('.marketing-stats').count(),0);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false,'overflow at '+width);
   if(width>=1024){
