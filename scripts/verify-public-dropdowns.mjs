@@ -27,8 +27,8 @@ try{
    for(const [group,items] of Object.entries(groups)){
     for(const item of items){
      await nav.getByRole('button',{name:group}).click();
-     const href=await page.locator('.marketing-dropdown[data-open="true"] a').filter({hasText:item}).first().getAttribute('href');
-     await page.locator('.marketing-dropdown[data-open="true"] a').getByText(item,{exact:true}).click();
+     const link=page.locator('.marketing-dropdown[data-open="true"]').getByRole('link',{name:item,exact:true});
+     const href=await link.getAttribute('href');await link.click();
      await page.waitForURL(url=>url.pathname===new URL(href,base).pathname);
      await page.goBack();await page.waitForURL(base+'/');
      assert.equal(await nav.getByRole('button',{name:group}).getAttribute('aria-expanded'),'false','desktop close/back '+group+'/'+item);
