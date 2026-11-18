@@ -19,7 +19,7 @@ if(b.eventType==='clock_out'){
   // Require an actual unclosed clock-in during the last 24h instead of
   // assigning the checkout to the device's current calendar date.
   const pending=await client.query(
-    "SELECT ci.work_date FROM hr_attendance_events ci WHERE ci.employer_id=$1 AND ci.employee_id=$2 AND ci.event_type='clock_in' AND ci.event_time >= NOW()-INTERVAL '24 hours' AND NOT EXISTS (SELECT 1 FROM hr_attendance_events co WHERE co.employer_id=ci.employer_id AND co.employee_id=ci.employee_id AND co.work_date=ci.work_date AND co.event_type='clock_out') ORDER BY ci.event_time DESC LIMIT 1 FOR UPDATE OF ci",
+    "SELECT ci.work_date::text AS work_date FROM hr_attendance_events ci WHERE ci.employer_id=$1 AND ci.employee_id=$2 AND ci.event_type='clock_in' AND ci.event_time >= NOW()-INTERVAL '24 hours' AND NOT EXISTS (SELECT 1 FROM hr_attendance_events co WHERE co.employer_id=ci.employer_id AND co.employee_id=ci.employee_id AND co.work_date=ci.work_date AND co.event_type='clock_out') ORDER BY ci.event_time DESC LIMIT 1 FOR UPDATE OF ci",
     [e.employer_id,e.id]);
   if(!pending.rowCount){await client.query('ROLLBACK');return NextResponse.json({error:'No open clock-in in the last 24 hours. Contact HR to correct an older shift.'},{status:409})}
   const openDay=pending.rows[0].work_date;
