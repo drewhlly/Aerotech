@@ -50,8 +50,8 @@ Generated from the repository environment reference audit on 18 November 2026; `
 | `SUPPORT_EMAIL` | server/runtime | src/lib/support-contact.ts | yes |
 | `SUPPORT_INITIAL_AGENT_EMAIL` | server/runtime | scripts/enable-support-enrollment.mjs, src/app/api/support-console/enroll/route.ts | yes |
 | `SUPPORT_MFA_ENCRYPTION_KEY` | server/runtime | scripts/test-support-enrollment.mjs, scripts/test-support-flow.mjs, src/lib/support-security.ts, tests/support-security.test.mjs | yes |
-| `SUPPORT_PHONE` | server/runtime | src/lib/support-contact.ts | MISSING |
-| `SUPPORT_TEST_DEPENDENCIES` | server/runtime | scripts/test-support-enrollment.mjs, scripts/test-support-flow.mjs | MISSING |
+| `SUPPORT_PHONE` | server/runtime | src/lib/support-contact.ts | yes |
+| `SUPPORT_TEST_DEPENDENCIES` | server/runtime | scripts/test-support-enrollment.mjs, scripts/test-support-flow.mjs | yes |
 
 ## Verification
 
