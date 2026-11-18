@@ -45,6 +45,8 @@ jobs:
         run: |
           npm run start -- --hostname localhost --port 3010 > /tmp/aerotech-server.log 2>&1 &
           node scripts/verify-signed-in.mjs
+      - name: Verify corporate navigation and three login portals at 360/768/1024/1440
+        run: node scripts/verify-public-marketing-auth.mjs
       - name: Verify extended portal audits
         run: |
           node scripts/verify-landing-motion.mjs
