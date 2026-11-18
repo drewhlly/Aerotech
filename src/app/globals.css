@@ -289,7 +289,7 @@ progress::-webkit-progress-bar{background:#e2e8f0;border-radius:8px}progress::-w
 .marketing-carousel-note{margin-top:16px;color:#c3d2e7;font-size:.75rem}
 .marketing-footer{background:var(--aero-navy);color:white;padding:56px 0 26px}
 .marketing-footer nav a{color:#dbe7f7;min-height:40px;display:flex;align-items:center;font-size:.9rem}.marketing-footer nav a:hover{color:var(--aero-accent)}
-.marketing-dropdown{position:relative}.marketing-dropdown summary{display:flex;align-items:center;gap:6px;list-style:none;cursor:pointer;font-weight:650}.marketing-dropdown summary::-webkit-details-marker{display:none}
+.marketing-dropdown{position:relative}
 .marketing-dropdown-panel{position:absolute;top:calc(100% + 12px);left:0;z-index:80;min-width:260px;display:grid;gap:20px;padding:22px;border:1px solid var(--aero-border);border-radius:12px;background:white;box-shadow:var(--aero-shadow)}
 .marketing-dropdown-panel a{display:block;min-height:36px;padding-block:8px;color:var(--aero-navy);white-space:nowrap}
 .marketing-dropdown-panel a:hover{color:var(--aero-brand)}
