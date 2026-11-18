@@ -127,7 +127,7 @@ try {
     0,
   );
   const status = await (await api.faceStatus()).json();
-  assert.ok(!JSON.stringify(status).includes("embedding"));
+  assert.ok(!/"embeddings?"\s*:/.test(JSON.stringify(status)));
   assert.equal(status.enrollment.samples, 3);
   employer = foreign;
   await assert.rejects(

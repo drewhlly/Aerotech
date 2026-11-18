@@ -35,12 +35,15 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run build
+        id: build
       - run: npx tsc --noEmit
       - run: node --experimental-test-module-mocks --import ./tests/helpers/ts-loader.mjs tests/face-postgres.pgvector.mjs
         env:
           FACE_TEST_DATABASE_URL: postgres://postgres:face_test_only@127.0.0.1:5432/aerotech_face_test
       - run: npx playwright install --with-deps chromium
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
       - run: node scripts/verify-face-mobile.mjs
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
       - name: Save synthetic mobile evidence
         if: always()
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
