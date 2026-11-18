@@ -17,7 +17,7 @@ export default function AttendanceMonthly(){
  const setFilter=(f:()=>void)=>{f();setPage(1)};
  return <section className="aero-card space-y-6" aria-labelledby="attendance-monthly-title">
   <div className="flex flex-wrap items-start justify-between gap-4"><div><p className="workspace-eyebrow">Attendance intelligence</p><h2 id="attendance-monthly-title" className="mt-2 text-2xl font-bold">Monthly and date-range overview</h2><p className="mt-2 text-sm text-slate-600">Times display in your device timezone. Workday and lateness are calculated in Africa/Lagos.</p></div><button type="button" onClick={exportPage} disabled={!report?.records.length} className="aero-button border border-slate-300"><Download size={16} aria-hidden/>Export displayed page CSV</button></div>
-  <form onSubmit={e=>{e.preventDefault();setPage(1);void load()}} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+  <form method="post" onSubmit={e=>{e.preventDefault();setPage(1);void load()}} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
    <label className="text-sm font-semibold">From<input type="date" className="aero-input mt-2" value={from} onChange={e=>setFilter(()=>setFrom(e.target.value))}/></label>
    <label className="text-sm font-semibold">To<input type="date" className="aero-input mt-2" value={to} onChange={e=>setFilter(()=>setTo(e.target.value))}/></label>
    <label className="text-sm font-semibold">Employee<input type="search" className="aero-input mt-2" value={search} onChange={e=>setFilter(()=>setSearch(e.target.value))} placeholder="Search name"/></label>
