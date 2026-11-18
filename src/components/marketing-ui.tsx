@@ -8,7 +8,20 @@ export function Button({href,children,variant='primary',className=''}:{href:stri
 export function Card({children,className=''}:{children:ReactNode;className?:string}){return <article className={'marketing-card '+className}>{children}</article>}
 export function Chip({children,href}:{children:ReactNode;href:string}){return <Link className="marketing-chip" href={href}>{children}</Link>}
 export function Input({label,name,placeholder}:{label:string;name:string;placeholder:string}){return <label className="marketing-input-label">{label}<input name={name} placeholder={placeholder} className="marketing-input"/></label>}
-export function Dropdown({title,groups}:{title:string;groups:{heading:string;links:{label:string;href:string}[]}[]}){return <details className="marketing-dropdown"><summary>{title}<ChevronDown size={16} aria-hidden/></summary><div className="marketing-dropdown-panel">{groups.map(g=><div key={g.heading}><p className="marketing-eyebrow">{g.heading}</p>{g.links.map(l=><Link key={l.href} href={l.href}>{l.label}</Link>)}</div>)}</div></details>}
+export function Dropdown({title,groups,open,onOpenChange}:{title:string;groups:{heading:string;links:{label:string;href:string}[]}[];open:boolean;onOpenChange:(open:boolean)=>void}){
+ const root=useRef<HTMLDivElement>(null),trigger=useRef<HTMLButtonElement>(null),closeTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
+ const clear=()=>{if(closeTimer.current){clearTimeout(closeTimer.current);closeTimer.current=null}};
+ const dismiss=()=>{clear();onOpenChange(false)};
+ const hover=()=>typeof window!=='undefined'&&window.matchMedia('(min-width: 1024px) and (hover: hover) and (pointer: fine)').matches;
+ useEffect(()=>{if(!open)return;const outside=(event:PointerEvent)=>{if(root.current&&!root.current.contains(event.target as Node))onOpenChange(false)};
+ document.addEventListener('pointerdown',outside);return()=>document.removeEventListener('pointerdown',outside)},[open,onOpenChange]);
+ useEffect(()=>()=>{if(closeTimer.current)clearTimeout(closeTimer.current)},[]);
+ const links=()=>Array.from(root.current?.querySelectorAll<HTMLAnchorElement>('.marketing-dropdown-panel a')||[]);
+ return <div ref={root} className="marketing-dropdown" data-open={open} onMouseEnter={()=>{clear();if(hover())onOpenChange(true)}} onMouseLeave={()=>{if(hover()){clear();closeTimer.current=setTimeout(()=>onOpenChange(false),160)}}} onBlur={e=>{if(!e.currentTarget.contains(e.relatedTarget))dismiss()}} onKeyDown={e=>{if(e.key==='Escape'&&open){e.preventDefault();dismiss();trigger.current?.focus()}else if(open&&(e.key==='ArrowDown'||e.key==='ArrowUp')){e.preventDefault();const items=links();const index=items.indexOf(document.activeElement as HTMLAnchorElement);items[(index+(e.key==='ArrowDown'?1:items.length-1))%items.length]?.focus()}else if(open&&e.key==='Home'){e.preventDefault();links()[0]?.focus()}else if(open&&e.key==='End'){e.preventDefault();links().at(-1)?.focus()}}}>
+  <button ref={trigger} type="button" className="marketing-dropdown-trigger" aria-haspopup="true" aria-expanded={open} onClick={()=>{clear();onOpenChange(!open)}} onKeyDown={e=>{if(!open&&(e.key==='ArrowDown'||e.key==='ArrowUp')){e.preventDefault();onOpenChange(true);requestAnimationFrame(()=>{const items=links();(e.key==='ArrowDown'?items[0]:items.at(-1))?.focus()})}}}>{title}<ChevronDown size={16} aria-hidden/></button>
+  <div className="marketing-dropdown-panel" inert={!open} aria-hidden={!open}>{groups.map(group=><div key={group.heading}><p className="marketing-eyebrow">{group.heading}</p>{group.links.map(link=><Link key={link.href} href={link.href} onClick={dismiss}>{link.label}</Link>)}</div>)}</div>
+ </div>;
+}
 export function Carousel({slides}:{slides:{quote:string;attribution:string}[]}){
  const [index,setIndex]=useState(0),[paused,setPaused]=useState(false),[reduced,setReduced]=useState(false);
  const touch=useRef<number|null>(null);
