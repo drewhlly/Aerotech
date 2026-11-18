@@ -55,7 +55,8 @@ try{
   await page.getByLabel('Remember me',{exact:true}).check();
   await page.locator('#login-password').press('Enter');await page.waitForURL(base+homes[role],{timeout:30000});
   const cookies=await ctx.cookies();const cookie=cookies.find(c=>c.name==='aerotech_'+role+'_session');assert.ok(cookie?.httpOnly,'HttpOnly role session');assert.equal(await page.evaluate(()=>Object.keys(localStorage).filter(k=>/token|password|session/i.test(k)).length),0);
-  await page.goto(base+'/auth/login?role='+role);assert.equal(await page.getByLabel('Email address',{exact:true}).inputValue(),users[role]);
+  // A signed-in visitor is intentionally redirected away from login. Clear only fixture cookies, retaining localStorage to verify remembered email.
+  await ctx.clearCookies();await page.goto(base+'/auth/login?role='+role);await page.waitForFunction(expected=>document.querySelector('#login-email')?.value===expected,users[role]);assert.equal(await page.getByLabel('Email address',{exact:true}).inputValue(),users[role]);
   await ctx.close();results.push({role,realLogin:'passed',redirect:homes[role],rememberEmail:'passed'});
  }
  // Real APIs, not intercepted: each account must fail against the other two portals.
