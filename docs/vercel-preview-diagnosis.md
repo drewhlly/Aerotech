@@ -29,3 +29,11 @@ npx tsc --noEmit
 ```
 
 The command sequence is now part of CI; the connected execution container cannot clone this repository directly for a separate local terminal run. CI and Vercel platform provisioning are separate gates.
+
+## Identified database-provisioning capacity blocker (18 November 2026)
+
+The Vercel-installed Neon marketplace database was traced to Neon project `polished-cloud-66634472` (`neon-beige-ball`), which was created by the marketplace integration. It has **10 of 10 branches** occupied (one `main`, nine Vercel-created `preview/*` branches). Neon Free limits the project to 10 branches; creating a fresh preview branch therefore cannot succeed without freeing capacity or upgrading the plan. This exactly matches a documented Vercel/Neon `Resource provisioning failed` pattern. Confirm by retrying preview only after capacity is available.
+
+The oldest inactive preview candidate is `preview/codex/outstanding-workflows-20261031` (Neon branch ID `br-damp-water-b8edvo8a`, last updated 1 November 2026). **Do not delete it without explicit owner authorization:** deleting a database branch destroys its branch data and disconnects clients. Never delete the Neon `main` branch or alter the unrelated `aerotech-cloudflare-staging` database.
+
+Once the owner approves a specifically named obsolete branch for deletion, remove *only that branch* in the Neon dashboard, verify branch count is below the Free limit, retry a new Vercel preview, and inspect the actual deployment state and authenticated routes. If Vercel still cannot provision resources, escalate with the deployment ID and provisioning trace; branch capacity is then not the only blocker.
