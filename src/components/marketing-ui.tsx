@@ -16,7 +16,6 @@ export function Dropdown({title,groups}:{title:string;groups:{heading:string;lin
  const closeTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
  const panelId=useId();
  const pathname=usePathname();
- const links=groups.flatMap(group=>group.links);
  const cancelClose=()=>{if(closeTimer.current!==null){clearTimeout(closeTimer.current);closeTimer.current=null;}};
  const close=()=>{cancelClose();setOpen(false);};
  const show=()=>{cancelClose();window.dispatchEvent(new CustomEvent('aerotech:public-dropdown-open',{detail:title}));setOpen(true);};
