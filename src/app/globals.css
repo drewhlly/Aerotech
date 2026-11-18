@@ -291,10 +291,13 @@ progress::-webkit-progress-bar{background:#e2e8f0;border-radius:8px}progress::-w
 .marketing-carousel-note{margin-top:16px;color:#c3d2e7;font-size:.75rem}
 .marketing-footer{background:var(--aero-navy);color:white;padding:56px 0 26px}
 .marketing-footer nav a{color:#dbe7f7;min-height:40px;display:flex;align-items:center;font-size:.9rem}.marketing-footer nav a:hover{color:var(--aero-accent)}
-.marketing-dropdown{position:relative}.marketing-dropdown summary{display:flex;align-items:center;gap:6px;list-style:none;cursor:pointer;font-weight:650}.marketing-dropdown summary::-webkit-details-marker{display:none}
+.marketing-dropdown{position:relative}.marketing-dropdown-trigger{display:flex;min-height:44px;align-items:center;gap:6px;border:0;background:transparent;color:#203653;cursor:pointer;font-weight:650}.marketing-dropdown-trigger:focus-visible,.marketing-dropdown-panel a:focus-visible{outline:3px solid var(--aero-brand);outline-offset:3px;border-radius:4px}.marketing-dropdown-trigger svg{transition:transform .18s}.marketing-dropdown[data-open=true] .marketing-dropdown-trigger svg{transform:rotate(180deg)}
 .marketing-dropdown-panel{position:absolute;top:calc(100% + 12px);left:0;z-index:80;min-width:260px;display:grid;gap:20px;padding:22px;border:1px solid var(--aero-border);border-radius:12px;background:white;box-shadow:var(--aero-shadow)}
 .marketing-dropdown-panel a{display:block;min-height:36px;padding-block:8px;color:var(--aero-navy);white-space:nowrap}
 .marketing-dropdown-panel a:hover{color:var(--aero-brand)}
+.marketing-dropdown-panel{opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-7px);transition:opacity .18s ease,transform .18s ease,visibility .18s}
+.marketing-dropdown[data-open=true] .marketing-dropdown-panel{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(0)}
+@media(prefers-reduced-motion:reduce){.marketing-dropdown-panel,.marketing-dropdown-trigger svg{transition:none}}
 .marketing-mobile-drawer{position:fixed;top:0;right:0;bottom:0;z-index:90;width:min(340px,92vw);overflow-y:auto;overscroll-behavior:contain;background:white;box-shadow:-20px 0 60px #071c3c45;padding:22px;animation:marketing-enter .2s ease}
 @keyframes marketing-enter{from{transform:translateX(100%)}to{transform:translateX(0)}}
 @media(max-width:1023px){.marketing-feature{grid-template-columns:1fr}.marketing-insights{grid-template-columns:repeat(2,minmax(0,1fr))}}
