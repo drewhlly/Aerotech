@@ -1,0 +1,38 @@
+import assert from 'node:assert/strict';
+import {mock} from 'node:test';
+import {randomUUID} from 'node:crypto';
+import {readFileSync} from 'node:fs';
+import {PGlite} from '@electric-sql/pglite';
+const p=await PGlite.create(),company=randomUUID(),other=randomUUID(),employeeId=randomUUID(),foreignId=randomUUID();let actor=company;
+const query=async(sql,args=[])=>{const r=await p.query(sql,args);return {...r,rowCount:r.rows.length||r.affectedRows||0}};
+mock.module(new URL('../src/lib/employer-session.ts',import.meta.url).href,{namedExports:{currentEmployer:async()=>actor,db:()=>({query,connect:async()=>({query,release(){}}),end:async()=>{}})}});
+for(const m of readFileSync('scripts/migrate.mjs','utf8').matchAll(/"(\d{3}_[^"]+\.sql)"/g))await p.exec(readFileSync('database/'+m[1],'utf8'));
+const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Africa/Lagos',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+const yesterday=new Date(Date.parse(today+'T00:00:00Z')-86400000).toISOString().slice(0,10);
+for(const id of [company,other])await query("INSERT INTO employer_accounts(id,company_name,company_email,admin_first_name,admin_last_name,phone,country,password_hash) VALUES($1,'Fixture',$2,'Test','Owner','000','Nigeria','test-only')",[id,id+'@example.test']);
+for(const [id,tenant] of [[employeeId,company],[foreignId,other]])await query("INSERT INTO workforce_employees(id,employer_id,employee_number,first_name,last_name,email,job_title,department,location,employment_status) VALUES($1,$2,$3,'Case','Tester',$4,'Analyst','Engineering','Lagos','active')",[id,tenant,id,id+'@example.test']);
+await query("INSERT INTO workforce_shifts(id,employer_id,employee_id,assigned_by,work_date,starts_at,ends_at) VALUES($1,$2,$3,$3,$4::date,'08:00','17:00')",[randomUUID(),company,employeeId,today]);
+await query("INSERT INTO hr_attendance_events(id,employer_id,employee_id,work_date,event_type,event_time) VALUES($1,$2,$3,$4::date,'clock_in',$5::timestamptz)",[randomUUID(),company,employeeId,today,today+'T09:00:00Z']);
+await query("INSERT INTO hr_attendance_events(id,employer_id,employee_id,work_date,event_type,event_time) VALUES($1,$2,$3,$4::date,'clock_out',$5::timestamptz)",[randomUUID(),company,employeeId,today,today+'T17:00:00Z']);
+await query("INSERT INTO attendance_holidays(id,employer_id,work_date,name) VALUES($1,$2,$3::date,'Public holiday')",[randomUUID(),company,yesterday]);
+const {GET}=await import('../src/app/api/hr/attendance/monthly/route.ts');
+const request=q=>new Request('https://local.test/api/hr/attendance/monthly?'+q);
+try{
+ const r=await GET(request(new URLSearchParams({from:yesterday,to:today,page:'1',pageSize:'25'})));assert.equal(r.status,200);
+ const report=await r.json();
+ assert.equal(report.records.length,2);assert.ok(report.records.every(row=>row.id===employeeId),'tenant isolation');
+ const late=report.records.find(row=>row.work_date===today);assert.equal(late.status,'late');
+ assert.equal(Number(late.hours),8);
+ assert.equal(report.records.find(row=>row.work_date===yesterday).status,'holiday');
+ const filtered=await (await GET(request(new URLSearchParams({from:yesterday,to:today,status:'late',pageSize:'1'})))).json();
+ assert.equal(filtered.total,1);assert.equal(filtered.records[0].status,'late');
+ assert.equal((await GET(request('from='+yesterday+'&to='+today+'&pageSize=101'))).status,400);
+ assert.equal((await GET(request('from=2026-02-30&to=2026-03-01'))).status,400);
+ const correction=await import('../src/app/api/hr/attendance/corrections/route.ts');
+ const eventId=(await query("SELECT id FROM hr_attendance_events WHERE employer_id=$1 AND employee_id=$2 AND event_type='clock_in'",[company,employeeId])).rows[0].id;
+ const change=new Request('https://local.test/api/hr/attendance/corrections',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({eventId,newTime:today+'T00:00:00Z',reason:'Verified correction from approved shift record'})});
+ const corrected=await correction.POST(change);assert.equal(corrected.status,200,JSON.stringify(await corrected.json()));
+ const history=await correction.GET(new Request('https://local.test/api/hr/attendance/corrections?eventId='+eventId));assert.equal(history.status,200);assert.equal((await history.json()).history.length,1);
+ actor=null;assert.equal((await GET(request('from='+today+'&to='+today))).status,401);
+ console.log('PASS attendance monthly status, holiday, timezone, duration, filters, pagination, validation and isolation');
+}finally{await p.close()}

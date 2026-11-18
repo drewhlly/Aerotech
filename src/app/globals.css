@@ -235,3 +235,94 @@ progress::-webkit-progress-bar{background:#e2e8f0;border-radius:8px}progress::-w
 @keyframes landing-slide-enter { from { transform: translateY(12px); } to { transform: translateY(0); } }
 .landing-slide-content { animation: landing-slide-enter 500ms ease-out both; }
 @media (prefers-reduced-motion: reduce) { .landing-slide-content { animation: none; } }
+
+
+/* Aerotech corporate design system — use tokens for all new public + workspace UI. */
+:root {
+ --aero-brand:#155eef;--aero-blue:#155eef;--aero-primary:#155eef;
+ --aero-navy:#071c3c;--aero-ink:#071c3c;--aero-accent:#19c7ec;
+ --aero-muted:#53637b;--aero-canvas:#f6f9fd;--aero-surface:#ffffff;
+ --aero-border:#d9e3f0;--aero-radius:16px;--aero-shadow:0 14px 40px #09264d12;
+ --aero-space-1:8px;--aero-space-2:16px;--aero-space-3:24px;--aero-space-4:32px;
+ --aero-space-5:48px;--aero-space-6:72px;--aero-title-xl:clamp(2.7rem,5.4vw,5rem);
+ --aero-title-lg:clamp(2rem,3.4vw,3.3rem);--aero-title-md:clamp(1.5rem,2.4vw,2.1rem);
+}
+.aero-hero{background:linear-gradient(120deg,var(--aero-navy),#114487);border-radius:var(--aero-radius)}
+.aero-card{border:1px solid var(--aero-border);background:var(--aero-surface);box-shadow:var(--aero-shadow);border-radius:var(--aero-radius)}
+.aero-button,.marketing-button{transition:background-color .2s,border-color .2s,color .2s,box-shadow .2s,transform .2s}
+.aero-button:hover:not(:disabled),.marketing-button:hover{transform:translateY(-1px)}
+.aero-button:focus-visible,.marketing-button:focus-visible{outline:3px solid var(--aero-accent);outline-offset:3px}
+.marketing-container{width:min(100% - 40px,1200px);margin-inline:auto}
+.marketing-eyebrow{font-size:.76rem;letter-spacing:.14em;font-weight:800;text-transform:uppercase;color:var(--aero-brand)}
+.marketing-section-heading{max-width:690px}
+.marketing-section-heading h2{margin-top:12px;font-size:var(--aero-title-lg);line-height:1.12;letter-spacing:-.035em;font-weight:750;color:var(--aero-navy)}
+.marketing-description{margin-top:18px;max-width:65ch;font-size:1.05rem;line-height:1.75;color:var(--aero-muted)}
+.marketing-button{display:inline-flex;align-items:center;justify-content:center;gap:12px;min-height:48px;padding:12px 20px;border-radius:10px;font-size:.92rem;font-weight:750;text-decoration:none}
+.marketing-button--primary{background:var(--aero-accent);color:var(--aero-navy)}.marketing-button--primary:hover{background:#8be8f8}
+.marketing-button--secondary{background:var(--aero-brand);color:white}.marketing-button--secondary:hover{background:#064ab5}
+.marketing-button--ghost{border:1px solid var(--aero-brand);color:var(--aero-brand);background:white}.marketing-button--ghost:hover{background:#eff5ff}
+.marketing-card{background:white;border:1px solid var(--aero-border);border-radius:var(--aero-radius);box-shadow:var(--aero-shadow);padding:24px;transition:transform .2s,box-shadow .2s}.marketing-card:hover{transform:translateY(-3px);box-shadow:0 22px 55px #09264d19}
+.marketing-chip{display:inline-flex;min-height:36px;align-items:center;padding:7px 14px;border:1px solid var(--aero-border);border-radius:999px;background:white;color:var(--aero-navy);font-size:.83rem;font-weight:650}.marketing-chip:hover{border-color:var(--aero-brand);background:#eef5ff}
+.marketing-input-label{display:block;font-size:.83rem;font-weight:750;color:var(--aero-navy)}
+.marketing-input{width:100%;min-height:50px;margin-top:8px;padding:13px 15px;border:1px solid #aebdd2;border-radius:10px;background:white;color:var(--aero-navy);font-size:1rem}
+.marketing-input:focus-visible{outline:3px solid #a6e8ff;outline-offset:2px}
+.landing-stage{background:linear-gradient(100deg,#071c3ce8,#072451bd),url('/brand/hero-pattern.svg') center /cover no-repeat;border:0;color:white}
+.landing-stage .landing-slide-content h1{color:white}.landing-stage .landing-slide-content>p{color:#e0eaf7}
+.landing-stage .landing-slide-content .text-slate-600{color:#e0eaf7}
+.landing-stage .landing-slide-content .text-blue-800{color:#b4e9ff}
+.landing-stage .landing-slide-content .aero-button.bg-blue-700{background:var(--aero-accent);color:var(--aero-navy)}
+.landing-stage .landing-preview{border-color:#3984bd;background:#09224a}
+.landing-stage .landing-slide-arrow{color:var(--aero-navy);background:white}
+.marketing-search-card{position:relative;z-index:2;margin-top:-36px;padding:24px;background:white;border-radius:var(--aero-radius);box-shadow:0 20px 60px #071c3c2b}
+.marketing-search-grid{display:grid;gap:16px;grid-template-columns:1.25fr 1fr auto;align-items:end}
+.marketing-feature{display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:clamp(30px,5vw,80px);padding-block:var(--aero-space-6)}
+.marketing-feature-media{min-height:320px;border-radius:20px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:linear-gradient(125deg,#e6f4ff,#c6e5f9);border:1px solid #c9dcea}
+.marketing-feature-media svg{width:min(68%,290px);height:auto;color:var(--aero-brand)}
+.marketing-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;padding-block:48px;border-block:1px solid var(--aero-border)}
+.marketing-stat-value{font-size:clamp(2rem,4vw,3rem);font-weight:800;line-height:1;color:var(--aero-navy);font-variant-numeric:tabular-nums}
+.marketing-insights{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}
+.marketing-carousel{border-radius:22px;background:var(--aero-navy);color:white;padding:clamp(28px,5vw,60px)}
+.marketing-carousel .marketing-eyebrow{color:var(--aero-accent)}
+.marketing-carousel blockquote p{margin-top:24px;max-width:850px;font-size:clamp(1.35rem,2.8vw,2.25rem);line-height:1.45;font-weight:600}
+.marketing-carousel blockquote footer{margin-top:22px;color:#b7cbe4;font-size:.94rem}
+.marketing-carousel-controls{display:flex;align-items:center;gap:24px;margin-top:26px}
+.marketing-carousel-controls>button{width:44px;height:44px;border:1px solid #8da4c5;border-radius:50%;display:grid;place-items:center}
+.marketing-dots{display:flex;gap:8px}.marketing-dots button{width:12px;height:12px;min-width:12px;min-height:12px;border-radius:50%;background:#7991b2}.marketing-dots button[aria-current=true]{background:var(--aero-accent)}
+.marketing-carousel-note{margin-top:16px;color:#c3d2e7;font-size:.75rem}
+.marketing-footer{background:var(--aero-navy);color:white;padding:56px 0 26px}
+.marketing-footer nav a{color:#dbe7f7;min-height:40px;display:flex;align-items:center;font-size:.9rem}.marketing-footer nav a:hover{color:var(--aero-accent)}
+.marketing-dropdown{position:relative}.marketing-dropdown summary{display:flex;align-items:center;gap:6px;list-style:none;cursor:pointer;font-weight:650}.marketing-dropdown summary::-webkit-details-marker{display:none}
+.marketing-dropdown-panel{position:absolute;top:calc(100% + 12px);left:0;z-index:80;min-width:260px;display:grid;gap:20px;padding:22px;border:1px solid var(--aero-border);border-radius:12px;background:white;box-shadow:var(--aero-shadow)}
+.marketing-dropdown-panel a{display:block;min-height:36px;padding-block:8px;color:var(--aero-navy);white-space:nowrap}
+.marketing-dropdown-panel a:hover{color:var(--aero-brand)}
+.marketing-mobile-drawer{position:fixed;top:0;right:0;bottom:0;z-index:90;width:min(340px,92vw);overflow-y:auto;overscroll-behavior:contain;background:white;box-shadow:-20px 0 60px #071c3c45;padding:22px;animation:marketing-enter .2s ease}
+@keyframes marketing-enter{from{transform:translateX(100%)}to{transform:translateX(0)}}
+@media(max-width:1023px){.marketing-feature{grid-template-columns:1fr}.marketing-insights{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:767px){.marketing-search-grid{grid-template-columns:1fr}.marketing-stats{grid-template-columns:1fr;gap:24px}.marketing-feature{padding-block:48px}.marketing-insights{grid-template-columns:1fr}.marketing-container{width:min(100% - 32px,1200px)}.marketing-search-card{margin-top:-20px}}
+@media(prefers-reduced-motion:reduce){.marketing-mobile-drawer{animation:none}.marketing-card:hover,.aero-button:hover,.marketing-button:hover{transform:none}}
+
+/* Override corporate light-mode tokens when the root is in dark mode.
+   :root and [data-theme="dark"] have equal specificity; a later light-mode
+   :root block previously won the cascade and broke recruitment contrast. */
+:root[data-theme="dark"] {
+  --aero-ink: #f1f5f9;
+  --aero-muted: #cbd5e1;
+  --aero-surface: #111827;
+  --aero-canvas: #020617;
+  --aero-border: #475569;
+}
+
+/* Preserve dark-mode design tokens after the shared corporate :root declaration.
+   :root and [data-theme] have equal CSS specificity, so source order matters. */
+[data-theme="dark"]{
+ --aero-brand:#93c5fd;
+ --aero-blue:#93c5fd;
+ --aero-primary:#93c5fd;
+ --aero-navy:#071c3c;
+ --aero-ink:#f1f5f9;
+ --aero-muted:#cbd5e1;
+ --aero-surface:#111827;
+ --aero-border:#475569;
+ --aero-canvas:#020617;
+ --aero-shadow:0 14px 40px #0003;
+}

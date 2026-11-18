@@ -1,10 +1,10 @@
 import {mock} from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';import {randomUUID} from 'node:crypto';import {PGlite} from '@electric-sql/pglite';
-const database=await PGlite.create(),company=randomUUID(),other=randomUUID(),first=randomUUID(),assigned=randomUUID(),unassigned=randomUUID(),site=randomUUID(),foreignSite=randomUUID();let employee=null;
+const database=await PGlite.create(),company=randomUUID(),other=randomUUID(),first=randomUUID(),assigned=randomUUID(),unassigned=randomUUID(),overnight=randomUUID(),site=randomUUID(),foreignSite=randomUUID();let employee=null;
 const query=async(sql,args=[])=>{const r=await database.query(sql,args);return {...r,rowCount:r.rows.length||r.affectedRows||0}};
-mock.module(new URL('../src/lib/employer-session.ts',import.meta.url).href,{namedExports:{db:()=>({query,connect:async()=>({query,release(){}}),end:async()=>{}})}});mock.module(new URL('../src/lib/employee-auth.ts',import.meta.url).href,{namedExports:{currentEmployee:async()=>employee}});mock.module(new URL('../src/lib/face-attendance.ts',import.meta.url).href,{namedExports:{faceConfigured:()=>false,decodeFace:()=>{throw Error('Unexpected biometric call')},compareEmployeeFace:async()=>{throw Error('Unexpected biometric call')}}});
+mock.module(new URL('../src/lib/employer-session.ts',import.meta.url).href,{namedExports:{currentEmployer:async()=>company,db:()=>({query,connect:async()=>({query,release(){}}),end:async()=>{}})}});mock.module(new URL('../src/lib/employee-auth.ts',import.meta.url).href,{namedExports:{currentEmployee:async()=>employee}});mock.module(new URL('../src/lib/face-attendance.ts',import.meta.url).href,{namedExports:{faceConfigured:()=>false,decodeFace:()=>{throw Error('Unexpected biometric call')},compareEmployeeFace:async()=>{throw Error('Unexpected biometric call')}}});
 for(const m of readFileSync('scripts/migrate.mjs','utf8').matchAll(/"(\d{3}_[^"]+\.sql)"/g))await database.exec(readFileSync('database/'+m[1],'utf8'));
 for(const id of [company,other])await query("INSERT INTO employer_accounts(id,company_name,company_email,admin_first_name,admin_last_name,phone,country,password_hash) VALUES($1,'Fixture',$2,'Test','Owner','000','Nigeria','test-only')",[id,id+'@example.test']);
-for(const id of [first,assigned,unassigned])await query("INSERT INTO workforce_employees(id,employer_id,employee_number,first_name,last_name,email,job_title,department,location,employment_status) VALUES($1,$2,$3,'Test','Employee',$4,'Engineer','Engineering','Lagos','active')",[id,company,id,id+'@example.test']);
+for(const id of [first,assigned,unassigned,overnight])await query("INSERT INTO workforce_employees(id,employer_id,employee_number,first_name,last_name,email,job_title,department,location,employment_status) VALUES($1,$2,$3,'Test','Employee',$4,'Engineer','Engineering','Lagos','active')",[id,company,id,id+'@example.test']);
 for(const [id,tenant] of [[site,company],[foreignSite,other]])await query("INSERT INTO attendance_sites(id,employer_id,name,latitude,longitude,radius_m) VALUES($1,$2,'Fixture site',6.5244,3.3792,100)",[id,tenant]);await query('UPDATE workforce_employees SET attendance_site_id=$1 WHERE id=$2',[site,assigned]);
 const api=await import('../src/app/api/employee/attendance/route.ts');const req=body=>new Request('https://local.test/api/employee/attendance',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});const location={latitude:6.5244,longitude:3.3792,accuracy:10};
 try{
@@ -12,5 +12,24 @@ try{
  const started=await api.POST(req({eventType:'clock_in',...location}));assert.equal(started.status,200);assert.equal((await started.json()).assignmentPending,true);assert.equal((await api.POST(req({eventType:'clock_in',...location}))).status,409);assert.equal((await api.POST(req({eventType:'clock_out',...location}))).status,200);assert.equal((await query('SELECT COUNT(*)::int AS n FROM hr_attendance_events WHERE employee_id=$1',[first])).rows[0].n,2);assert.equal((await query('SELECT source FROM hr_attendance_events WHERE employee_id=$1 LIMIT 1',[first])).rows[0].source,'unassigned_pending_review');
  employee={id:assigned,employer_id:company};assert.equal((await api.POST(req({eventType:'clock_in',...location,latitude:7}))).status,400);assert.equal((await api.POST(req({eventType:'clock_in',...location}))).status,200);assert.equal((await api.POST(req({eventType:'clock_in',...location}))).status,409);assert.equal((await query('SELECT COUNT(*)::int AS n FROM attendance_verifications WHERE employee_id=$1',[assigned])).rows[0].n,1);
  employee={id:unassigned,employer_id:company};assert.equal((await api.POST(req({eventType:'clock_in',...location,siteId:foreignSite}))).status,400);assert.equal((await query('SELECT COUNT(*)::int AS n FROM hr_attendance_events WHERE employee_id=$1',[unassigned])).rows[0].n,0);assert.equal((await api.POST(req({eventType:'clock_out',...location}))).status,409);
+ // HR-assisted events must obey the same daily sequence and tenant/location rules.
+ const hr=await import('../src/app/api/hr/attendance/check-in/route.ts');
+ const hrReq=(employeeId,eventType,siteId=site)=>new Request('https://local.test/api/hr/attendance/check-in',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({employeeId,siteId,eventType,...location})});
+ assert.equal((await hr.POST(hrReq(unassigned,'clock_out'))).status,409);
+ assert.equal((await hr.POST(hrReq(unassigned,'clock_in',foreignSite))).status,404);
+ assert.equal((await hr.POST(hrReq(unassigned,'clock_in'))).status,201);
+ assert.equal((await hr.POST(hrReq(unassigned,'clock_in'))).status,409);
+ assert.equal((await hr.POST(hrReq(unassigned,'clock_out'))).status,201);
+ assert.equal((await hr.POST(hrReq(unassigned,'clock_out'))).status,409);
+ assert.equal((await query('SELECT COUNT(*)::int AS n FROM hr_attendance_events WHERE employee_id=$1',[unassigned])).rows[0].n,2);
+ // After-midnight checkout must use the original open shift work_date.
+ const localDay=new Intl.DateTimeFormat('en-CA',{timeZone:'Africa/Lagos',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+ const previousDay=new Date(Date.parse(localDay+'T00:00:00Z')-86400000).toISOString().slice(0,10);
+ await query("INSERT INTO hr_attendance_events(id,employer_id,employee_id,work_date,event_type,event_time,source) VALUES($1,$2,$3,$4::date,'clock_in',NOW()-INTERVAL '15 minutes','geofence')",[randomUUID(),company,overnight,previousDay]);
+ employee={id:overnight,employer_id:company};
+ const overnightExit=await api.POST(req({eventType:'clock_out',...location}));
+ assert.equal(overnightExit.status,200,JSON.stringify(await overnightExit.json()));
+ const overnightEvents=(await query("SELECT work_date::text AS day,event_type FROM hr_attendance_events WHERE employee_id=$1 ORDER BY event_type",[overnight])).rows;
+ assert.equal(overnightEvents.length,2);assert.ok(overnightEvents.every(row=>row.day===previousDay),'overnight events stay on original day');
  console.log('PASS attendance auth/validation, unassigned workplace HR-review fallback, duplicate prevention, non-biometric GPS, geofencing and tenant boundaries');
 }finally{await database.close()}
