@@ -13,7 +13,7 @@ export async function GET(req:Request){
  if(!Number.isSafeInteger(page)||page<1||!Number.isSafeInteger(size)||size<1||size>100||page>100000)
   return NextResponse.json({error:'Invalid page or pageSize'},{status:400});
  const search=(url.searchParams.get('search')||'').trim().slice(0,100),department=(url.searchParams.get('department')||'').trim().slice(0,100),status=(url.searchParams.get('status')||'').trim();
- const statuses=['present','late','absent','on_leave','scheduled','not_scheduled','missed_checkout','clocked_in','assignment_review'];
+ const statuses=['present','late','absent','on_leave','scheduled','not_scheduled','missed_checkout','clocked_in','assignment_review','holiday'];
  if(status&&!statuses.includes(status))return NextResponse.json({error:'Invalid status filter'},{status:400});
  const pool=db();
  try{
@@ -27,7 +27,8 @@ export async function GET(req:Request){
           EXISTS(SELECT 1 FROM employee_requests lr
                  WHERE lr.employer_id=w.employer_id AND lr.employee_id=w.id
                    AND lr.request_type='leave' AND lr.status='approved'
-                   AND d.work_date::date BETWEEN lr.start_date AND lr.end_date) AS approved_leave
+                   AND d.work_date::date BETWEEN lr.start_date AND lr.end_date) AS approved_leave,
+          EXISTS(SELECT 1 FROM attendance_holidays h WHERE h.employer_id=w.employer_id AND h.work_date=d.work_date::date) AS public_holiday
    FROM workforce_employees w
    CROSS JOIN generate_series($2::date,$3::date,interval '1 day') AS d(work_date)
    LEFT JOIN attendance_sites site ON site.id=w.attendance_site_id AND site.employer_id=w.employer_id
@@ -46,6 +47,7 @@ export async function GET(req:Request){
          AND clock_in > ((work_date+starts_at) AT TIME ZONE 'Africa/Lagos') THEN 'late'
     WHEN clock_in IS NOT NULL THEN 'present'
     WHEN approved_leave THEN 'on_leave'
+    WHEN public_holiday THEN 'holiday'
     WHEN starts_at IS NULL THEN 'not_scheduled'
     WHEN work_date < (NOW() AT TIME ZONE 'Africa/Lagos')::date THEN 'absent'
     WHEN (work_date+starts_at) < (NOW() AT TIME ZONE 'Africa/Lagos') THEN 'absent'
