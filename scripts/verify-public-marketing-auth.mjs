@@ -49,7 +49,7 @@ try{
      const toggle=page.getByRole('button',{name:title,exact:true});
      await toggle.click();
      assert.equal(await toggle.getAttribute('aria-expanded'),'true',title+' failed to open');
-     await page.getByRole('link',{name:label,exact:true}).click();
+     await toggle.locator('..').getByRole('link',{name:label,exact:true}).click();
      await page.waitForURL(url=>url.pathname===href,{timeout:15000});
      assert.equal(await page.getByRole('button',{name:title,exact:true}).getAttribute('aria-expanded'),'false',title+' stayed open after navigation');
      await page.goBack({waitUntil:'domcontentloaded'});await page.waitForURL(url=>url.pathname==='/');
