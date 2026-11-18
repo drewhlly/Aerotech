@@ -5,7 +5,7 @@ import {readFileSync} from 'node:fs';
 import {PGlite} from '@electric-sql/pglite';
 const p=await PGlite.create(),company=randomUUID(),other=randomUUID(),employeeId=randomUUID(),foreignId=randomUUID();let actor=company;
 const query=async(sql,args=[])=>{const r=await p.query(sql,args);return {...r,rowCount:r.rows.length||r.affectedRows||0}};
-mock.module(new URL('../src/lib/employer-session.ts',import.meta.url).href,{namedExports:{currentEmployer:async()=>actor,db:()=>({query,end:async()=>{}})}});
+mock.module(new URL('../src/lib/employer-session.ts',import.meta.url).href,{namedExports:{currentEmployer:async()=>actor,db:()=>({query,connect:async()=>({query,release(){}}),end:async()=>{}})}});
 for(const m of readFileSync('scripts/migrate.mjs','utf8').matchAll(/"(\d{3}_[^"]+\.sql)"/g))await p.exec(readFileSync('database/'+m[1],'utf8'));
 const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Africa/Lagos',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
 const yesterday=new Date(Date.parse(today+'T00:00:00Z')-86400000).toISOString().slice(0,10);
@@ -28,6 +28,11 @@ try{
  assert.equal(filtered.total,1);assert.equal(filtered.records[0].status,'late');
  assert.equal((await GET(request('from='+yesterday+'&to='+today+'&pageSize=101'))).status,400);
  assert.equal((await GET(request('from=2026-02-30&to=2026-03-01'))).status,400);
+ const correction=await import('../src/app/api/hr/attendance/corrections/route.ts');
+ const eventId=(await query("SELECT id FROM hr_attendance_events WHERE employer_id=$1 AND employee_id=$2 AND event_type='clock_in'",[company,employeeId])).rows[0].id;
+ const change=new Request('https://local.test/api/hr/attendance/corrections',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({eventId,newTime:today+'T00:00:00Z',reason:'Verified correction from approved shift record'})});
+ const corrected=await correction.POST(change);assert.equal(corrected.status,200,JSON.stringify(await corrected.json()));
+ const history=await correction.GET(new Request('https://local.test/api/hr/attendance/corrections?eventId='+eventId));assert.equal(history.status,200);assert.equal((await history.json()).history.length,1);
  actor=null;assert.equal((await GET(request('from='+today+'&to='+today))).status,401);
  console.log('PASS attendance monthly status, holiday, timezone, duration, filters, pagination, validation and isolation');
 }finally{await p.close()}
