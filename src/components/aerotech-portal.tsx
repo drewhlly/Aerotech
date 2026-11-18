@@ -34,8 +34,8 @@ export function PublicNav() {
    <nav aria-label="Public navigation" className="hidden items-center gap-8 text-sm font-semibold text-slate-800 lg:flex">
     <Link className="inline-flex min-h-11 items-center hover:text-blue-700" href="/careers">Careers</Link>
     <Link className="inline-flex min-h-11 items-center hover:text-blue-700" href="/solutions">Solutions</Link>
-    <Dropdown title="Insights" groups={insights} open={activeDropdown==='insights'} onOpenChange={value=>setActiveDropdown(value?'insights':null)}/>
-    <Dropdown title="About Us" groups={company} open={activeDropdown==='about'} onOpenChange={value=>setActiveDropdown(value?'about':null)}/>
+    <Dropdown title="Insights" groups={insights} open={activeDropdown==='insights'} onOpenChange={value=>setActiveDropdown(current=>value?'insights':current==='insights'?null:current)}/>
+    <Dropdown title="About Us" groups={company} open={activeDropdown==='about'} onOpenChange={value=>setActiveDropdown(current=>value?'about':current==='about'?null:current)}/>
    </nav>
    <div className="hidden items-center gap-3 lg:flex"><Link href="/auth/login" className="marketing-button marketing-button--ghost">Sign in</Link><Link href="/#choose-your-path" className="marketing-button marketing-button--secondary">Get started</Link></div>
    <button ref={mobileTrigger} type="button" onClick={()=>{setOpen(v=>!v);setSubmenu(null);setActiveDropdown(null)}} className="aero-button border border-slate-200 lg:hidden" aria-label={open?'Close navigation':'Open navigation'} aria-expanded={open} aria-controls="public-mobile-menu">{open?<X size={22}/>:<Menu size={22}/>}</button>
