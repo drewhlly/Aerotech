@@ -21,8 +21,14 @@ export async function POST(request:Request){
   const site=await client.query("SELECT latitude,longitude,radius_m FROM attendance_sites WHERE id=$1 AND employer_id=$2 AND active=TRUE",[data.siteId,employer]);
   if(!employee.rowCount||!site.rowCount){await client.query("ROLLBACK");return NextResponse.json({error:"Employee or approved workplace not found"},{status:404});}
   // Serialize attendance events per employee to prevent concurrent duplicate submissions.
-  const date=await client.query("SELECT (NOW() AT TIME ZONE 'Africa/Lagos')::date AS work_date");
-  const recorded=await client.query("SELECT event_type FROM hr_attendance_events WHERE employee_id=$1 AND employer_id=$2 AND work_date=$3::date",[data.employeeId,employer,date.rows[0].work_date]);
+  const current=await client.query("SELECT (NOW() AT TIME ZONE 'Africa/Lagos')::date AS work_date");
+  let date=current.rows[0].work_date;
+  if(data.eventType==='clock_out'){
+   const pending=await client.query("SELECT ci.work_date FROM hr_attendance_events ci WHERE ci.employee_id=$1 AND ci.employer_id=$2 AND ci.event_type='clock_in' AND ci.event_time>=NOW()-INTERVAL '24 hours' AND NOT EXISTS (SELECT 1 FROM hr_attendance_events co WHERE co.employee_id=ci.employee_id AND co.employer_id=ci.employer_id AND co.work_date=ci.work_date AND co.event_type='clock_out') ORDER BY ci.event_time DESC LIMIT 1 FOR UPDATE OF ci",[data.employeeId,employer]);
+   if(!pending.rowCount){await client.query('ROLLBACK');return NextResponse.json({error:'No open clock-in in the last 24 hours. Arrange an audited correction with HR.'},{status:409})}
+   date=pending.rows[0].work_date;
+  }
+  const recorded=await client.query("SELECT event_type FROM hr_attendance_events WHERE employee_id=$1 AND employer_id=$2 AND work_date=$3::date",[data.employeeId,employer,date]);
   const actions=new Set(recorded.rows.map((row:{event_type:string})=>row.event_type));
   if(actions.has(data.eventType!)||(data.eventType==='clock_out'&&!actions.has('clock_in'))){
     await client.query("ROLLBACK");
@@ -33,7 +39,7 @@ export async function POST(request:Request){
   catch(e){await client.query("ROLLBACK");return NextResponse.json({error:e instanceof Error?e.message:"Location outside workplace"},{status:422});}
   const id=randomUUID();
   await client.query("INSERT INTO attendance_verifications(id,employer_id,employee_id,site_id,event_type,latitude,longitude,accuracy_m,distance_m,verification_method) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,'gps')",[id,employer,data.employeeId,data.siteId,data.eventType,data.latitude,data.longitude,data.accuracy,distance]);
-  await client.query("INSERT INTO hr_attendance_events(id,employer_id,employee_id,work_date,event_type,source) VALUES($1,$2,$3,$5::date,$4,'geofence')",[randomUUID(),employer,data.employeeId,data.eventType,date.rows[0].work_date]);
+  await client.query("INSERT INTO hr_attendance_events(id,employer_id,employee_id,work_date,event_type,source) VALUES($1,$2,$3,$5::date,$4,'geofence')",[randomUUID(),employer,data.employeeId,data.eventType,date]);
   await client.query("COMMIT");
   return NextResponse.json({status:"recorded",verificationId:id,distanceMeters:Math.round(distance)},{status:201});
  }catch{await client.query("ROLLBACK");return NextResponse.json({error:"Clock-in could not be saved. Check for an existing attendance event."},{status:409});}
