@@ -13,11 +13,11 @@ export async function GET(req:Request){
  if(!Number.isSafeInteger(page)||page<1||!Number.isSafeInteger(size)||size<1||size>100||page>100000)
   return NextResponse.json({error:'Invalid page or pageSize'},{status:400});
  const search=(url.searchParams.get('search')||'').trim().slice(0,100),department=(url.searchParams.get('department')||'').trim().slice(0,100),status=(url.searchParams.get('status')||'').trim();
- const statuses=['present','late','absent','on_leave','scheduled','not_scheduled','missed_checkout','assignment_review'];
+ const statuses=['present','late','absent','on_leave','scheduled','not_scheduled','missed_checkout','clocked_in','assignment_review'];
  if(status&&!statuses.includes(status))return NextResponse.json({error:'Invalid status filter'},{status:400});
  const pool=db();
  try{
-  const sql=\`
+  const sql=`
   WITH daily AS (
    SELECT w.id,w.first_name,w.last_name,w.department,COALESCE(site.name,w.location) AS location,
           d.work_date::date AS work_date,s.starts_at,s.ends_at,
@@ -40,6 +40,7 @@ export async function GET(req:Request){
   ), evaluated AS (
    SELECT *,CASE
     WHEN assignment_review THEN 'assignment_review'
+    WHEN clock_in IS NOT NULL AND clock_out IS NULL AND work_date >= (NOW() AT TIME ZONE 'Africa/Lagos')::date THEN 'clocked_in'
     WHEN clock_in IS NOT NULL AND clock_out IS NULL THEN 'missed_checkout'
     WHEN clock_in IS NOT NULL AND starts_at IS NOT NULL
          AND clock_in > ((work_date+starts_at) AT TIME ZONE 'Africa/Lagos') THEN 'late'
@@ -60,7 +61,7 @@ export async function GET(req:Request){
   FROM evaluated
   WHERE ($6='' OR status=$6)
   ORDER BY work_date DESC,first_name,last_name,id
-  LIMIT $7 OFFSET $8\`;
+  LIMIT $7 OFFSET $8`;
   const rows=(await pool.query(sql,[employer,from,to,search,department,status,size,(page-1)*size])).rows;
   const total=rows[0]?.total??0;
   return NextResponse.json({from,to,page,pageSize:size,total,pages:Math.ceil(total/size),records:rows.map(({total:unused,...record}:{total:number;[key:string]:unknown})=>{void unused;return record})},
