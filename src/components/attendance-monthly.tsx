@@ -3,7 +3,7 @@ import {useCallback,useEffect,useMemo,useState} from 'react';
 import {Download,Search,CalendarDays,ChevronLeft,ChevronRight} from 'lucide-react';
 type RecordRow={id:string;first_name:string;last_name:string;department:string|null;location:string|null;work_date:string;status:string;clock_in:string|null;clock_out:string|null;hours:string|null};
 type Report={records:RecordRow[];total:number;pages:number;page:number;from:string;to:string};
-const statusOptions=['','present','late','clocked_in','missed_checkout','absent','on_leave','scheduled','not_scheduled','assignment_review'];
+const statusOptions=['','present','late','clocked_in','missed_checkout','absent','on_leave','holiday','scheduled','not_scheduled','assignment_review'];
 const day=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Africa/Lagos',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
 const time=(value:string|null)=>value?new Date(value).toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'}):'—';
 const safeCell=(value:unknown)=>{let s=String(value??'');if(/^[=+\-@\t\r]/.test(s))s="'"+s;return '"'+s.replaceAll('"','""')+'"';};
