@@ -1,11 +1,10 @@
 "use client";
-
 import Link from "next/link";
-import { useState } from "react";
-import { ArrowRight, LockKeyhole, Check, Eye, EyeOff } from "lucide-react";
-import BrandLogo from "./brand-logo";
+import { useEffect, useState } from "react";
+import { ArrowRight, Eye, EyeOff, Mail, LockKeyhole, LoaderCircle } from "lucide-react";
 import { safeReturnTo } from "@/lib/auth-navigation";
-
+import AuthLayout from "./auth/auth-layout";
+import { portalConfig } from "./auth/portal-config";
 export default function LoginForm({
   requestedRole,
   returnTo,
@@ -19,14 +18,33 @@ export default function LoginForm({
       : requestedRole === "employee"
         ? "employee"
         : "employer";
+  return <PortalLoginForm key={role} role={role} returnTo={returnTo} />;
+}
+
+function PortalLoginForm({role,returnTo}:{role:"applicant"|"employee"|"employer";returnTo?:string}) {
   const [email, setEmail] = useState("");
+  const [remember, setRemember] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<{email?:string;password?:string}>({});
+  const config = portalConfig[role];
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    let active = true;
+    queueMicrotask(() => {
+      if (!active) return;
+      try { const saved = localStorage.getItem("aerotech-login-email:" + role); if (saved) {setEmail(saved); setRemember(true);} } catch { /* Storage is optional. */ }
+    });
+    return () => { active = false; };
+  }, [role]);
   async function signIn(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (busy) return;
     setError("");
+    const errors = {email: !email.trim() ? "Enter your email address." : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) ? "Enter a valid email address." : undefined, password: !password ? "Enter your password." : undefined};
+    setFieldErrors(errors);
+    if(errors.email || errors.password){document.getElementById(errors.email ? "login-email" : "login-password")?.focus(); return;}
     setBusy(true);
     try {
       const response = await fetch(
@@ -41,12 +59,13 @@ export default function LoginForm({
           body: JSON.stringify({ email, password }),
         },
       );
-      const data = await response.json().catch(() => ({}));
+      await response.json().catch(() => ({}));
       if (!response.ok) {
-        setError(data.error || "Unable to sign in.");
+        setError(response.status === 429 ? "Too many sign-in attempts. Please try again in 15 minutes." : response.status === 423 ? "Access is temporarily locked. Contact support for help." : response.status === 401 || response.status === 403 ? "Unable to sign in with these credentials. Check your details and selected portal." : "Sign-in is currently unavailable. Please try again shortly.");
         return;
       }
-      window.location.assign(safeReturnTo(returnTo, role));
+      try { if (remember) localStorage.setItem("aerotech-login-email:" + role, email); else localStorage.removeItem("aerotech-login-email:" + role); } catch { /* Sign-in must work when storage is disabled. */ }
+      window.location.assign(safeReturnTo(returnTo || config.redirectTarget, role));
     } catch {
       setError("Unable to connect. Please try again.");
     } finally {
@@ -54,258 +73,24 @@ export default function LoginForm({
     }
   }
 
-  return (
-    <main className="bg-[#f3f6fc] px-4 py-8 sm:px-8 sm:py-12">
-      <div className="mx-auto max-w-6xl">
-        <div className="grid overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_20px_70px_#06163f0b] lg:grid-cols-[.95fr_1.05fr]">
-          <aside
-            className="relative hidden flex-col justify-between overflow-hidden bg-[#06163F] p-10 text-white lg:flex xl:p-12"
-            aria-label="Your Aerotech workspace"
-          >
-            <div
-              className="pointer-events-none absolute -right-40 -top-40 h-96 w-96 rounded-full border-[50px] border-blue-500/10"
-              aria-hidden="true"
-            />
-            <div className="relative">
-              <p className="inline-flex rounded-full border border-white/20 px-3 py-2 text-xs font-semibold uppercase tracking-[.16em] text-blue-100">
-                A little more clarity. Every day.
-              </p>
-              <h2 className="mt-12 max-w-sm text-[44px] font-semibold leading-[1.13] tracking-tight">
-                {role === "applicant" ? (
-                  <>
-                    Your next chapter
-                    <br />
-                    starts here.
-                  </>
-                ) : role === "employee" ? (
-                  <>
-                    A better place
-                    <br />
-                    for your workday.
-                  </>
-                ) : (
-                  <>
-                    Good people.
-                    <br />
-                    Great possibilities.
-                  </>
-                )}
-              </h2>
-              <p className="mt-5 max-w-sm text-base leading-7 text-slate-200">
-                {role === "applicant"
-                  ? "Find opportunities that fit, share your experience and keep track of what comes next."
-                  : role === "employee"
-                    ? "Stay close to your team, your records and the everyday details that matter."
-                    : "Bring your team and everyday people operations into one organised workspace."}
-              </p>
-            </div>
-            <div className="relative mt-12 space-y-4">
-              {(role === "applicant"
-                ? [
-                    "Create your applicant account for free",
-                    "Upload your CV and follow applications",
-                    "Keep assessments and interviews together",
-                  ]
-                : role === "employee"
-                  ? [
-                      "View your payslips and shared documents",
-                      "Follow leave requests and company updates",
-                      "Find your assigned projects and tasks",
-                    ]
-                  : [
-                      "Keep employee records organised",
-                      "Connect hiring, payroll and people workflows",
-                      "Follow projects, meetings and team progress",
-                    ]
-              ).map((text) => (
-                <div
-                  key={text}
-                  className="flex items-start gap-3 border-t border-white/10 pt-4 text-sm leading-6 text-slate-100"
-                >
-                  <Check size={17} className="mt-1 text-blue-200" />
-                  {text}
-                </div>
-              ))}
-            </div>
-            <p className="relative mt-12 text-xs leading-6 text-slate-300">
-              One platform. Dedicated workspaces.
-              <br />
-              Access stays with the right people.
-            </p>
-          </aside>
-          <section className="p-6 sm:p-10 xl:p-12" aria-label="Sign in">
-            <BrandLogo />
-            <p className="mt-8 text-xs font-semibold uppercase tracking-[.18em] text-blue-800">
-              {role} workspace
-            </p>
-            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-[#06163F]">
-              Welcome back.
-            </h1>
-            <p className="mt-3 text-sm leading-6 text-slate-600">
-              Choose your workspace and pick up where you left off.
-            </p>
-            <nav
-              aria-label="Choose sign-in role"
-              className="mt-7 grid grid-cols-3 gap-2"
-            >
-              {(["employer", "employee", "applicant"] as const).map(
-                (option) => (
-                  <Link
-                    key={option}
-                    onClick={() => {
-                      setError("");
-                      setPassword("");
-                    }}
-                    href={
-                      "/auth/login?" +
-                      new URLSearchParams({
-                        role: option,
-                        ...(returnTo
-                          ? { next: safeReturnTo(returnTo, option) }
-                          : {}),
-                      })
-                    }
-                    aria-current={role === option ? "page" : undefined}
-                    className={
-                      "min-h-12 rounded-xl px-2 py-3 text-center text-xs font-semibold " +
-                      (role === option
-                        ? "bg-blue-700 text-white"
-                        : "bg-slate-100 text-slate-700")
-                    }
-                  >
-                    {option[0].toUpperCase() + option.slice(1)} sign in
-                  </Link>
-                ),
-              )}
-            </nav>
-            {role === "employee" && (
-              <p className="mt-4 text-sm text-slate-600">
-                Employee access is by employer invitation. Ask HR for your
-                activation link.
-              </p>
-            )}
-
-            <noscript>
-              <p className="mt-5 text-sm text-red-700">
-                Enable JavaScript to sign in securely. Contact support if this
-                page cannot load.
-              </p>
-            </noscript>
-            <form
-              method="post"
-              action={"/api/auth/login/" + role}
-              className="mt-7 space-y-4"
-              onSubmit={signIn}
-            >
-              <div>
-                <label
-                  htmlFor="login-email"
-                  className="text-sm font-bold text-slate-700"
-                >
-                  Email
-                </label>
-                <input
-                  id="login-email"
-                  autoComplete="email"
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder={
-                    role === "employer" ? "you@company.com" : "you@example.com"
-                  }
-                  className="aero-input mt-2 !bg-slate-50"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="login-password"
-                  className="text-sm font-bold text-slate-700"
-                >
-                  Password
-                </label>
-                <div className="relative mt-2">
-                  <input
-                    id="login-password"
-                    autoComplete="current-password"
-                    type={showPassword ? "text" : "password"}
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="aero-input !bg-slate-50 !pr-14"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((current) => !current)}
-                    aria-label={
-                      showPassword ? "Hide password" : "Show password"
-                    }
-                    aria-pressed={showPassword}
-                    className="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-slate-500 hover:text-[#07152c] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563eb]"
-                  >
-                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </button>
-                </div>
-              </div>
-
-              <Link
-                href={"/auth/forgot-password?role=" + role}
-                className="inline-block text-sm font-semibold text-blue-700"
-              >
-                Forgot password?
-              </Link>
-              {error && (
-                <p role="alert" className="text-sm text-red-700">
-                  {error}
-                </p>
-              )}
-              <button
-                type="submit"
-                disabled={busy}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#07152c] px-5 py-3.5 font-semibold text-white hover:bg-blue-800 disabled:opacity-60"
-              >
-                {busy ? "Signing in..." : "Sign in"} <ArrowRight size={17} />
-              </button>
-            </form>
-
-            <div className="mt-7 flex items-center gap-2 text-xs text-slate-600">
-              <LockKeyhole size={14} />
-              Your password is sent securely and is never shared with other
-              portals.
-            </div>
-
-            {role === "employee" ? (
-              <p className="mt-7 text-center text-sm text-slate-500">
-                Use the activation link sent by your employer to set up your
-                account.
-              </p>
-            ) : (
-              <div className="mt-7 text-center text-sm">
-                <Link
-                  href={
-                    (role === "applicant"
-                      ? "/auth/signup/applicant"
-                      : "/auth/signup/employer") +
-                    (returnTo
-                      ? "?" +
-                        new URLSearchParams({
-                          next: safeReturnTo(returnTo, role),
-                        })
-                      : "")
-                  }
-                  className="font-bold text-blue-700"
-                >
-                  {role === "applicant"
-                    ? "Create free applicant account"
-                    : "Create an employer account"}
-                </Link>
-              </div>
-            )}
-          </section>
-        </div>
-      </div>
-    </main>
-  );
+  return <AuthLayout portal={role}>
+    <p className="portal-auth-eyebrow">{config.name}</p>
+    <h1 id="portal-login-title">{config.title}</h1>
+    <p className="portal-auth-subtitle">{config.subtitle}</p>
+    <nav className="portal-auth-switcher" aria-label="Choose sign-in portal">
+      {(["applicant", "employee", "employer"] as const).map(option => <Link key={option} href={"/auth/login?" + new URLSearchParams({role: option, ...(returnTo ? {next: safeReturnTo(returnTo, option)} : {})})} aria-current={role === option ? "page" : undefined}>{option[0].toUpperCase() + option.slice(1)}</Link>)}
+    </nav>
+    <noscript><p className="portal-auth-error">Enable JavaScript to sign in. Contact support if you need help.</p></noscript>
+    <form method="post" action={"/api/auth/login/" + role} onSubmit={signIn} noValidate aria-busy={busy}>
+      <fieldset disabled={busy}>
+        <div className="portal-auth-field"><label htmlFor="login-email">Email address</label><div className="portal-auth-input"><Mail size={18} aria-hidden="true" /><input id="login-email" name="username" type="email" autoComplete="username" inputMode="email" autoCapitalize="none" spellCheck={false} required maxLength={254} value={email} onChange={e=>{setEmail(e.target.value);setFieldErrors(v=>({...v,email:undefined}));setError("");}} aria-invalid={!!fieldErrors.email} aria-describedby={fieldErrors.email ? "login-email-error" : undefined} placeholder={role === "employer" ? "you@company.com" : "you@example.com"} /></div>{fieldErrors.email && <p id="login-email-error" className="portal-auth-field-error" aria-live="polite">{fieldErrors.email}</p>}</div>
+        <div className="portal-auth-field"><label htmlFor="login-password">Password</label><div className="portal-auth-input"><LockKeyhole size={18} aria-hidden="true" /><input id="login-password" name="password" type={showPassword ? "text" : "password"} autoComplete="current-password" required maxLength={256} value={password} onChange={e=>{setPassword(e.target.value);setFieldErrors(v=>({...v,password:undefined}));setError("");}} aria-invalid={!!fieldErrors.password} aria-describedby={fieldErrors.password ? "login-password-error" : undefined} /><button type="button" onClick={()=>setShowPassword(v=>!v)} aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword}>{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button></div>{fieldErrors.password && <p id="login-password-error" className="portal-auth-field-error" aria-live="polite">{fieldErrors.password}</p>}</div>
+        <div className="portal-auth-options"><label><input type="checkbox" checked={remember} onChange={e=>{setRemember(e.target.checked);if(!e.target.checked)try{localStorage.removeItem("aerotech-login-email:"+role);}catch{}}} aria-describedby="remember-explanation" />Remember me</label><Link href={"/auth/forgot-password?role="+role}>Forgot password?</Link></div>
+        <p id="remember-explanation" className="portal-auth-hint">Remembers your email on this device only. Your sign-in duration stays the same.</p>
+        <div aria-live="polite" aria-atomic="true">{error && <p role="alert" className="portal-auth-error">{error}</p>}</div>
+        <button type="submit" className="portal-auth-submit">{busy ? <LoaderCircle size={18} className="animate-spin" aria-hidden="true" /> : null}{busy ? "Signing in…" : "Sign In"}{!busy && <ArrowRight size={18} aria-hidden="true" />}</button>
+      </fieldset>
+    </form>
+    {config.signup ? <p className="portal-auth-register"><Link href={config.signup + (returnTo ? "?" + new URLSearchParams({next:safeReturnTo(returnTo,role)}) : "")}>{config.signupLabel}</Link></p> : <p className="portal-auth-invitation">Your organisation issues employee accounts. Ask HR for your activation link.</p>}
+  </AuthLayout>;
 }
