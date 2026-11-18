@@ -12,7 +12,7 @@ export async function verifyRecruitmentUI(context,jobId,applicationId){
   const dialog=page.getByRole('dialog',{name:'Test Applicant',exact:true});await dialog.waitFor();
   assert.ok(await dialog.getByRole('button',{name:'Schedule interview',exact:true}).isVisible());
   assert.ok((await dialog.getByRole('link',{name:'Download CV',exact:true}).getAttribute('href')).startsWith('/api/workforce-documents?role=employer&'));
-  const result=await new AxeBuilder({page}).include('main').analyze();assert.deepEqual(result.violations.filter(v=>['critical','serious'].includes(v.impact)).map(v=>v.id),[]);
+  const result=await new AxeBuilder({page}).include('main').analyze();const serious=result.violations.filter(v=>['critical','serious'].includes(v.impact));if(serious.length)console.error('RECRUITMENT_AXE_EVIDENCE',JSON.stringify(serious.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary,html:n.html.slice(0,280)}))}))));assert.deepEqual(serious.map(v=>v.id),[]);
   if(viewport.width===1280){
    await dialog.getByLabel('Interview time (your local timezone)',{exact:true}).fill(new Date(Date.now()+3600000).toISOString().slice(0,16));
    await dialog.getByRole('button',{name:'Schedule interview',exact:true}).click();await dialog.waitFor({state:'hidden'});
