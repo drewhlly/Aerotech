@@ -22,7 +22,9 @@
     "test:consolidated:browser": "node scripts/consolidated-browser-suite.mjs",
     "test:automation:browser": "node scripts/automation-browser-suite.mjs",
     "test:api:invalid-input": "node scripts/invalid-input-suite.mjs",
-    "db:migrate:face": "node scripts/migrate-face.mjs"
+    "db:migrate:face": "node scripts/migrate-face.mjs",
+    "prebuild": "node scripts/prepare-face-models.mjs",
+    "predev": "node scripts/prepare-face-models.mjs"
   },
   "repository": {
     "type": "git",
@@ -58,6 +60,7 @@
     "@types/pg": "^8.11.11",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
+    "@vladmandic/face-api": "1.7.15",
     "eslint": "^9.39.5",
     "eslint-config-next": "^16.3.1",
     "lighthouse": "^13.5.0",
