@@ -17,7 +17,7 @@ const features=[
 const artwork=['/brand/feature-hiring.svg','/brand/feature-workday.svg','/brand/hero-pattern.svg','/brand/feature-hiring.svg'];
 export default function Home(){return <main className="bg-white text-slate-900">
  <CookieNotice/>
- <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(organisationSchema).replace(/</g,'\u003c')}}/>
+ <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(organisationSchema).replace(/</g,'\\u003c')}}/>
  <LandingShowcase/>
  <CareerSearch/>
  <section id="choose-your-path" className="scroll-mt-28"><Container className="pt-20">
