@@ -20,7 +20,7 @@ export async function verifyRecruitmentUI(context,jobId,applicationId){
    assert.equal(candidate.stage,'interview');assert.ok(candidate.interview_room_id);
   }else{await page.keyboard.press('Escape');await dialog.waitFor({state:'hidden'})}
   await page.evaluate(()=>{document.documentElement.dataset.theme='dark'});
-  const dark=await new AxeBuilder({page}).include('main').analyze();assert.deepEqual(dark.violations.filter(v=>['critical','serious'].includes(v.impact)).map(v=>v.id),[]);
+  const dark=await new AxeBuilder({page}).include('main').analyze();const darkFailures=dark.violations.filter(v=>['critical','serious'].includes(v.impact));if(darkFailures.length)console.error('Recruitment dark accessibility findings',JSON.stringify(darkFailures.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.slice(0,15).map(n=>({target:n.target,summary:n.failureSummary,html:n.html.slice(0,240)}))}))));assert.deepEqual(darkFailures.map(v=>v.id),[]);
   await page.evaluate(()=>{document.documentElement.dataset.theme='light'});
   await page.close();
  }
