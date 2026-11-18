@@ -22,7 +22,7 @@ try{
    await about.click();assert.equal(await insights.getAttribute('aria-expanded'),'false');assert.equal(await about.getAttribute('aria-expanded'),'true');
    await page.keyboard.press('Escape');assert.equal(await about.getAttribute('aria-expanded'),'false');assert.equal(await about.evaluate(e=>document.activeElement===e),true);
    await insights.click();await page.getByRole('main').click({position:{x:10,y:10}});assert.equal(await insights.getAttribute('aria-expanded'),'false');
-   await insights.focus();await page.keyboard.press('ArrowDown');assert.equal(await insights.getAttribute('aria-expanded'),'true');assert.equal(await page.locator('.marketing-dropdown[data-open="true"] a').first().evaluate(e=>document.activeElement===e),true);
+   await insights.focus();await page.keyboard.press('ArrowDown');assert.equal(await insights.getAttribute('aria-expanded'),'true');await page.waitForFunction(()=>document.activeElement===document.querySelector('.marketing-dropdown[data-open="true"] a'));
    await page.keyboard.press('ArrowDown');await page.keyboard.press('Escape');assert.equal(await insights.getAttribute('aria-expanded'),'false');
    for(const [group,items] of Object.entries(groups)){
     for(const item of items){
