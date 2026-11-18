@@ -26,7 +26,7 @@ export async function POST(req:Request){
   if(!result.rowCount){await client.query('ROLLBACK');return NextResponse.json({error:'Attendance event not found'},{status:404})}
   const event=result.rows[0];
   // An event remains attached to its original Lagos workday (including an overnight checkout).
-  const day=String(event.work_date).slice(0,10),newDay=new Intl.DateTimeFormat('en-CA',{timeZone:'Africa/Lagos',year:'numeric',month:'2-digit',day:'2-digit'}).format(parsed);
+  const originalDate=event.work_date;const day=originalDate instanceof Date?originalDate.toISOString().slice(0,10):String(originalDate).slice(0,10);const newDay=new Intl.DateTimeFormat('en-CA',{timeZone:'Africa/Lagos',year:'numeric',month:'2-digit',day:'2-digit'}).format(parsed);
   const following=new Date(Date.parse(day+'T00:00:00Z')+86400000).toISOString().slice(0,10);
   if(newDay!==day&&!(event.event_type==='clock_out'&&newDay===following)){await client.query('ROLLBACK');return NextResponse.json({error:'Corrected time must remain on its assigned workday (or following day for overnight checkout).'},{status:422})}
   const other=await client.query('SELECT event_type,event_time FROM hr_attendance_events WHERE employer_id=$1 AND employee_id=$2 AND work_date=$3::date AND id<>$4',[employer,event.employee_id,day,eventId]);
