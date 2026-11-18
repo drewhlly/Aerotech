@@ -8,9 +8,7 @@ export type PayrollStatus =
 export type PayrollCurrency = "NGN" | "USD" | "GBP" | "EUR";
 
 export type PayFrequency =
-  | "monthly"
-  | "biweekly"
-  | "weekly";
+  | "monthly";
 
 export type PayrollEmployee = {
   id: string;

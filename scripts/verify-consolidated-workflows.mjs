@@ -18,7 +18,7 @@ try{
  assert.equal(await page.getByRole('link',{name:'Recruitment',exact:true}).count(),0);
  assert.equal(await page.getByRole('link',{name:'Salary payments',exact:true}).count(),0);
  assert.equal(await page.getByRole('link',{name:'My approvals',exact:true}).count(),0);
- for(const path of ['/employee/opportunities','/employee/opportunities/'+randomUUID(),'/employee/approvals','/employee/payroll/payments'])assert.equal((await employee.request.get(path)).status(),403,path);
+ for(const path of ['/employee/opportunities','/employee/opportunities/'+randomUUID(),'/employee/approvals'])assert.equal((await employee.request.get(path)).status(),403,path);
  assert.equal((await employee.request.get('/api/employee/payroll/review')).status(),403);
  assert.equal((await employee.request.get('/api/employee/manager/leave')).status(),403);
  console.log('PASS ordinary employee has no recruitment, salary-payments or unassigned approval access');

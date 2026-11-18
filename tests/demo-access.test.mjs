@@ -11,5 +11,5 @@ test('valid demo is tenant-bound and requires future expiry',()=>{
 });
 test('demo permits workforce previews',()=>{
  assert.equal(demoMayAccessService('/api/employees'),true);
- assert.equal(demoMayAccessService('/api/payroll/transfers'),false);
+ assert.equal(demoMayAccessService('/api/payroll/bank-schedule'),false);
 });

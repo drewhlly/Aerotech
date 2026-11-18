@@ -10,9 +10,7 @@ export function isActiveDemoSubscription(
     new Date(subscription.paid_until).getTime() > now;
 }
 
-/** Internal demo accounts can explore modules, but must not initiate real transfers. */
+/** Bank schedules contain sensitive data and are restricted to paid workspaces. */
 export function demoMayAccessService(path: string): boolean {
-  return !(
-    path.startsWith('/api/payroll/transfers')
-  );
+  return path !== '/api/payroll/bank-schedule' && path !== '/dashboard/employer/payroll/pay';
 }

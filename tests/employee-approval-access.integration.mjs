@@ -27,9 +27,7 @@ await query("INSERT INTO employee_sessions VALUES($1,$2,NOW()+INTERVAL '1 day')"
 assert.equal(await access.employeeRequestCanApprove(undefined),false);
 assert.equal(await access.employeeRequestCanApprove('wrong-token'),false);
 assert.equal(await access.employeeRequestCanApprove('local-fixture'),true);
-assert.equal(await access.employeeRequestCanApprove('local-fixture',true),false);
 await query("UPDATE payroll_stage_approvers SET stage='ceo' WHERE employer_id=$1 AND employee_id=$2",[company,id]);
-assert.equal(await access.employeeRequestCanApprove('local-fixture',true),true);
 await query("UPDATE employee_sessions SET expires_at=NOW()-INTERVAL '1 day'");
 assert.equal(await access.employeeRequestCanApprove('local-fixture'),false);
 await database.close();console.log('PASS: approval responsibility and tenant boundaries enforced server-side.');

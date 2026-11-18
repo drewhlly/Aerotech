@@ -55,7 +55,7 @@ export async function proxy(req:NextRequest){
    if(path==='/employee/opportunities'||path.startsWith('/employee/opportunities/'))return deny();
    const approval=path==='/employee/approvals'||path.startsWith('/employee/approvals/')||path==='/employee/payroll/approvals';
    if(approval){
-    try{if(!await employeeRequestCanApprove(req.cookies.get('aerotech_employee_session')?.value,path.endsWith('/payments')))return deny();}
+    try{if(!await employeeRequestCanApprove(req.cookies.get('aerotech_employee_session')?.value))return deny();}
     catch{return new NextResponse('Approval access is temporarily unavailable. Please retry.',{status:503});}
    }
   }
