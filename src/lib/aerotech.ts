@@ -61,7 +61,6 @@ export const employerOSData = {
   payroll: {
     currentPeriod: "August 2026",
     nextPayrollDate: "31 August 2026",
-    walletBalance: 18500000,
     payrollRequired: 12750000,
     gross: 15200000,
     employeeTax: 1430000,
@@ -357,7 +356,7 @@ export function getAiResponse(prompt: string) {
   const text = prompt.toLowerCase();
 
   if (text.includes("payroll")) {
-    return "Payroll is currently 94% ready. The August payroll requirement is ₦12.75m and the employer wallet has ₦18.5m available in this demo environment. Before approval, review PAYE, pension, other deductions and employer contributions.";
+    return "Payroll is currently 94% ready. The August payroll requirement is ₦12.75m. Before approval, review PAYE, pension, other deductions and employer contributions.";
   }
 
   if (text.includes("attendance")) {
@@ -393,48 +392,8 @@ export const paymentConfig = {
   mode: "demo" as "demo" | "production",
   provider: "paystack" as PaymentProvider,
   currency: "NGN",
-  note: "Production API keys, webhooks and bank payout credentials are intentionally not included.",
+  note: "Production API keys, webhooks are intentionally not included.",
 };
-
-export type WalletTransaction = {
-  id: string;
-  date: string;
-  type: "credit" | "debit";
-  description: string;
-  reference: string;
-  amount: number;
-  status: "successful" | "pending" | "failed";
-};
-
-export const walletTransactions: WalletTransaction[] = [
-  {
-    id: "TXN-1001",
-    date: "12 Aug 2026",
-    type: "credit",
-    description: "Payroll wallet funding",
-    reference: "AERO-WALLET-1001",
-    amount: 10000000,
-    status: "successful",
-  },
-  {
-    id: "TXN-1002",
-    date: "08 Aug 2026",
-    type: "credit",
-    description: "Payroll wallet funding",
-    reference: "AERO-WALLET-1002",
-    amount: 8500000,
-    status: "successful",
-  },
-  {
-    id: "TXN-1003",
-    date: "31 Jul 2026",
-    type: "debit",
-    description: "July payroll settlement",
-    reference: "AERO-PAYROLL-0726",
-    amount: 11800000,
-    status: "successful",
-  },
-];
 
 export const payrollCalculationExample = {
   gross: 15200000,

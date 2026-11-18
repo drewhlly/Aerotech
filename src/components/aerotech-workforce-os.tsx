@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Activity, AlertCircle, ArrowDownLeft, ArrowRight, ArrowUpRight, Award, Banknote, BarChart3, Bell, BriefcaseBusiness, Building2, CalendarDays, CheckCircle2, ChevronDown, Clock3, FileCheck2, FileText, GraduationCap, LayoutDashboard, LifeBuoy, Menu, MessageSquareText, MoreHorizontal, Plus, Search, Settings, ShieldCheck, Sparkles, Target, UserCheck, UserPlus, Users, Wallet, X } from "lucide-react";
+import { Activity, AlertCircle, ArrowRight, ArrowUpRight, Award, Banknote, BarChart3, Bell, BriefcaseBusiness, Building2, CalendarDays, CheckCircle2, ChevronDown, Clock3, FileCheck2, FileText, GraduationCap, LayoutDashboard, LifeBuoy, Menu, MessageSquareText, MoreHorizontal, Plus, Search, Settings, ShieldCheck, Sparkles, Target, UserCheck, UserPlus, Users, X } from "lucide-react";
 
 type Section =
   | "command"
@@ -12,7 +12,6 @@ type Section =
   | "performance"
   | "training"
   | "payroll"
-  | "wallet"
   | "compliance"
   | "documents"
   | "reports"
@@ -1062,11 +1061,7 @@ function Training() {
   );
 }
 
-function Payroll({
-  setSection,
-}: {
-  setSection: (section: Section) => void;
-}) {
+function Payroll() {
   const gross = payrollRows.reduce((sum, row) => sum + row.gross, 0);
   const net = payrollRows.reduce((sum, row) => sum + row.net, 0);
   const paye = payrollRows.reduce((sum, row) => sum + row.paye, 0);
@@ -1077,15 +1072,13 @@ function Payroll({
       <PageHeader
         title="Payroll"
         description="Gross-to-net payroll with country-aware statutory deductions."
-        action="Run payroll"
-        onAction={() => setSection("wallet")}
       />
 
       <div className="mb-5 grid gap-4 md:grid-cols-4">
         <StatCard label="Gross payroll" value={money(gross)} change="Current cycle" icon={Banknote} />
         <StatCard label="PAYE / tax" value={money(paye)} change="Configured by country" icon={FileCheck2} />
         <StatCard label="Pension" value={money(pension)} change="Statutory contribution" icon={ShieldCheck} />
-        <StatCard label="Net payroll" value={money(net)} change="Ready for funding" icon={Wallet} />
+        <StatCard label="Net payroll" value={money(net)} change="For employer review" icon={Banknote} />
       </div>
 
       <div className="mb-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -1156,166 +1149,6 @@ function Payroll({
           </table>
         </div>
       </div>
-    </>
-  );
-}
-
-function PayrollWallet() {
-  const [funding, setFunding] = useState(false);
-
-  return (
-    <>
-      <PageHeader
-        title="Payroll Wallet"
-        description="Employer-funded payroll balance for controlled salary execution."
-        action="Fund wallet"
-        onAction={() => setFunding(true)}
-      />
-
-      <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
-        <div className="rounded-2xl bg-slate-950 p-6 text-white shadow-sm">
-          <div className="flex items-start justify-between">
-            <div>
-              <div className="text-xs font-semibold text-slate-400">
-                Available payroll balance
-              </div>
-              <div className="mt-3 text-4xl font-black tracking-tight">
-                ₦72,450,000
-              </div>
-            </div>
-
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10">
-              <Wallet size={20} />
-            </div>
-          </div>
-
-          <div className="mt-8 grid gap-3 sm:grid-cols-3">
-            <div className="rounded-xl bg-white/10 p-3">
-              <div className="text-[10px] text-slate-400">Reserved</div>
-              <div className="mt-1 text-sm font-black">₦48.6M</div>
-            </div>
-
-            <div className="rounded-xl bg-white/10 p-3">
-              <div className="text-[10px] text-slate-400">Available</div>
-              <div className="mt-1 text-sm font-black">₦23.8M</div>
-            </div>
-
-            <div className="rounded-xl bg-white/10 p-3">
-              <div className="text-[10px] text-slate-400">Currency</div>
-              <div className="mt-1 text-sm font-black">NGN</div>
-            </div>
-          </div>
-        </div>
-
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="font-bold text-slate-950">Payroll funding flow</h2>
-
-          <div className="mt-5 space-y-4">
-            {[
-              ["1", "Employer funds wallet", "Bank / payment provider"],
-              ["2", "Payroll is calculated", "Gross → statutory → net"],
-              ["3", "Funds are reserved", "Payroll amount locked"],
-              ["4", "Payroll is approved", "Authorised by employer"],
-              ["5", "Employees are paid", "Payment execution"],
-            ].map(([number, title, description]) => (
-              <div key={number} className="flex gap-3">
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-950 text-[10px] font-black text-white">
-                  {number}
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-slate-800">
-                    {title}
-                  </div>
-                  <div className="mt-0.5 text-[11px] text-slate-500">
-                    {description}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-5 rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-200 p-5">
-          <h2 className="font-bold text-slate-950">Wallet activity</h2>
-        </div>
-
-        <div className="divide-y divide-slate-100">
-          {([
-            ["Payroll reserve", "₦48,600,000", "Reserved", ArrowDownLeft],
-            ["Wallet funding", "₦25,000,000", "Received", ArrowUpRight],
-            ["Payroll payout", "₦41,250,000", "Completed", ArrowUpRight],
-          ] as const).map(([title, amount, status, Icon]) => {
-            const WalletIcon = Icon as typeof ArrowUpRight;
-
-            return (
-              <div
-                key={`${title}-${amount}`}
-                className="flex items-center justify-between p-5"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100">
-                    <WalletIcon size={15} />
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold">{title}</div>
-                    <div className="mt-0.5 text-[10px] text-slate-400">
-                      Today
-                    </div>
-                  </div>
-                </div>
-
-                <div className="text-right">
-                  <div className="text-xs font-black">{amount}</div>
-                  <div className="mt-0.5 text-[10px] font-semibold text-emerald-600">
-                    {status}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {funding && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-5">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="font-black text-slate-950">Fund payroll wallet</h2>
-                <p className="mt-1 text-xs text-slate-500">
-                  Add funds for the next payroll cycle.
-                </p>
-              </div>
-
-              <button onClick={() => setFunding(false)}>
-                <X size={18} />
-              </button>
-            </div>
-
-            <div className="mt-5">
-              <label className="text-xs font-bold text-slate-700">
-                Funding amount
-              </label>
-              <div className="mt-2 flex items-center rounded-xl border border-slate-200">
-                <span className="px-3 text-sm font-bold">₦</span>
-                <input
-                  defaultValue="50000000"
-                  className="w-full rounded-xl py-3 pr-3 text-sm font-bold outline-none"
-                />
-              </div>
-            </div>
-
-            <button
-              onClick={() => setFunding(false)}
-              className="mt-5 w-full rounded-xl bg-slate-950 py-3 text-xs font-bold text-white"
-            >
-              Continue to funding
-            </button>
-          </div>
-        </div>
-      )}
     </>
   );
 }
@@ -1574,7 +1407,6 @@ const navigation: Array<{
   { id: "performance", label: "Performance", icon: Target, group: "People" },
   { id: "training", label: "Training & L&D", icon: GraduationCap, group: "People" },
   { id: "payroll", label: "Payroll", icon: Banknote, group: "Finance" },
-  { id: "wallet", label: "Payroll Wallet", icon: Wallet, group: "Finance" },
   { id: "compliance", label: "Compliance", icon: ShieldCheck, group: "Control" },
   { id: "documents", label: "Documents", icon: FileText, group: "Control" },
   { id: "reports", label: "Reports", icon: BarChart3, group: "Control" },
@@ -1608,9 +1440,7 @@ export default function AerotechWorkforceOS() {
       case "training":
         return <Training />;
       case "payroll":
-        return <Payroll setSection={setSection} />;
-      case "wallet":
-        return <PayrollWallet />;
+        return <Payroll />;
       case "compliance":
         return <Compliance />;
       case "documents":
@@ -1742,18 +1572,7 @@ export default function AerotechWorkforceOS() {
                             {item.label}
                           </span>
 
-                          {item.id === "wallet" && (
-                            <span
-                              className={`ml-auto rounded-full px-1.5 py-0.5 text-[8px] font-black ${
-                                active
-                                  ? "bg-white/10 text-white"
-                                  : "bg-emerald-50 text-emerald-700"
-                              }`}
-                            >
-                              FUNDED
-                            </span>
-                          )}
-                        </button>
+                          </button>
                       );
                     })}
                 </div>

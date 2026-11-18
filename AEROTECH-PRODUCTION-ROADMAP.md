@@ -12,8 +12,6 @@
 - Attendance capture architecture/UI
 - Training types and L&D UI
 - Payroll dashboard
-- Employer Payroll Wallet UI
-- Wallet transaction ledger UI
 - Payment provider abstraction
 - AI workforce assistant UI
 - AI workforce demo response layer
@@ -39,7 +37,6 @@
 - Recruitment records
 - Documents
 - Audit logs
-- Wallet ledger
 - AI persistence
 - Notifications
 
@@ -51,9 +48,7 @@
 - Payment verification API
 - Webhook verification
 - Idempotency
-- Wallet crediting
 - Refund/reversal handling
-- Bank payout integration
 - Payroll settlement
 - Transaction reconciliation
 

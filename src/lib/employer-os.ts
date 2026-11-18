@@ -7,7 +7,6 @@ export {
   getPayrollStatusLabel,
   paymentConfig,
   payrollCalculationExample,
-  walletTransactions,
 } from "./aerotech";
 
 export type {
@@ -15,5 +14,4 @@ export type {
   QuickAction,
   PayrollSummary,
   PaymentProvider,
-  WalletTransaction,
 } from "./aerotech";

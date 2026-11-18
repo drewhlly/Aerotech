@@ -30,7 +30,6 @@
 - `/dashboard/employer/attendance`
 - `/dashboard/employer/training`
 - `/dashboard/employer/payroll`
-- `/dashboard/employer/payroll/wallet`
 - `/dashboard/employer/payroll/pay`
 - `/dashboard/employer/ai`
 
@@ -39,8 +38,6 @@
 - Authentication backend
 - Real payment gateway
 - Payment webhooks
-- Wallet ledger
-- Payroll disbursement
 - Real employee attendance capture
 - Real AI provider
 - Production file storage

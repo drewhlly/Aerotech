@@ -57,7 +57,6 @@ try{
   await assertBlocked('Inactive or expired company: '+status+' / '+term);
  }
 
- // Exercise real guards and every interactive payout route with demo identities.
  for(const [reference,expiry] of [['private-demo-'+foreign,"NOW()+INTERVAL '1 day'"],
    ['private-demo-'+company,'NOW()'],['private-demo-'+company,'NULL']]){
   await query(`UPDATE company_subscriptions SET status='demo',reference=$2,paid_until=${expiry} WHERE employer_id=$1`,[company,reference]);
@@ -69,21 +68,6 @@ try{
  jar={aerotech_employee_session:'employee'};path='/api/employee/workspace';
  assert.equal((await currentEmployee()).id,employee,'own employer demo sponsors employee');
  assert.equal(await employeeRequestCanApprove('employee'),true,'demo review access');
- assert.equal(await employeeRequestCanApprove('employee',true),false,'demo cannot access CEO payment page');
- const payoutRoutes=[['','GET'],['connection','GET'],['connection','POST'],['recipients','GET'],
-  ['recipients','POST'],['prepare','POST'],['release','POST'],['finalize','POST'],['reconcile','POST']];
- for(const [suffix,method] of payoutRoutes){
-  const api=await import('../src/app/api/payroll/payments/'+(suffix?suffix+'/':'')+'route.ts');
-  path='/api/payroll/payments'+(suffix?'/'+suffix:'');
-  for(const role of ['employer','employee']){
-   jar={['aerotech_'+role+'_session']:role};
-   const response=await api[method](new Request('https://local.test'+path,{method,
-    headers:{origin:'https://local.test',host:'local.test','content-type':'application/json'},
-    ...(method==='POST'?{body:JSON.stringify({})}:{})}));
-   assert.equal(response.status,401,role+' demo blocked at '+method+' '+path);
-  }
- }
- console.log('PASS tenant-bound demo services and all interactive payout entry points denied without provider requests');
  await query("UPDATE company_subscriptions SET status='active',paid_until=NOW()+INTERVAL '1 day',plan='business' WHERE employer_id=$1",[company]);
  jar={aerotech_employer_session:'employer'};assert.equal(await currentEmployer(),company,'paid legacy employer');
  jar={aerotech_employee_session:'employee'};assert.equal((await currentEmployee()).id,employee,'company sponsors employee without employee payment');assert.equal((await currentEmployee(true,false)).id,employee,'paid company retains employee payment eligibility');

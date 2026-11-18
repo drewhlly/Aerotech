@@ -9,9 +9,7 @@ test('valid demo is tenant-bound and requires future expiry',()=>{
  assert.equal(isActiveDemoSubscription({status:'demo',reference:'private-demo-other',paid_until:tomorrow},employer),false);
  assert.equal(isActiveDemoSubscription({status:'demo',reference:'private-demo-'+employer,paid_until:'2020-01-01'},employer),false);
 });
-test('demo permits workforce previews and blocks payout initiation',()=>{
+test('demo permits workforce previews',()=>{
  assert.equal(demoMayAccessService('/api/employees'),true);
- assert.equal(demoMayAccessService('/api/payroll/payments/prepare'),false);
- assert.equal(demoMayAccessService('/api/payroll/payments/release'),false);
  assert.equal(demoMayAccessService('/api/payroll/transfers'),false);
 });

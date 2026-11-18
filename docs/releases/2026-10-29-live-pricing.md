@@ -51,4 +51,4 @@ Local lint, TypeScript and webpack production build passed. All 53 unit tests an
 
 Stage production with the read-only Paystack preflight before its app build. Apply migration 040 transactionally under the existing migration lock and record its checksum before promotion. Verify the published pricing, portal isolation and callback behavior. Never log credentials or provider balances. Production credentials are stored in Vercel's production environment, outside source control.
 
-The subscription webhook endpoint is `/api/billing/webhook`. Configure it in the Paystack Live dashboard for automatic activation when a purchaser does not return to the browser callback. Existing payroll payout accounts remain company-specific and separate from Aerotech subscription collection.
+The subscription webhook endpoint is `/api/billing/webhook`. Configure it in the Paystack Live dashboard for automatic activation when a purchaser does not return to the browser callback.

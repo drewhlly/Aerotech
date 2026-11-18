@@ -9,7 +9,7 @@ Aerotech selects payroll deductions using the employer's saved country, not the 
 - Annual rent relief is 20% of documented annual rent paid, capped at NGN 500,000.
 - Approved disciplinary sanctions are included; pending or rejected sanctions are not.
 - Automatic calculation creates an immutable monthly payroll snapshot in `awaiting_hr` status. No funds are disbursed automatically.
-- Four approval stages are HR, Finance, Management and CEO. Payment wallet is Coming Soon.
+- HR, Finance and CEO approve each run. Employers pay salaries from their own bank.
 
 Important: this is **not yet a fully compliant production payroll system**. Employee eligibility, withholding details, benefits in kind, other allowed deductions and current regional/state rules require validation. The employer must review figures before CEO approval. The current simple worker data model does not capture every tax allowance, exemption and jurisdiction.
 

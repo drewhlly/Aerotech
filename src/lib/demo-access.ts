@@ -13,8 +13,6 @@ export function isActiveDemoSubscription(
 /** Internal demo accounts can explore modules, but must not initiate real transfers. */
 export function demoMayAccessService(path: string): boolean {
   return !(
-    path.startsWith('/api/payroll/payments') ||
-    path.startsWith('/api/payroll/payout') ||
     path.startsWith('/api/payroll/transfers')
   );
 }

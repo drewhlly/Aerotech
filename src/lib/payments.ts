@@ -32,7 +32,7 @@ export async function createPayrollFundingIntent(
    * 4. Store transaction in database.
    * 5. Return provider checkout URL.
    * 6. Verify webhook server-side.
-   * 7. Credit wallet only after verified payment.
+   * 7. Confirm subscription access after verified payment.
    *
    * Never expose provider secret keys in this file or any client component.
    */

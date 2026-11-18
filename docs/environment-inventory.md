@@ -38,7 +38,6 @@ Generated from the repository environment reference audit on 18 November 2026. T
 | `NODE_ENV` | build/config,server/runtime | next.config.ts, src/app/api/privacy/cookies/route.ts, src/app/api/support-console/enroll/route.ts, src/app/api/support-console/login/route.ts, src/components/install-app.tsx, src/lib/applicant-session.ts, src/lib/employee-auth.ts, src/lib/employer-session.ts, src/lib/portal-selection.ts | MISSING |
 | `OPENAI_API_KEY` | server/runtime | src/app/api/admin/readiness/route.ts | yes |
 | `OUTSTANDING_LIGHTHOUSE` | server/runtime | scripts/automation-browser-suite.mjs | yes |
-| `PAYOUT_ENCRYPTION_KEY` | server/runtime | scripts/verify-signed-in.mjs, src/app/api/admin/readiness/route.ts, src/app/api/payroll/payments/connection/route.ts, src/lib/paystack-payouts.ts, tests/payout-api.integration.mjs | yes |
 | `PAYSTACK_SECRET_KEY` | server/runtime | scripts/verify-paystack-live.mjs, src/app/(public)/pricing/page.tsx, src/app/api/billing/route.ts, src/app/api/billing/webhook/route.ts, src/lib/billing.ts, tests/subscription-billing.integration.mjs | yes |
 | `PHASE2_LIGHTHOUSE` | server/runtime | scripts/automation-browser-suite.mjs, scripts/consolidated-browser-suite.mjs, scripts/invalid-input-suite.mjs, scripts/phase2-browser-suite.mjs | yes |
 | `PHASE2_TEST_ORIGIN` | server/runtime | scripts/verify-collaboration.mjs | yes |
