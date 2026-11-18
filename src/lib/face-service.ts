@@ -656,6 +656,19 @@ export async function reviewFace(request: Request) {
         "UPDATE face_templates SET is_active=TRUE WHERE employee_id=$1 AND employer_id=$2",
         [id, a.employer],
       );
+      const legacy = await c.query(
+        "DELETE FROM employee_face_references WHERE employee_id=$1 AND employer_id=$2 RETURNING employee_id",
+        [id, a.employer],
+      );
+      if (legacy.rowCount)
+        await audit(
+          c,
+          a.employer,
+          id,
+          a.id,
+          "legacy_photo_replaced",
+          "Supervised descriptor enrollment replaced the legacy reference photo",
+        );
     } else if (b.action === "request_enrollment") {
       await c.query(
         "INSERT INTO employee_notifications(id,employer_id,employee_id,title,body) VALUES($1,$2,$3,'Face enrollment requested','Your manager invites you to /employee/face-enroll. Enrollment is optional; read the consent notice or use manual attendance.')",

@@ -167,9 +167,9 @@ export default function FaceReview() {
       <section className="aero-card">
         <h2>Face enrollment status</h2>
         <p className="text-sm text-slate-600">
-          Enrollment approval confirms identity through a supervised process. A
-          request to enrol is optional and never records consent on the
-          employee’s behalf.
+          Enrollment approval confirms identity through a supervised process and
+          removes any legacy reference photo for that employee. A request to
+          enrol is optional and never records consent on the employee’s behalf.
         </p>
         {employees.map((e) => (
           <article className="face-request" key={e.id}>

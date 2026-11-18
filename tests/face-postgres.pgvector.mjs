@@ -93,7 +93,7 @@ try {
     [manager, company],
   ])
     await pool.query(
-      "INSERT INTO workforce_employees(id,employer_id,employee_number,first_name,last_name,email,job_title,department,location,employment_status) VALUES($1,$2,$1::text,'Synthetic','Employee',$3,'Tester','QA','Lagos','active')",
+      "INSERT INTO workforce_employees(id,employer_id,employee_number,first_name,last_name,email,job_title,department,location,employment_status) VALUES($1::uuid,$2,$1::uuid::text,'Synthetic','Employee',$3,'Tester','QA','Lagos','active')",
       [emp, co, emp + "@example.test"],
     );
   await pool.query(

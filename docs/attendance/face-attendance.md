@@ -6,7 +6,7 @@
 - The project uses ordered SQL migrations with a `schema_migrations` checksum ledger. The feature uses that same ledger and lock, via a separate opt-in command so old PGlite test fixtures and existing deployments do not require pgvector just to start.
 - Separate employer, employee and applicant sessions use HttpOnly cookies; employee identity and employer scope come from the server session. Employer administrators manage their tenant; employee managers may review assigned direct reports, never themselves.
 - `hr_attendance_events` is the accepted event ledger, with `(employee_id,work_date,event_type)` uniqueness and Africa/Lagos workdays. Existing GPS evidence is stored in `attendance_verifications`. Current code supports overnight checkout against an actual open shift.
-- Legacy Rekognition enrollment stored a reference photo in `employee_face_references`. New photo uploads are retired with an authenticated 410 response; existing URLs remain. No old reference photo is silently converted or bulk-deleted. Self deletion or manager reset deletes that employee's legacy reference as well as new templates. Confirm and execute a separate retention/purge decision for any remaining legacy photos and backups.
+- Legacy Rekognition enrollment stored a reference photo in `employee_face_references`. New photo uploads are retired with an authenticated 410 response; existing URLs remain. No old reference photo is silently converted or bulk-deleted. Self deletion or manager reset deletes that employee's legacy reference as well as new templates. Supervised approval of the replacement descriptor enrollment also removes that employee's old reference photo and records the replacement in the audit trail. Confirm and execute a separate retention/purge decision for any remaining legacy photos and backups.
 
 ## Routes
 
@@ -19,7 +19,7 @@
 | Employer administrator | `/dashboard/employer/attendance/face-review` | Organisation queue, enrollment status and reset |
 | Existing alias | `/dashboard/employer/hr/attendance/faces` | Redirects to the new employer review queue |
 
-Existing `/employee/attendance` retains location attendance, history and links to the optional flow. Existing GPS, authentication, subscriptions and tenant rules remain in effect. New face endpoints explicitly reject image/video/photo payloads and return no embeddings. Their responses use `private, no-store`.
+Existing `/employee/attendance` retains location attendance, history and links to the optional flow. Existing GPS, authentication, subscriptions and tenant rules remain in effect. A legacy account that previously required configured Rekognition matching is not silently downgraded to GPS-only: it must complete supervised replacement enrollment, or HR must handle manual attendance during transition. Old photo attendance clients receive a clear re-enrollment error. New face endpoints explicitly reject image/video/photo payloads and return no embeddings. Their responses use `private, no-store`.
 
 ## Data and review semantics
 
