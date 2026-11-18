@@ -12,7 +12,7 @@ export default function LoginForm({requestedRole,returnTo}:{requestedRole:string
  const portal=loginPortals[role];
  const [email,setEmail]=useState(''),[password,setPassword]=useState(''),[remember,setRemember]=useState(false);
  const [visible,setVisible]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState('');
- useEffect(()=>{try{const saved=window.localStorage.getItem(emailKey);if(saved){setEmail(saved);setRemember(true)}}catch{}},[]);
+ useEffect(()=>{let saved:string|null=null;try{saved=window.localStorage.getItem(emailKey)}catch{}if(saved)void Promise.resolve().then(()=>{setEmail(saved!);setRemember(true)})},[]);
  async function signIn(event:FormEvent<HTMLFormElement>){
   event.preventDefault();if(busy)return;setError('');
   const cleanEmail=email.trim();
