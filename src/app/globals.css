@@ -325,3 +325,10 @@ progress::-webkit-progress-bar{background:#e2e8f0;border-radius:8px}progress::-w
 @media(max-width:1023px){.portal-auth{padding:32px 20px}.portal-auth-shell{display:block;max-width:540px;min-height:0}.portal-auth-panel{display:none}.portal-auth-card{padding:24px 36px}.portal-auth-mobile-brand{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid #e2e8f0}.portal-auth-mobile-brand>span{font-size:10px;color:#475569}.portal-auth-form-content{padding-top:18px}.portal-auth-footer{flex-wrap:wrap}}
 @media(max-width:479px){.portal-auth{padding:16px 12px;align-items:flex-start}.portal-auth-shell{border-radius:16px}.portal-auth-card{padding:20px}.portal-auth-card h1{font-size:27px}.portal-auth-subtitle{font-size:13px}.portal-auth-switcher{margin:22px 0}.portal-auth-options{font-size:11px}.portal-auth-footer{gap:6px}.portal-auth-form-content{padding-bottom:20px}}
 @media(prefers-reduced-motion:reduce){.portal-auth .animate-spin{animation:none}}
+
+/* Shared dropdown: keep links out of the tab order while closed; animate within the same element. */
+.marketing-dropdown-trigger{display:inline-flex;align-items:center;gap:6px;font-weight:650;color:var(--aero-navy);border-radius:8px;padding:8px 4px}
+.marketing-dropdown-trigger:focus-visible{outline:3px solid var(--aero-accent);outline-offset:3px}
+.marketing-dropdown-panel{opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-7px);transition:opacity .18s ease,transform .18s ease,visibility .18s}
+.marketing-dropdown[data-open="true"] .marketing-dropdown-panel{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(0)}
+@media(prefers-reduced-motion:reduce){.marketing-dropdown-panel{transition:none}}
