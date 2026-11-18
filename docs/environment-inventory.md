@@ -31,10 +31,7 @@ Generated from the repository environment reference audit on 18 November 2026. T
 | `JITSI_JWT_SUB` | server/runtime | src/app/api/meet/[id]/join/route.ts | yes |
 | `LD_LIBRARY_PATH` | server/runtime | scripts/phase2-lighthouse.mjs, scripts/verify-collaboration.mjs | MISSING |
 | `NEXT_PUBLIC_CANONICAL_URL` | public/build | scripts/verify-public-routes.mjs, src/lib/seo.ts | yes |
-| `NEXT_PUBLIC_CLIENTS_SERVED` | public/build | src/components/credibility-stats.tsx | yes |
-| `NEXT_PUBLIC_PROFESSIONALS_PLACED` | public/build | src/components/credibility-stats.tsx | yes |
 | `NEXT_PUBLIC_SITE_URL` | public/build | src/lib/collaboration-worker.ts | yes |
-| `NEXT_PUBLIC_YEARS_IN_BUSINESS` | public/build | src/components/credibility-stats.tsx | yes |
 | `NODE_ENV` | build/config,server/runtime | next.config.ts, src/app/api/privacy/cookies/route.ts, src/app/api/support-console/enroll/route.ts, src/app/api/support-console/login/route.ts, src/components/install-app.tsx, src/lib/applicant-session.ts, src/lib/employee-auth.ts, src/lib/employer-session.ts, src/lib/portal-selection.ts | MISSING |
 | `OPENAI_API_KEY` | server/runtime | src/app/api/admin/readiness/route.ts | yes |
 | `OUTSTANDING_LIGHTHOUSE` | server/runtime | scripts/automation-browser-suite.mjs | yes |
