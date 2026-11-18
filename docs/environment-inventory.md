@@ -1,6 +1,6 @@
 # Aerotech environment variable inventory
 
-Generated from the repository environment reference audit on 18 November 2026. Template presence was reconciled against the latest `.env.example`. Values are not included. This enumerates direct dotted references in `src/`, `scripts/` and `tests/`, plus build config. Dynamic bracket-indexed references require separate manual review.
+Generated from the repository environment reference audit on 18 November 2026; the unused homepage statistic fields have since been removed. Template presence was reconciled against the latest `.env.example`. Values are not included. This enumerates direct dotted references in `src/`, `scripts/` and `tests/`, plus build config. Dynamic bracket-indexed references require separate manual review.
 
 **Interpretation:** `public/build` must be configured before building the client; `build/config` is read by Next.js during configuration; `server/runtime` is needed only when the corresponding server route or test runs. `MISSING` means absent from the example template—not necessarily missing from Vercel or required in every environment. Node, browser and CI-provided variables should not be manually set as secrets.
 
@@ -31,10 +31,7 @@ Generated from the repository environment reference audit on 18 November 2026. T
 | `JITSI_JWT_SUB` | server/runtime | src/app/api/meet/[id]/join/route.ts | yes |
 | `LD_LIBRARY_PATH` | server/runtime | scripts/phase2-lighthouse.mjs, scripts/verify-collaboration.mjs | MISSING |
 | `NEXT_PUBLIC_CANONICAL_URL` | public/build | scripts/verify-public-routes.mjs, src/lib/seo.ts | yes |
-| `NEXT_PUBLIC_CLIENTS_SERVED` | public/build | src/components/credibility-stats.tsx | yes |
-| `NEXT_PUBLIC_PROFESSIONALS_PLACED` | public/build | src/components/credibility-stats.tsx | yes |
 | `NEXT_PUBLIC_SITE_URL` | public/build | src/lib/collaboration-worker.ts | yes |
-| `NEXT_PUBLIC_YEARS_IN_BUSINESS` | public/build | src/components/credibility-stats.tsx | yes |
 | `NODE_ENV` | build/config,server/runtime | next.config.ts, src/app/api/privacy/cookies/route.ts, src/app/api/support-console/enroll/route.ts, src/app/api/support-console/login/route.ts, src/components/install-app.tsx, src/lib/applicant-session.ts, src/lib/employee-auth.ts, src/lib/employer-session.ts, src/lib/portal-selection.ts | MISSING |
 | `OPENAI_API_KEY` | server/runtime | src/app/api/admin/readiness/route.ts | yes |
 | `OUTSTANDING_LIGHTHOUSE` | server/runtime | scripts/automation-browser-suite.mjs | yes |
