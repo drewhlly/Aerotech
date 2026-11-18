@@ -311,3 +311,18 @@ progress::-webkit-progress-bar{background:#e2e8f0;border-radius:8px}progress::-w
   --aero-canvas: #020617;
   --aero-border: #475569;
 }
+
+/* Preserve dark-mode design tokens after the shared corporate :root declaration.
+   :root and [data-theme] have equal CSS specificity, so source order matters. */
+[data-theme="dark"]{
+ --aero-brand:#93c5fd;
+ --aero-blue:#93c5fd;
+ --aero-primary:#93c5fd;
+ --aero-navy:#071c3c;
+ --aero-ink:#f1f5f9;
+ --aero-muted:#cbd5e1;
+ --aero-surface:#111827;
+ --aero-border:#475569;
+ --aero-canvas:#020617;
+ --aero-shadow:0 14px 40px #0003;
+}
