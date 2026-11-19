@@ -72,7 +72,7 @@ export async function scheduleInterview(
       [employer, room, interviewer],
     );
   const changed = await client.query(
-    "UPDATE ats_applications SET interview_room_id=$1,interview_completed_at=NULL,interview_details=$2,interview_at=$4,interview_revision=interview_revision+1 WHERE id=$3 RETURNING interview_revision",
+    "UPDATE ats_applications SET interview_room_id=$1,stage='interview',interview_completed_at=NULL,interview_details=$2,interview_at=$4,interview_revision=interview_revision+1 WHERE id=$3 RETURNING interview_revision",
     [room, "/meet/" + room, application, startsAt],
   );
   await enqueue(
