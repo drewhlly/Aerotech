@@ -27,13 +27,13 @@ jobs:
           case "$DATABASE_URL" in */aerotech_staging\?*|*/aerotech_staging) ;; *) echo 'Expected isolated staging database'; exit 1;; esac
           test -z "$PAYSTACK_SECRET_KEY" || { case "$PAYSTACK_SECRET_KEY" in sk_test_*) ;; *) echo 'Only Paystack test credentials allowed'; exit 1;; esac; }
       - name: Install dependencies
-        run: npm install --no-audit --no-fund --package-lock=false
+        run: npm ci --no-audit --no-fund
       - name: Validate staging migration ledger
         run: npm run db:migrate
       - name: Build and bundle Worker
         run: npm run cf:build
       - name: Deploy only to workers.dev staging Worker
-        run: npx wrangler deploy -c wrangler.aerotech-staging.toml
+        run: npx wrangler deploy -c wrangler.jsonc
 
       - name: Install database URL as encrypted Worker secret
         shell: bash

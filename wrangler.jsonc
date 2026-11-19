@@ -1,0 +1,11 @@
+{
+ "$schema":"node_modules/wrangler/config-schema.json",
+ "name":"aerotech-staging",
+ "main":".open-next/worker.js",
+ "compatibility_date":"2026-11-19",
+ "compatibility_flags":["nodejs_compat","global_fetch_strictly_public"],
+ "assets":{"directory":".open-next/assets","binding":"ASSETS"},
+ "services":[{"binding":"WORKER_SELF_REFERENCE","service":"aerotech-staging"}],
+ "observability":{"enabled":true,"logs":{"enabled":true,"invocation_logs":false},"traces":{"enabled":true,"head_sampling_rate":0.01}},
+ "vars":{"MEETING_PROVIDER":"daily","MEETING_MONTHLY_BUDGET_MINUTES":"8000","MEETING_MAX_PARTICIPANTS":"8","MEETING_TOKEN_TTL_SECONDS":"300"}
+}

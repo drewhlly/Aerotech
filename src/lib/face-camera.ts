@@ -33,7 +33,9 @@ let loading: Promise<FaceApi> | null = null;
 export function loadFaceModels() {
   if (!loading)
     loading = (async () => {
-      const url = "/models/face-api.esm.js";
+      // Keep the on-device asset URL dynamic so Worker bundlers do not treat it as a server import.
+      const url = new URL("/models/face-api.esm.js", window.location.origin)
+        .href;
       const api = (await import(/* webpackIgnore: true */ url)) as FaceApi;
       await Promise.all(
         [

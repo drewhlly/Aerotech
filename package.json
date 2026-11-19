@@ -24,7 +24,9 @@
     "test:api:invalid-input": "node scripts/invalid-input-suite.mjs",
     "db:migrate:face": "node scripts/migrate-face.mjs",
     "prebuild": "node scripts/prepare-face-models.mjs",
-    "predev": "node scripts/prepare-face-models.mjs"
+    "predev": "node scripts/prepare-face-models.mjs",
+    "cf:build": "opennextjs-cloudflare build",
+    "cf:preview": "opennextjs-cloudflare preview"
   },
   "repository": {
     "type": "git",
@@ -39,11 +41,12 @@
   "homepage": "https://github.com/drewhlly/Aerotech#readme",
   "dependencies": {
     "@aws-sdk/client-rekognition": "^3.1156.0",
+    "@daily-co/daily-js": "0.95.0",
     "@pdf-lib/fontkit": "^1.1.1",
     "clsx": "^2.1.1",
     "exceljs": "^4.4.0",
     "lucide-react": "^1.31.0",
-    "next": "^16.3.1",
+    "next": "16.4.6",
     "pdf-lib": "^1.17.1",
     "pg": "^8.13.1",
     "react": "^19.2.8",
@@ -55,6 +58,7 @@
     "@axe-core/playwright": "^4.14.0",
     "@electric-sql/pglite": "^0.5.12",
     "@electric-sql/pglite-socket": "^0.2.15",
+    "@opennextjs/cloudflare": "1.20.17",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "^26.2.0",
     "@types/pg": "^8.11.11",
@@ -66,7 +70,8 @@
     "lighthouse": "^13.5.0",
     "playwright": "1.64.1",
     "tailwindcss": "^4.3.3",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "wrangler": "4.165.0"
   },
   "type": "module",
   "engines": {
