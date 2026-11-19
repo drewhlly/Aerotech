@@ -152,7 +152,14 @@ export default function PeoplePicker({
           </div>
         ))}
         {!loading && !records.length && (
-          <p className="p-3 text-sm">No matching people.</p>
+          <p
+            role="option"
+            aria-selected={false}
+            aria-disabled="true"
+            className="p-3 text-sm"
+          >
+            No matching people.
+          </p>
         )}
       </div>
       <div className="flex gap-2">
