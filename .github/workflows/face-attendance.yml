@@ -1,0 +1,54 @@
+name: Face attendance verification
+on:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'database/047_face_embeddings.sql'
+      - 'scripts/*face*'
+      - 'tests/face*'
+      - '.github/workflows/face-attendance.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  face-postgres:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: pgvector/pgvector:0.8.7-pg16-trixie
+        env:
+          POSTGRES_PASSWORD: face_test_only
+          POSTGRES_DB: aerotech_face_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres -d aerotech_face_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24'
+      - run: npm ci --no-audit --no-fund
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+        id: build
+      - run: npx tsc --noEmit
+      - run: node --experimental-test-module-mocks --import ./tests/helpers/ts-loader.mjs tests/face-postgres.pgvector.mjs
+        env:
+          FACE_TEST_DATABASE_URL: postgres://postgres:face_test_only@127.0.0.1:5432/aerotech_face_test
+      - run: npx playwright install --with-deps chromium
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+      - run: node scripts/verify-face-mobile.mjs
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+      - name: Save synthetic mobile evidence
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: face-mobile-synthetic-evidence
+          path: /tmp/aerotech-face-mobile
+          if-no-files-found: ignore
+          retention-days: 7

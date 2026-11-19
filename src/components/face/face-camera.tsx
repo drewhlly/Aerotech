@@ -1,0 +1,679 @@
+"use client";
+import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import {
+  Camera,
+  ChevronLeft,
+  Lightbulb,
+  LoaderCircle,
+  ShieldCheck,
+  X,
+} from "lucide-react";
+import {
+  FACE_CONSENT_TEXT,
+  FACE_CONSENT_VERSION,
+  validateMotion,
+  type FaceAction,
+  type Motion,
+} from "@/lib/face-policy";
+import {
+  loadFaceModels,
+  faceMotion,
+  faceQuality,
+  type FaceApi,
+  type DetectedFace,
+} from "@/lib/face-camera";
+type Purpose = "enroll" | "clock_in" | "clock_out";
+type State = {
+  enabled: boolean;
+  enrolled: boolean;
+  enrollment?: { state: string; samples: number };
+  geofence: boolean;
+  requests?: {
+    id: string;
+    event_type: string;
+    status: string;
+    event_time: string;
+    review_note?: string;
+  }[];
+};
+type Challenge = { id: string; action: FaceAction; expires_at: string };
+const prompts = [
+  "Look straight at the camera",
+  "Turn slightly left, keeping both eyes visible",
+  "Turn slightly right, keeping both eyes visible",
+  "Look straight with your chin slightly raised",
+  "Look straight in slightly different light",
+];
+const instructions = {
+  blink: "Blink once, then look straight with your eyes open.",
+  left: "Turn your head slightly left, then return to the centre.",
+  right: "Turn your head slightly right, then return to the centre.",
+  smile: "Smile, then relax your expression and look straight.",
+};
+export default function FaceCamera({ purpose }: { purpose: Purpose }) {
+  const [state, setState] = useState<State | null>(null),
+    [message, setMessage] = useState("Loading face attendance…"),
+    [consent, setConsent] = useState(false),
+    [camera, setCamera] = useState(false),
+    [busy, setBusy] = useState(false),
+    [modelReady, setModelReady] = useState(false),
+    [samples, setSamples] = useState(0),
+    [challenge, setChallenge] = useState<Challenge | null>(null),
+    [reason, setReason] = useState(""),
+    [shareLocation, setShareLocation] = useState(false),
+    [manualEvent, setManualEvent] = useState<"clock_in" | "clock_out">(
+      purpose === "clock_out" ? "clock_out" : "clock_in",
+    );
+  const closeButton = useRef<HTMLButtonElement>(null),
+    video = useRef<HTMLVideoElement>(null),
+    stream = useRef<MediaStream | null>(null),
+    api = useRef<FaceApi | null>(null),
+    generation = useRef(0),
+    timer = useRef<ReturnType<typeof setTimeout> | null>(null),
+    latest = useRef<DetectedFace | null>(null),
+    descriptors = useRef<number[][]>([]),
+    challengeRef = useRef<Challenge | null>(null),
+    motion = useRef<Motion[]>([]),
+    started = useRef(0),
+    sending = useRef(false),
+    sampleTime = useRef(0);
+  const stop = useCallback(() => {
+    generation.current++;
+    if (timer.current) clearTimeout(timer.current);
+    stream.current?.getTracks().forEach((t) => t.stop());
+    stream.current = null;
+    if (video.current) video.current.srcObject = null;
+    latest.current = null;
+    descriptors.current = [];
+    challengeRef.current = null;
+    motion.current = [];
+    setSamples(0);
+    setChallenge(null);
+    setCamera(false);
+    setModelReady(false);
+    setBusy(false);
+  }, []);
+  const load = useCallback(async () => {
+    const r = await fetch("/api/employee/face/templates", {
+      cache: "no-store",
+    });
+    const d = await r.json();
+    if (!r.ok) throw Error(d.error);
+    setState(d);
+    setMessage(
+      d.enabled
+        ? "Ready. Camera frames stay on this device."
+        : "Face attendance is not enabled yet. Use existing location attendance.",
+    );
+  }, []);
+  useEffect(() => {
+    void Promise.resolve()
+      .then(load)
+      .catch((e) => setMessage(e.message));
+    const hidden = () => {
+      if (document.hidden) stop();
+    };
+    document.addEventListener("visibilitychange", hidden);
+    window.addEventListener("pagehide", stop);
+    return () => {
+      document.removeEventListener("visibilitychange", hidden);
+      window.removeEventListener("pagehide", stop);
+      stop();
+    };
+  }, [load, stop]);
+  useEffect(() => {
+    if (camera) queueMicrotask(() => closeButton.current?.focus());
+  }, [camera]);
+  async function location() {
+    if (!shareLocation) return {};
+    if (!navigator.geolocation)
+      throw Error(
+        "Location is unavailable. Turn off location sharing to request manager review.",
+      );
+    const p = await new Promise<GeolocationPosition>((resolve, reject) =>
+      navigator.geolocation.getCurrentPosition(resolve, reject, {
+        enableHighAccuracy: true,
+        timeout: 12000,
+        maximumAge: 0,
+      }),
+    );
+    return {
+      latitude: p.coords.latitude,
+      longitude: p.coords.longitude,
+      accuracy: p.coords.accuracy,
+    };
+  }
+  async function submit() {
+    if (sending.current || !challengeRef.current || !latest.current) return;
+    sending.current = true;
+    setBusy(true);
+    setMessage("Submitting descriptors for server-side comparison…");
+    const active = challengeRef.current;
+    const payload =
+      purpose === "enroll"
+        ? {
+            consent: true,
+            consentVersion: FACE_CONSENT_VERSION,
+            embeddings: descriptors.current,
+          }
+        : {
+            eventType: purpose,
+            method: "face",
+            embedding: Array.from(latest.current.descriptor),
+          };
+    try {
+      const geo = purpose === "enroll" ? {} : await location();
+      const r = await fetch(
+        purpose === "enroll"
+          ? "/api/employee/face/templates"
+          : "/api/employee/face/attendance",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...payload,
+            ...geo,
+            challengeId: active.id,
+            motion: motion.current,
+          }),
+        },
+      );
+      const d = await r.json();
+      if (!r.ok) throw Error(d.error);
+      stop();
+      await load();
+      setMessage(d.message);
+    } catch (e) {
+      stop();
+      setMessage(
+        e instanceof Error
+          ? e.message
+          : "Could not submit. Try again or request manual attendance.",
+      );
+    } finally {
+      sending.current = false;
+      setBusy(false);
+    }
+  }
+  async function scan(gen: number) {
+    if (
+      gen !== generation.current ||
+      !api.current ||
+      !video.current ||
+      sending.current
+    )
+      return;
+    if (challengeRef.current && performance.now() - started.current > 45000) {
+      stop();
+      setMessage(
+        "Challenge timed out. Start again or request manual attendance.",
+      );
+      return;
+    }
+    try {
+      if (video.current.readyState < 2) {
+        timer.current = setTimeout(() => void scan(gen), 250);
+        return;
+      }
+      const faces = await api.current
+        .detectAllFaces(
+          video.current,
+          new api.current.TinyFaceDetectorOptions({
+            inputSize: 224,
+            scoreThreshold: 0.65,
+          }),
+        )
+        .withFaceLandmarks()
+        .withFaceDescriptors()
+        .withFaceExpressions();
+      if (gen !== generation.current) return;
+      latest.current = null;
+      if (faces.length !== 1) {
+        motion.current = [];
+        setMessage(
+          faces.length
+            ? "Only one person can be in the frame."
+            : "No face found. Face the camera in good light.",
+        );
+      } else {
+        const poor = faceQuality(faces[0], video.current);
+        if (poor) {
+          motion.current = [];
+          setMessage(poor);
+        } else {
+          latest.current = faces[0];
+          const active = challengeRef.current;
+          if (active) {
+            const at = Math.round(performance.now() - started.current);
+            if (at > 45000) {
+              stop();
+              setMessage(
+                "Challenge timed out. Start again; at most three attempts are available.",
+              );
+              return;
+            }
+            motion.current.push({ at, ...faceMotion(faces[0]) });
+            if (motion.current.length > 80) {
+              stop();
+              setMessage(
+                "Challenge incomplete. Start again or request manual attendance.",
+              );
+              return;
+            }
+            setMessage(
+              "Look straight with eyes open, follow the instruction, then return to the centre.",
+            );
+            if (validateMotion(active.action, motion.current, at)) {
+              await submit();
+              return;
+            }
+          } else setMessage(prompts[Math.min(descriptors.current.length, 4)]);
+        }
+      }
+    } catch {
+      setMessage(
+        "Face processing failed. Try a current browser or use manual attendance.",
+      );
+      stop();
+      return;
+    }
+    timer.current = setTimeout(() => void scan(gen), 250);
+  }
+  async function beginChallenge() {
+    if (purpose === "enroll" && descriptors.current.length < 3) {
+      setMessage("Capture at least three distinct samples first.");
+      return;
+    }
+    setBusy(true);
+    try {
+      const r = await fetch("/api/employee/face/challenge", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ purpose }),
+      });
+      const d = await r.json();
+      if (!r.ok) throw Error(d.error);
+      challengeRef.current = d;
+      motion.current = [];
+      started.current = performance.now();
+      setChallenge(d);
+      setMessage(instructions[d.action as FaceAction]);
+    } catch (e) {
+      stop();
+      setMessage(e instanceof Error ? e.message : "Unable to start challenge");
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function open() {
+    setBusy(true);
+    setMessage("Allow the front camera. Models load only when needed.");
+    descriptors.current = [];
+    setSamples(0);
+    sending.current = false;
+    const gen = ++generation.current;
+    try {
+      if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia)
+        throw Error(
+          "Camera needs HTTPS and a current browser. Use manual attendance if unavailable.",
+        );
+      setCamera(true);
+      const media = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: "user",
+          width: { ideal: 640 },
+          height: { ideal: 480 },
+        },
+        audio: false,
+      });
+      if (gen !== generation.current) {
+        media.getTracks().forEach((t) => t.stop());
+        return;
+      }
+      stream.current = media;
+      if (video.current) {
+        video.current.srcObject = media;
+        await video.current.play();
+      }
+      api.current = await loadFaceModels();
+      if (gen !== generation.current) return;
+      setModelReady(true);
+      setMessage("Keep one face in the guide.");
+      if (purpose !== "enroll") await beginChallenge();
+      void scan(gen);
+    } catch (e) {
+      stop();
+      setMessage(
+        e instanceof DOMException && e.name === "NotAllowedError"
+          ? "Camera permission denied. Follow the iPhone or Android instructions below, then try again."
+          : e instanceof Error
+            ? e.message
+            : "Camera unavailable",
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+  function capture() {
+    if (
+      !latest.current ||
+      challengeRef.current ||
+      samples >= 5 ||
+      performance.now() - sampleTime.current < 1000
+    )
+      return;
+    const d = Array.from(latest.current.descriptor);
+    if (
+      descriptors.current.some(
+        (p) => Math.sqrt(p.reduce((s, v, i) => s + (v - d[i]) ** 2, 0)) < 0.01,
+      )
+    ) {
+      setMessage("Change your angle slightly before the next sample.");
+      return;
+    }
+    descriptors.current.push(d);
+    sampleTime.current = performance.now();
+    setSamples(descriptors.current.length);
+    setMessage(prompts[Math.min(descriptors.current.length, 4)]);
+  }
+  async function remove() {
+    setBusy(true);
+    try {
+      const r = await fetch("/api/employee/face/templates", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: "{}",
+      });
+      const d = await r.json();
+      if (!r.ok) throw Error(d.error);
+      await load();
+      setMessage(
+        "Your face templates and any legacy reference were deleted. You can use manual attendance.",
+      );
+    } catch (e) {
+      setMessage(e instanceof Error ? e.message : "Delete failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function manual() {
+    setBusy(true);
+    try {
+      const r = await fetch("/api/employee/face/attendance", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          method: "manual",
+          eventType: manualEvent,
+          reason,
+          ...(await location()),
+        }),
+      });
+      const d = await r.json();
+      if (!r.ok) throw Error(d.error);
+      await load();
+      setReason("");
+      setMessage(d.message);
+    } catch (e) {
+      setMessage(e instanceof Error ? e.message : "Request failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <div className="face-workspace">
+      <Link href="/employee/attendance" className="face-back">
+        <ChevronLeft size={18} />
+        My attendance
+      </Link>
+      <section className="aero-hero">
+        <p className="workspace-eyebrow !text-blue-200">Employee portal</p>
+        <h1>
+          {purpose === "enroll"
+            ? "Set up face attendance"
+            : purpose === "clock_in"
+              ? "Face check-in"
+              : "Face check-out"}
+        </h1>
+        <p>
+          Private on-device capture. Server-side matching. Manager-reviewed
+          attendance.
+        </p>
+      </section>
+      <section className="aero-card">
+        <div className="face-notice">
+          <ShieldCheck size={20} />
+          <p>
+            Browser challenges cannot guarantee liveness. Every submission stays
+            pending until your manager approves it.
+          </p>
+        </div>
+        <p role="status" aria-live="polite" className="face-status">
+          {message}
+        </p>
+        {purpose === "enroll" ? (
+          <>
+            <h2>Choose whether to enrol</h2>
+            <p className="face-consent">{FACE_CONSENT_TEXT}</p>
+            <label className="face-check">
+              <input
+                type="checkbox"
+                checked={consent}
+                onChange={(e) => setConsent(e.target.checked)}
+              />
+              I have read this notice and consent to face enrollment.
+            </label>
+            {state?.enrollment && (
+              <p>
+                Enrollment: {state.enrollment.state} ·{" "}
+                {state.enrollment.samples} samples. Delete this enrollment to
+                start again.
+              </p>
+            )}
+          </>
+        ) : (
+          <>
+            <p>
+              {state?.enrolled
+                ? "Your approved enrollment is ready."
+                : "Face enrollment is not approved yet."}{" "}
+              <Link href="/employee/face-enroll">Manage enrollment</Link>
+            </p>
+            <label className="face-check">
+              <input
+                type="checkbox"
+                checked={shareLocation}
+                onChange={(e) => setShareLocation(e.target.checked)}
+              />
+              Share my location for this attendance request
+              {state?.geofence ? " (office geofence enabled)" : " (optional)"}
+            </label>
+            <p className="text-xs text-slate-600">
+              If you decline location when an office geofence is enabled, the
+              manager sees that location was not verified.
+            </p>
+          </>
+        )}
+        <button
+          type="button"
+          className="aero-button face-primary"
+          disabled={
+            busy ||
+            !state?.enabled ||
+            (purpose === "enroll"
+              ? !consent || !!state.enrollment
+              : !state.enrolled)
+          }
+          onClick={() => void open()}
+        >
+          <Camera size={19} />
+          {busy
+            ? "Please wait…"
+            : purpose === "enroll"
+              ? "Open front camera"
+              : purpose === "clock_in"
+                ? "Check In"
+                : "Check Out"}
+        </button>
+        {purpose === "enroll" && (
+          <button
+            disabled={busy}
+            className="aero-button border border-red-300 text-red-800"
+            onClick={() => void remove()}
+          >
+            Delete my face data
+          </button>
+        )}
+      </section>
+      <section className="aero-card">
+        <h2>Camera access help</h2>
+        <p>
+          <strong>iPhone / Safari:</strong> open this site in Safari, tap the
+          page settings icon → Website Settings → Camera → Allow, then reload.
+          If unavailable, check Settings → Apps → Safari → Camera.
+        </p>
+        <p>
+          <strong>Android / Chrome:</strong> tap the site controls beside the
+          address → Permissions → Camera → Allow. Check Android Settings → Apps
+          → Chrome → Permissions if blocked.
+        </p>
+        <p className="face-light">
+          <Lightbulb size={18} />
+          Face a window or lamp, remove strong backlight and clean the lens.
+          Most front cameras have no torch. Stop your camera before opening
+          another app.
+        </p>
+      </section>
+      {purpose !== "enroll" && (
+        <section className="aero-card">
+          <h2>Camera failed? Request manual attendance</h2>
+          <label>
+            Action
+            <select
+              className="aero-input"
+              value={manualEvent}
+              onChange={(e) =>
+                setManualEvent(e.target.value as "clock_in" | "clock_out")
+              }
+            >
+              <option value="clock_in">Check in</option>
+              <option value="clock_out">Check out</option>
+            </select>
+          </label>
+          <label>
+            Reason
+            <textarea
+              className="aero-input"
+              minLength={10}
+              maxLength={1000}
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="Explain why face attendance is unavailable."
+            />
+          </label>
+          <button
+            className="aero-button face-primary"
+            disabled={busy || !state?.enabled || reason.trim().length < 10}
+            onClick={() => void manual()}
+          >
+            Send to manager
+          </button>
+        </section>
+      )}
+      {!!state?.requests?.length && (
+        <section className="aero-card">
+          <h2>My review requests</h2>
+          {state.requests.map((r) => (
+            <div className="face-request" key={r.id}>
+              <strong>
+                {r.event_type.replace("_", " ")} · {r.status}
+              </strong>
+              <time>{new Date(r.event_time).toLocaleString()}</time>
+              {r.review_note && <p>{r.review_note}</p>}
+            </div>
+          ))}
+        </section>
+      )}
+      <div
+        className={"face-camera-overlay " + (!camera ? "face-hidden" : "")}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Front camera attendance"
+        onKeyDown={(e) => {
+          if (e.key === "Escape") stop();
+          if (e.key === "Tab") {
+            const buttons = Array.from(
+              e.currentTarget.querySelectorAll<HTMLButtonElement>(
+                "button:not(:disabled)",
+              ),
+            );
+            const first = buttons[0],
+              last = buttons.at(-1);
+            if (e.shiftKey && document.activeElement === first) {
+              e.preventDefault();
+              last?.focus();
+            } else if (!e.shiftKey && document.activeElement === last) {
+              e.preventDefault();
+              first?.focus();
+            }
+          }
+        }}
+      >
+        <button
+          ref={closeButton}
+          className="face-close"
+          aria-label="Close camera"
+          onClick={stop}
+        >
+          <X size={24} />
+        </button>
+        <video
+          ref={video}
+          autoPlay
+          playsInline
+          muted
+          aria-label="Live front camera preview"
+        />
+        <div className="face-guide" aria-hidden="true" />
+        <div className="face-camera-controls">
+          {!modelReady && (
+            <LoaderCircle className="animate-spin mx-auto" aria-hidden="true" />
+          )}
+          <p role="status" aria-live="polite">
+            {challenge
+              ? instructions[challenge.action]
+              : purpose === "enroll"
+                ? prompts[Math.min(samples, 4)]
+                : "Preparing camera…"}
+          </p>
+          <small>{message}</small>
+          {purpose === "enroll" && !challenge && (
+            <>
+              <p>{samples} / 5 samples · at least 3 required</p>
+              <button
+                className="face-capture"
+                disabled={busy || !modelReady || samples >= 5}
+                onClick={capture}
+              >
+                Capture sample
+              </button>
+              <button
+                className="face-capture"
+                disabled={busy || samples < 3}
+                onClick={() => void beginChallenge()}
+              >
+                Start liveness & save
+              </button>
+            </>
+          )}
+          <p className="face-light">
+            <Lightbulb size={16} />
+            Good light helps. Photos and screens are not valid identity
+            evidence.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}

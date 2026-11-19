@@ -1,3 +1,6 @@
 .next
 
 node_modules/
+
+# Generated from pinned npm face-api package during prebuild/predev.
+/public/models/
