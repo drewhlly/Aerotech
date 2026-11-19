@@ -557,7 +557,7 @@ export async function submitFaceAttendance(request: Request) {
 }
 
 type Actor = { employer: string; id: string; manager: string | null };
-async function actor(requireService = true): Promise<Actor> {
+export async function faceReviewActor(requireService = true): Promise<Actor> {
   const employer = await currentEmployer(requireService);
   if (employer) return { employer, id: "employer:" + employer, manager: null };
   const employee = await currentEmployee(requireService);
@@ -598,7 +598,7 @@ async function permitted(c: PoolClient, a: Actor, id: unknown) {
   return String(id);
 }
 export async function reviewFaceStatus() {
-  const a = await actor();
+  const a = await faceReviewActor();
   return faceTransaction(async (c) => {
     const employees = await c.query(
       "SELECT e.id,e.first_name,e.last_name,COALESCE(f.state,'not_enrolled') AS enrollment_status,f.consent_at,(SELECT count(*)::int FROM face_templates t WHERE t.employee_id=e.id AND t.employer_id=e.employer_id) AS samples FROM workforce_employees e LEFT JOIN face_enrollments f ON f.employee_id=e.id AND f.employer_id=e.employer_id WHERE e.employer_id=$1 AND ($2::uuid IS NULL OR(e.manager_employee_id=$2 AND e.id<>$2)) ORDER BY e.first_name LIMIT 500",
@@ -621,7 +621,7 @@ export async function reviewFaceStatus() {
 }
 export async function reviewFace(request: Request) {
   const b = await faceBody(request),
-    a = await actor(b.action !== "reset");
+    a = await faceReviewActor(b.action !== "reset");
   if (b.action !== "reset") enabled();
   if (
     typeof b.note !== "string" ||

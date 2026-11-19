@@ -12,7 +12,7 @@ jobs:
     timeout-minutes: 60
     services:
       postgres:
-        image: postgres:16
+        image: pgvector/pgvector:0.8.7-pg16-trixie
         env:
           POSTGRES_USER: aerotech_test
           POSTGRES_PASSWORD: disposable_ci_only
@@ -36,6 +36,7 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: npx playwright install --with-deps chromium --only-shell
       - run: npm run db:migrate
+      - run: npm run db:migrate:face
       - run: npm run build
       - name: Verify signed-in journeys and event expiry
         run: |
