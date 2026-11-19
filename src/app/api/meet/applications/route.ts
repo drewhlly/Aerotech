@@ -1,0 +1,3 @@
+import {actor,transaction,respond,errorResponse,AccessError} from '@/lib/collaboration';
+export const runtime='nodejs';
+export async function GET(){try{const a=await actor();if(a.employee)throw new AccessError('Employer access required');return await transaction(async c=>respond({applications:(await c.query("SELECT a.id,j.title,p.first_name||' '||p.last_name AS name FROM ats_applications a JOIN ats_jobs j ON j.id=a.job_id JOIN applicant_accounts p ON p.id=a.applicant_id WHERE j.employer_id=$1 AND a.stage IN ('shortlisted','interview') ORDER BY a.created_at DESC LIMIT 100",[a.tenant])).rows}))}catch(e){return errorResponse(e)}}

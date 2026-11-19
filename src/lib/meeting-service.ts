@@ -4,11 +4,14 @@ import {
   id,
   ids,
   text,
-  notify,
   audit,
   enqueue,
   type Actor,
 } from "./collaboration";
+import { retireInterview } from "./recruitment-interviews";
+import { scheduleInput, meetingConfig } from "./meeting-policy";
+import { meetingProvider, meetingProviderReady } from "./meeting-provider";
+import { db } from "./employer-session";
 import { randomUUID } from "node:crypto";
 export async function meetingAccess(
   c: PoolClient,
@@ -75,22 +78,28 @@ export async function scheduleMeeting(
   b: Record<string, unknown>,
 ) {
   if (a.employee) throw new AccessError("Employer access required");
-  const date = new Date(String(b.startsAt)),
-    duration = Number(b.durationMinutes || 60),
-    timezone = text(b.timezone || "Africa/Lagos", 80);
+  let settings;
   try {
-    new Intl.DateTimeFormat("en", { timeZone: timezone }).format(date);
-  } catch {
-    throw new AccessError("Invalid start time or timezone", 400);
+    settings = scheduleInput(b);
+  } catch (e) {
+    throw new AccessError(
+      e instanceof Error ? e.message : "Invalid schedule",
+      400,
+    );
   }
-  if (
-    !Number.isFinite(date.getTime()) ||
-    date.getTime() < Date.now() - 60000 ||
-    !Number.isInteger(duration) ||
-    duration < 15 ||
-    duration > 240
-  )
-    throw new AccessError("Invalid meeting schedule", 400);
+  const { date, duration, timezone, type } = settings;
+  await c.query("SELECT id FROM employer_accounts WHERE id=$1 FOR UPDATE", [
+    a.tenant,
+  ]);
+  const recent = await c.query(
+    "SELECT count(*)::int n FROM meet_rooms WHERE employer_id=$1 AND created_at>NOW()-INTERVAL '5 minutes'",
+    [a.tenant],
+  );
+  if (recent.rows[0].n >= 5)
+    throw new AccessError(
+      "You can create up to five meetings in five minutes.",
+      429,
+    );
   const groups = Array.isArray(b.groups) ? (b.groups as GroupRef[]) : [],
     exclude = b.excludeIds ? ids(b.excludeIds) : [],
     selected = await resolveGroups(c, a, groups, exclude),
@@ -106,11 +115,11 @@ export async function scheduleMeeting(
     throw new AccessError("Invite only your company employees", 422);
   for (const m of direct)
     if (!exclude.includes(m)) selected.set(m, !optional.has(m));
-  if (selected.size > 10000)
+  if (selected.size + 1 > meetingConfig().maxParticipants)
     throw new AccessError("Invite limit exceeded", 422);
   const emails = Array.isArray(b.guestEmails) ? b.guestEmails : [];
   if (
-    emails.length > 100 ||
+    emails.length + selected.size + 1 > meetingConfig().maxParticipants ||
     emails.some(
       (e) =>
         typeof e !== "string" ||
@@ -145,6 +154,42 @@ export async function scheduleMeeting(
       text(b.location, 300),
     ],
   );
+  await c.query("UPDATE meet_rooms SET type=$1 WHERE id=$2", [type, room]);
+  if (b.applicationId) {
+    const candidate = (
+      await c.query(
+        "SELECT a.id,a.stage,a.interview_room_id FROM ats_applications a JOIN ats_jobs j ON j.id=a.job_id WHERE a.id=$1 AND j.employer_id=$2 AND a.stage IN ('shortlisted','interview') FOR UPDATE OF a",
+        [id(b.applicationId), a.tenant],
+      )
+    ).rows[0];
+    if (!candidate)
+      throw new AccessError(
+        "Choose a shortlisted application from your organisation.",
+        404,
+      );
+    if (candidate.interview_room_id)
+      await retireInterview(
+        c,
+        a.tenant,
+        candidate.interview_room_id,
+        "cancelled",
+      );
+    const revision = await c.query(
+      "UPDATE ats_applications SET interview_room_id=$1,interview_at=$2,stage='interview',interview_completed_at=NULL,interview_revision=interview_revision+1 WHERE id=$3 RETURNING interview_revision",
+      [room, date, candidate.id],
+    );
+    await enqueue(
+      c,
+      a.tenant,
+      "interview_update",
+      "interview:" + candidate.id + ":" + revision.rows[0].interview_revision,
+      {
+        application: candidate.id,
+        revision: revision.rows[0].interview_revision,
+      },
+    );
+  }
+
   if (selected.size)
     await c.query(
       "INSERT INTO meet_participants(employer_id,room_id,employee_id,required) SELECT $1,$2,x.id,x.required FROM unnest($3::uuid[],$4::boolean[]) AS x(id,required)",
@@ -171,17 +216,6 @@ export async function scheduleMeeting(
       "INSERT INTO meeting_guests(employer_id,room_id,email) VALUES($1,$2,$3) ON CONFLICT DO NOTHING",
       [a.tenant, room, email.toLowerCase()],
     );
-  for(const guest of (await c.query("SELECT email FROM meeting_guests WHERE room_id=$1",[room])).rows)await enqueue(c,a.tenant,"guest_invite","guest:"+room+":"+guest.email,{meeting:room,email:guest.email});
-  await notify(
-    c,
-    a,
-    [...selected.keys()].map((x) => "employee:" + x),
-    "meeting",
-    "Meeting invitation",
-    text(b.title, 150, true) + " · " + date.toISOString() + " · " + timezone,
-    "/meet/" + room,
-    room,
-  );
   await audit(c, a, "meeting.created", room, {
     count: selected.size,
     groups: groups.length,
@@ -192,4 +226,32 @@ export async function scheduleMeeting(
     participants: selected.size,
     externalGuests: emails.length,
   };
+}
+
+export async function terminateConference(
+  tenant: string,
+  room: string,
+  generation: number,
+) {
+  const p = db();
+  try {
+    const m = (
+      await p.query(
+        "SELECT r.room_name AS provider_room_name FROM meeting_provider_rooms r JOIN meet_rooms m ON m.id=r.meeting_id WHERE m.employer_id=$1 AND m.id=$2 AND r.generation=$3",
+        [tenant, room, generation],
+      )
+    ).rows[0];
+    if (!m?.provider_room_name) return;
+    if (!meetingProviderReady())
+      throw Error("Meeting provider is not configured");
+    const users = (
+      await p.query(
+        "SELECT user_id FROM meeting_participants WHERE meeting_id=$1 AND user_id IS NOT NULL",
+        [room],
+      )
+    ).rows.map((r) => r.user_id);
+    await meetingProvider().endRoom(m.provider_room_name, users);
+  } finally {
+    await p.end();
+  }
 }

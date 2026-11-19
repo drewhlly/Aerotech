@@ -1,3 +1,4 @@
+import {currentApplicant} from "@/lib/applicant-session";
 import {activeCollaborationNotice,collaborationNoticeExpiry} from '@/lib/notification-policy';
 import {
   actor,
@@ -21,6 +22,8 @@ const events = [
 ];
 export async function GET(req: Request) {
   try {
+    const candidate=await currentApplicant();
+    if(candidate){const {limit,offset}=pageBounds(new URL(req.url));return await transaction(async c=>{const records=(await c.query("SELECT n.* FROM collaboration_notifications n WHERE n.actor=$1 AND n.event IN ('meeting','status') AND n.in_app AND (n.expires_at IS NULL OR n.expires_at>NOW()) ORDER BY n.created_at DESC LIMIT $2 OFFSET $3",['applicant:'+candidate,limit,offset])).rows;return respond({records,preferences:[],unread:records.filter(r=>!r.read_at).length,nextExpiry:null})})}
     const a = await actor(),
       { limit, offset } = pageBounds(new URL(req.url));
     return await transaction(async (c) =>
@@ -52,6 +55,8 @@ export async function GET(req: Request) {
 }
 export async function PATCH(req: Request) {
   try {
+    const candidate=await currentApplicant();if(candidate){const b=await req.json();return await transaction(async c=>{if(b.id)await c.query("UPDATE collaboration_notifications SET read_at=NOW() WHERE actor=$1 AND id=$2 AND event IN ('meeting','status')",['applicant:'+candidate,id(b.id)]);return respond({ok:true})})}
+
     const a = await actor(),
       b = await req.json().catch(()=>null);
  if(!b||typeof b!=='object'||Array.isArray(b))return respond({error:'Request body must be a JSON object.'},400);

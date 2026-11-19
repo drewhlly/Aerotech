@@ -1,13 +1,17 @@
-import {deliverInterviewUpdate} from './interview-delivery';
-import {deliverEmployeeActivation} from './activation-delivery';
-import {activeMeeting,activeCollaborationNotice} from './notification-policy';
+import { deliverInterviewUpdate } from "./interview-delivery";
+import { deliverEmployeeActivation } from "./activation-delivery";
+import {
+  activeMeeting,
+  activeCollaborationNotice,
+} from "./notification-policy";
 import type { PoolClient } from "pg";
 import { db } from "./employer-session";
 import { transaction, enqueue, notify, type Actor } from "./collaboration";
 import { decryptDocument } from "./document-crypto";
 import { createTask } from "./project-service";
-import { terminateConference } from "./meeting-provider";
-import {guestInvitation} from "./meeting-guest";
+import { terminateConference } from "./meeting-service";
+import { meetingInvitation } from "./meeting-invitations";
+import { calendarFile } from "./meeting-policy";
 import { randomUUID } from "node:crypto";
 type Job = {
   id: string;
@@ -15,7 +19,7 @@ type Job = {
   kind: string;
   payload: Record<string, unknown>;
   attempts: number;
-  created_at: Date|string;
+  created_at: Date | string;
 };
 async function email(to: string, subject: string, body: string, key: string) {
   if (!process.env.RESEND_API_KEY || !process.env.INVITATION_FROM_EMAIL)
@@ -73,8 +77,21 @@ export async function sweep(c: PoolClient) {
   await c.query(
     "UPDATE ats_jobs SET status='expired' WHERE status='published' AND expires_at<=NOW()",
   );
-  await c.query(`INSERT INTO collaboration_jobs(employer_id,kind,dedupe_key,payload) SELECT g.employer_id,'guest_invite','guest:'||g.room_id||':'||g.email,jsonb_build_object('meeting',g.room_id,'email',g.email) FROM meeting_guests g JOIN meet_rooms m ON m.id=g.room_id WHERE g.invited_at IS NULL AND m.status='scheduled' AND m.starts_at+duration_minutes*INTERVAL '1 minute'>NOW() ON CONFLICT DO NOTHING`);
-  for(const [label,window]of [['day',1440],['soon',30]] as const)await c.query(`INSERT INTO collaboration_jobs(employer_id,kind,dedupe_key,payload) SELECT j.employer_id,'interview_update','interview-reminder:'||a.id||':'||a.interview_revision||':'||$1,jsonb_build_object('application',a.id,'revision',a.interview_revision,'reminder',TRUE) FROM ats_applications a JOIN ats_jobs j ON j.id=a.job_id JOIN meet_rooms m ON m.id=a.interview_room_id AND m.employer_id=j.employer_id WHERE a.stage='interview' AND a.interview_completed_at IS NULL AND m.status='scheduled' AND m.revoked_at IS NULL AND a.interview_at>NOW() AND a.interview_at<=NOW()+$2::int*INTERVAL '1 minute' AND ($1<>'day' OR a.interview_at>NOW()+INTERVAL '30 minutes') AND m.created_at<NOW()-CASE WHEN $1='day' THEN INTERVAL '30 minutes' ELSE INTERVAL '5 minutes' END ON CONFLICT DO NOTHING`,[label,window]);
+  await c.query(
+    `INSERT INTO collaboration_jobs(employer_id,kind,dedupe_key,payload) SELECT p.employer_id,'meeting_delivery','meeting-invite:'||p.id||':'||m.join_generation,jsonb_build_object('meeting',m.id,'participant',p.id,'generation',m.join_generation,'event','invite') FROM meeting_participants p JOIN meet_rooms m ON m.id=p.meeting_id WHERE m.status='scheduled' AND m.revoked_at IS NULL AND m.starts_at+m.duration_minutes*INTERVAL '1 minute'>NOW() ON CONFLICT DO NOTHING`,
+  );
+  await c.query(
+    `INSERT INTO collaboration_jobs(employer_id,kind,dedupe_key,payload) SELECT p.employer_id,'meeting_delivery','meeting-soon:'||p.id||':'||m.join_generation,jsonb_build_object('meeting',m.id,'participant',p.id,'generation',m.join_generation,'event','reminder') FROM meeting_participants p JOIN meet_rooms m ON m.id=p.meeting_id WHERE m.status='scheduled' AND m.revoked_at IS NULL AND p.status<>'rejected' AND m.starts_at BETWEEN NOW() AND NOW()+INTERVAL '15 minutes' ON CONFLICT DO NOTHING`,
+  );
+
+  for (const [label, window] of [
+    ["day", 1440],
+    ["soon", 30],
+  ] as const)
+    await c.query(
+      `INSERT INTO collaboration_jobs(employer_id,kind,dedupe_key,payload) SELECT j.employer_id,'interview_update','interview-reminder:'||a.id||':'||a.interview_revision||':'||$1,jsonb_build_object('application',a.id,'revision',a.interview_revision,'reminder',TRUE) FROM ats_applications a JOIN ats_jobs j ON j.id=a.job_id JOIN meet_rooms m ON m.id=a.interview_room_id AND m.employer_id=j.employer_id WHERE a.stage='interview' AND a.interview_completed_at IS NULL AND m.status='scheduled' AND m.revoked_at IS NULL AND a.interview_at>NOW() AND a.interview_at<=NOW()+$2::int*INTERVAL '1 minute' AND ($1<>'day' OR a.interview_at>NOW()+INTERVAL '30 minutes') AND m.created_at<NOW()-CASE WHEN $1='day' THEN INTERVAL '30 minutes' ELSE INTERVAL '5 minutes' END ON CONFLICT DO NOTHING`,
+      [label, window],
+    );
   await c.query(
     `INSERT INTO collaboration_jobs(employer_id,kind,dedupe_key,payload,run_at) SELECT employer_id,'task_overdue','overdue:'||id||':'||revision,jsonb_build_object('task',id,'revision',revision),NOW() FROM project_tasks WHERE status NOT IN ('Done','Cancelled') AND due_at<NOW() ON CONFLICT DO NOTHING`,
   );
@@ -109,14 +126,123 @@ async function perform(c: PoolClient, job: Job) {
       role: "employer",
     },
     b = job.payload;
-  if(job.kind==="interview_update"){await deliverInterviewUpdate(c,job);return;}
-  if(job.kind==="employee_activation"){await deliverEmployeeActivation(c,job);return;}
-  if(job.kind==="guest_invite"){
-    const row=(await c.query("SELECT m.*,g.email FROM meeting_guests g JOIN meet_rooms m ON m.id=g.room_id AND m.employer_id=g.employer_id WHERE m.employer_id=$1 AND m.id=$2 AND g.email=$3",[a.tenant,b.meeting,b.email])).rows[0];
-    if(!row||row.status!=="scheduled"||row.revoked_at||new Date(row.starts_at).getTime()+row.duration_minutes*60000<=Date.now())return;
-    const token=guestInvitation(row.id,row.email,row.join_generation),origin=process.env.NEXT_PUBLIC_SITE_URL||"https://aerotech-psi.vercel.app";
-    await email(row.email,"Meeting invitation: "+row.title,row.title+"\n"+new Date(row.starts_at).toISOString()+" · "+row.timezone+"\n\nAccess your personal invitation: "+origin+"/guest/meet/"+row.id+"#invite="+token+"\nAccess opens 15 minutes before the meeting and expires when it ends. Do not forward this invitation.",job.id);
-    await c.query("UPDATE meeting_guests SET invited_at=NOW() WHERE room_id=$1 AND email=$2",[row.id,row.email]);return;
+  if (job.kind === "interview_update") {
+    await deliverInterviewUpdate(c, job);
+    return;
+  }
+  if (job.kind === "employee_activation") {
+    await deliverEmployeeActivation(c, job);
+    return;
+  }
+  if (job.kind === "guest_invite") return; // Retired anonymous invitation flow; canonical deliveries below.
+  if (job.kind === "meeting_delivery") {
+    const row = (
+      await c.query(
+        "SELECT m.*,p.id AS participant_id,p.user_id,p.principal_type,p.invited_email,COALESCE(e.email,x.email,h.company_email,p.invited_email) AS recipient_email FROM meeting_participants p JOIN meet_rooms m ON m.id=p.meeting_id AND m.employer_id=p.employer_id LEFT JOIN workforce_employees e ON p.principal_type='employee' AND e.id=p.user_id AND e.employer_id=p.employer_id LEFT JOIN applicant_accounts x ON p.principal_type='applicant' AND x.id=p.user_id LEFT JOIN employer_accounts h ON p.principal_type='employer' AND h.id=p.user_id WHERE p.id=$1 AND p.meeting_id=$2 AND m.employer_id=$3",
+        [b.participant, b.meeting, a.tenant],
+      )
+    ).rows[0];
+    if (
+      !row ||
+      row.join_generation !== Number(b.generation) ||
+      !row.recipient_email
+    )
+      return;
+    if (
+      b.event === "cancel"
+        ? row.status !== "cancelled"
+        : row.status !== "scheduled" ||
+          row.revoked_at ||
+          new Date(row.starts_at).getTime() + row.duration_minutes * 60000 <=
+            Date.now()
+    )
+      return;
+    const origin = process.env.APP_BASE_URL || process.env.NEXT_PUBLIC_SITE_URL;
+    if (!origin || !origin.startsWith("https://"))
+      throw Error("Meeting invitation origin is not configured");
+    const portal =
+      row.principal_type === "employee"
+        ? "/employee"
+        : row.principal_type === "employer"
+          ? "/dashboard/employer"
+          : "/applicant";
+    const href = portal + "/meet/" + row.id;
+    const link =
+      row.principal_type === "email"
+        ? origin +
+          "/guest/meet/" +
+          row.id +
+          "#invite=" +
+          (await meetingInvitation(row.participant_id, row.join_generation))
+        : origin + href;
+    const time = new Intl.DateTimeFormat("en-GB", {
+      dateStyle: "full",
+      timeStyle: "long",
+      timeZone: row.timezone,
+    }).format(new Date(row.starts_at));
+    const subject =
+      (b.event === "cancel"
+        ? "Meeting cancelled: "
+        : b.event === "reminder"
+          ? "Meeting starts soon: "
+          : "Meeting invitation: ") + row.title;
+    const body =
+      row.title +
+      "\n" +
+      time +
+      " (" +
+      row.timezone +
+      ")\n" +
+      row.duration_minutes +
+      " minutes · " +
+      row.type +
+      "\n\n" +
+      link +
+      "\nSign into your invited Aerotech account. No Daily account is needed. Recording and transcription are off.";
+    if (!process.env.RESEND_API_KEY || !process.env.INVITATION_FROM_EMAIL)
+      throw Error("Meeting email is not configured");
+    const delivery = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + process.env.RESEND_API_KEY,
+        "Content-Type": "application/json",
+        "Idempotency-Key": job.id,
+      },
+      body: JSON.stringify({
+        from: process.env.INVITATION_FROM_EMAIL,
+        to: [row.recipient_email],
+        subject,
+        text: body,
+        attachments: [
+          {
+            filename: "aerotech-meeting.ics",
+            content: Buffer.from(calendarFile(row, origin)).toString("base64"),
+          },
+        ],
+      }),
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!delivery.ok) throw Error("Meeting invitation delivery failed");
+    if (row.user_id)
+      await c.query(
+        "INSERT INTO collaboration_notifications(employer_id,actor,event,title,body,href,source_key,in_app,expires_at) VALUES($1,$2,$3,$4,$5,$6,$7,TRUE,$8) ON CONFLICT DO NOTHING",
+        [
+          a.tenant,
+          row.principal_type + ":" + row.user_id,
+          b.event === "cancel" ? "status" : "meeting",
+          subject,
+          time + " · " + row.timezone,
+          href,
+          job.id,
+          b.event === "cancel"
+            ? new Date(Date.now() + 7 * 86400000)
+            : new Date(
+                new Date(row.starts_at).getTime() +
+                  row.duration_minutes * 60000,
+              ),
+        ],
+      );
+    return;
   }
   if (job.kind === "meeting_terminate") {
     await terminateConference(
@@ -135,13 +261,16 @@ async function perform(c: PoolClient, job: Job) {
           [a.tenant, recipient, event],
         )
       ).rows[0];
-    let expiresAt: Date | null=null;
-    if(event==='meeting'){
-      const room=String(b.href||'').match(/\/meet\/([0-9a-f-]{36})$/i)?.[1];
-      if(!room)return;
-      const live=await c.query(`SELECT m.starts_at+m.duration_minutes*INTERVAL '1 minute' AS expires_at FROM meet_rooms m WHERE m.employer_id=$1 AND m.id=$2 AND (${activeMeeting})`,[a.tenant,room]);
-      if(!live.rows.length)return;
-      expiresAt=live.rows[0].expires_at;
+    let expiresAt: Date | null = null;
+    if (event === "meeting") {
+      const room = String(b.href || "").match(/\/meet\/([0-9a-f-]{36})$/i)?.[1];
+      if (!room) return;
+      const live = await c.query(
+        `SELECT m.starts_at+m.duration_minutes*INTERVAL '1 minute' AS expires_at FROM meet_rooms m WHERE m.employer_id=$1 AND m.id=$2 AND (${activeMeeting})`,
+        [a.tenant, room],
+      );
+      if (!live.rows.length) return;
+      expiresAt = live.rows[0].expires_at;
     }
     await c.query(
       "INSERT INTO collaboration_notifications(employer_id,actor,event,title,body,href,source_key,in_app,expires_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) ON CONFLICT DO NOTHING",
@@ -168,9 +297,18 @@ async function perform(c: PoolClient, job: Job) {
     return;
   }
   if (job.kind === "email") {
-    if(b.event==='meeting'){
-      const room=String(b.href||'').match(/\/meet\/([0-9a-f-]{36})$/i)?.[1];
-      if(!room||!(await c.query(`SELECT 1 FROM meet_rooms m WHERE m.employer_id=$1 AND m.id=$2 AND (${activeMeeting})`,[a.tenant,room])).rows.length)return;
+    if (b.event === "meeting") {
+      const room = String(b.href || "").match(/\/meet\/([0-9a-f-]{36})$/i)?.[1];
+      if (
+        !room ||
+        !(
+          await c.query(
+            `SELECT 1 FROM meet_rooms m WHERE m.employer_id=$1 AND m.id=$2 AND (${activeMeeting})`,
+            [a.tenant, room],
+          )
+        ).rows.length
+      )
+        return;
     }
     const pref = (
       await c.query(
@@ -375,7 +513,10 @@ async function perform(c: PoolClient, job: Job) {
       "INSERT INTO meet_participants(employer_id,room_id,employee_id,required) SELECT employer_id,$1,employee_id,required FROM meet_participants WHERE room_id=$2",
       [id, m.id],
     );
-    await c.query("INSERT INTO meeting_guests(employer_id,room_id,email,required) SELECT employer_id,$1,email,required FROM meeting_guests WHERE room_id=$2",[id,m.id]);
+    await c.query(
+      "INSERT INTO meeting_guests(employer_id,room_id,email,required) SELECT employer_id,$1,email,required FROM meeting_guests WHERE room_id=$2",
+      [id, m.id],
+    );
     return;
   }
   throw Error("Unknown job kind");
@@ -390,7 +531,12 @@ export async function runCollaborationJobs() {
     for (let i = 0; i < 200 && Date.now() - started < 50000; i++) {
       const claim = await p.query(
         `WITH candidate AS (SELECT id FROM collaboration_jobs WHERE (status='pending' AND run_at<=NOW() OR status='running' AND lease_until<NOW()) AND attempts<5 AND (kind<>'virus_scan' OR $1::boolean) ORDER BY run_at FOR UPDATE SKIP LOCKED LIMIT 1) UPDATE collaboration_jobs j SET status='running',attempts=attempts+1,lease_until=NOW()+INTERVAL '2 minutes' FROM candidate WHERE j.id=candidate.id RETURNING j.*`,
-        [Boolean(process.env.DOCUMENT_SCAN_URL?.startsWith("https://")&&process.env.DOCUMENT_SCAN_TOKEN)],
+        [
+          Boolean(
+            process.env.DOCUMENT_SCAN_URL?.startsWith("https://") &&
+            process.env.DOCUMENT_SCAN_TOKEN,
+          ),
+        ],
       );
       const job = claim.rows[0] as Job | undefined;
       if (!job) break;

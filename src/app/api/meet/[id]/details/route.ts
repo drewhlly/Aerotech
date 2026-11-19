@@ -9,9 +9,10 @@ import {
   notify,
   enqueue,
 } from "@/lib/collaboration";
-import { terminateConference } from "@/lib/meeting-provider";
+import { terminateConference } from "@/lib/meeting-service";
 import { meetingAccess } from "@/lib/meeting-service";
 import { createTask } from "@/lib/project-service";
+import { scheduleInput } from "@/lib/meeting-policy";
 import { joinWindow, pageBounds } from "@/lib/collaboration-policy";
 type C = { params: Promise<{ id: string }> };
 export async function GET(req: Request, ctx: C) {
@@ -50,8 +51,9 @@ export async function POST(req: Request, ctx: C) {
   try {
     const a = await actor(),
       { id } = await ctx.params,
-      b = await req.json().catch(()=>null);
- if(!b||typeof b!=='object'||Array.isArray(b))return respond({error:'Request body must be a JSON object.'},400);
+      b = await req.json().catch(() => null);
+    if (!b || typeof b !== "object" || Array.isArray(b))
+      return respond({ error: "Request body must be a JSON object." }, 400);
 
     let generation: number | undefined;
     const result = await transaction(async (c) => {
@@ -92,6 +94,46 @@ export async function POST(req: Request, ctx: C) {
           "/meet/" + id,
           id + ":cancel",
         );
+      } else if (b.action === "reschedule") {
+        let settings;
+        try {
+          settings = scheduleInput(b);
+        } catch (e) {
+          throw new AccessError(
+            e instanceof Error ? e.message : "Invalid schedule",
+            400,
+          );
+        }
+        generation = meeting.join_generation;
+        await enqueue(
+          c,
+          a.tenant,
+          "meeting_terminate",
+          "terminate:" + id + ":" + generation,
+          { meeting: id, generation },
+        );
+        await c.query(
+          "UPDATE meet_rooms SET starts_at=$1,duration_minutes=$2,timezone=$3,type=$4,join_generation=join_generation+1,status='scheduled',revoked_at=NULL,provider_room_name=NULL,provider_generation=NULL WHERE id=$5",
+          [
+            settings.date,
+            settings.duration,
+            settings.timezone,
+            settings.type,
+            id,
+          ],
+        );
+        const linked = await c.query(
+          "UPDATE ats_applications SET interview_at=$1,interview_revision=interview_revision+1 WHERE interview_room_id=$2 RETURNING id,interview_revision",
+          [settings.date, id],
+        );
+        for (const app of linked.rows)
+          await enqueue(
+            c,
+            a.tenant,
+            "interview_update",
+            "interview:" + app.id + ":" + app.interview_revision,
+            { application: app.id, revision: app.interview_revision },
+          );
       } else if (b.action === "notes")
         await c.query("UPDATE meet_rooms SET notes=$1 WHERE id=$2", [
           text(b.notes, 20000),
@@ -109,10 +151,15 @@ export async function POST(req: Request, ctx: C) {
         );
         return respond({ taskId: task.id, projectId: task.project_id }, 201);
       } else throw new AccessError("Unknown operation", 400);
+      if (b.action === "cancel" || b.action === "reschedule")
+        await c.query(
+          "INSERT INTO collaboration_jobs(employer_id,kind,dedupe_key,payload) SELECT p.employer_id,'meeting_delivery','meeting-'||$2::text||':'||p.id||':'||m.join_generation,jsonb_build_object('meeting',m.id,'participant',p.id,'generation',m.join_generation,'event',$2) FROM meeting_participants p JOIN meet_rooms m ON m.id=p.meeting_id WHERE m.id=$1 ON CONFLICT DO NOTHING",
+          [id, b.action === "cancel" ? "cancel" : "invite"],
+        );
       await audit(c, a, "meeting." + b.action, id);
       return respond({ ok: true });
     });
-    if (generation !== undefined && process.env.JAAS_APP_ID) {
+    if (generation !== undefined) {
       try {
         await terminateConference(a.tenant, id, generation);
       } catch {
