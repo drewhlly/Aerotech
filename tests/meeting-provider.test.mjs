@@ -36,7 +36,7 @@ test("Daily tokens are room/user bound, short-lived, and never grant recording o
     assert.equal(p.is_owner, host);
     assert.equal(p.start_video_off, true);
     assert.deepEqual(p.permissions.canSend, ["audio"]);
-    assert.equal(p.enable_recording, false);
+    assert.equal(p.enable_recording_ui, false);
     assert.equal(p.auto_start_transcription, false);
     assert.deepEqual(p.permissions.canAdmin, host ? ["participants"] : false);
   }
@@ -142,7 +142,7 @@ test("Daily adapter creates a private expiring room, never leaks its key into to
     assert.equal(created.privacy, "private");
     assert.equal(created.properties.enable_knocking, false);
     assert.equal(created.properties.eject_at_room_exp, true);
-    assert.equal(created.properties.enable_recording, false);
+    assert.equal(created.properties.enable_transcription_storage, false);
     assert.equal(created.properties.enable_shared_chat_history, false);
     await p.createToken({
       room,

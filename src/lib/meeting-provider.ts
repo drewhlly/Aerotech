@@ -41,7 +41,7 @@ export function dailyOrigin() {
 export function meetingProviderReady() {
   return Boolean(
     process.env.DAILY_API_KEY &&
-    process.env.DAILY_DOMAIN &&
+    /^[a-z0-9-]+\.daily\.co$/.test(process.env.DAILY_DOMAIN?.trim() || "") &&
     (!process.env.MEETING_PROVIDER || process.env.MEETING_PROVIDER === "daily"),
   );
 }
@@ -85,7 +85,6 @@ export function dailyTokenProperties(i: TokenInput, now = Date.now()) {
     enable_prejoin_ui: true,
     start_video_off: i.type === "audio",
     start_audio_off: true,
-    enable_recording: false,
     enable_recording_ui: false,
     start_cloud_recording: false,
     auto_start_transcription: false,
@@ -118,8 +117,6 @@ const daily: MeetingProvider = {
       enable_screenshare: i.type !== "audio",
       start_video_off: i.type === "audio",
       start_audio_off: true,
-      enable_recording: false,
-      enable_recording_ui: false,
       enable_live_captions_ui: false,
       enable_transcription_storage: false,
       permissions: { canAdmin: false },

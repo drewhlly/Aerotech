@@ -52,7 +52,12 @@ export async function meetingBody(request: Request) {
     }
     raw += decoder.decode();
   }
-  const b = JSON.parse(raw || "{}");
+  let b: unknown;
+  try {
+    b = JSON.parse(raw || "{}");
+  } catch {
+    throw new AccessError("Invalid JSON request.", 400);
+  }
   if (!b || typeof b !== "object" || Array.isArray(b))
     throw new AccessError("Invalid request", 400);
   return b as Record<string, unknown>;
