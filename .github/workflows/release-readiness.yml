@@ -1,0 +1,40 @@
+name: Release readiness (Cloudflare-first)
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: release-readiness-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  release-readiness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      - name: Node 24
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Clean locked installation
+        run: npm ci --no-audit --no-fund
+      - name: Lint
+        run: npm run lint
+      - name: Unit tests
+        run: npm test
+      - name: Integration tests
+        run: npm run test:integration
+      - name: Production Next.js build
+        run: npm run build
+      - name: Typecheck
+        run: npx tsc --noEmit
+      - name: Verify migration files are registered
+        run: node scripts/check-migration-ledger.mjs
+      - name: Report release gate result
+        if: always()
+        run: |
+          echo "### Release readiness" >> "$GITHUB_STEP_SUMMARY"
+          echo "This workflow validates code only. No production database or Worker was modified." >> "$GITHUB_STEP_SUMMARY"
