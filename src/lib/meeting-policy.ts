@@ -102,7 +102,7 @@ export function calendarFile(
       stamp(new Date(m.starts_at).getTime() + m.duration_minutes * 60000),
     "SUMMARY:" + clean(m.title),
     "URL:" + (invitationUrl || origin + "/meet/" + m.id),
-    "DESCRIPTION:Sign into your invited Aerotech portal to join. Recording and transcription are off.",
+    "DESCRIPTION:Sign into your invited Aerotech portal to join. Review the call provider and settings before joining.",
     "STATUS:" + (m.status === "cancelled" ? "CANCELLED" : "CONFIRMED"),
     "END:VEVENT",
     "END:VCALENDAR",

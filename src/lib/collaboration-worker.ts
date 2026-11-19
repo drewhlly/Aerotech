@@ -198,7 +198,7 @@ async function perform(c: PoolClient, job: Job) {
       row.type +
       "\n\n" +
       link +
-      "\nSign into your invited Aerotech account. No Daily account is needed. Recording and transcription are off.";
+      (row.mode==='external_link'?"\nSign into your invited Aerotech account. The host manages admission, recording and device settings at the external provider.":"\nSign into your invited Aerotech account. No Daily account is needed. Recording and transcription are off.");
     if (job.kind === "meeting_notice") {
       if (row.user_id)
         await c.query(

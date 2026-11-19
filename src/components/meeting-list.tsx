@@ -219,8 +219,8 @@ export default function Meetings() {
         <h1 className="text-2xl font-bold">Meetings</h1>
         <p className="mt-2 text-sm text-slate-600">
           Schedule external meeting links, or use your plan’s built-in audio and
-          video allowance. Times are shown in your device timezone. Recording
-          and transcription are off.
+          video allowance. Times are shown in your device timezone. Built-in
+          recording and transcription are off.
         </p>
       </section>
       {role === "applicant" && (
