@@ -25,14 +25,20 @@ await db.exec(
 );
 await db.exec(readFileSync("database/018_aerotech_meet.sql", "utf8"));
 await db.exec(readFileSync("database/037_collaboration.sql", "utf8"));
-await db.exec("CREATE TABLE IF NOT EXISTS workflow_alerts(employer_id UUID,alert_key TEXT,title TEXT,created_at TIMESTAMPTZ DEFAULT NOW(),read_at TIMESTAMPTZ);CREATE TABLE IF NOT EXISTS employee_notifications(employer_id UUID,employee_id UUID,title TEXT,created_at TIMESTAMPTZ DEFAULT NOW(),read_at TIMESTAMPTZ)");
-await db.exec(readFileSync("database/038_notification_lifecycle.sql","utf8"));
-await db.exec(readFileSync("database/039_guest_meetings.sql","utf8"));
+await db.exec(
+  "CREATE TABLE IF NOT EXISTS workflow_alerts(employer_id UUID,alert_key TEXT,title TEXT,created_at TIMESTAMPTZ DEFAULT NOW(),read_at TIMESTAMPTZ);CREATE TABLE IF NOT EXISTS employee_notifications(employer_id UUID,employee_id UUID,title TEXT,created_at TIMESTAMPTZ DEFAULT NOW(),read_at TIMESTAMPTZ)",
+);
+await db.exec(readFileSync("database/038_notification_lifecycle.sql", "utf8"));
+await db.exec(readFileSync("database/039_guest_meetings.sql", "utf8"));
 await db.exec(readFileSync("database/037_collaboration.sql", "utf8"));
-await db.exec("CREATE TABLE applicant_accounts(id UUID PRIMARY KEY,email TEXT,first_name TEXT,last_name TEXT);CREATE TABLE ats_applications(id UUID,job_id UUID,applicant_id UUID,stage TEXT,interview_room_id UUID)");
-await db.exec(readFileSync("database/048_daily_meetings.sql","utf8"));
-await db.exec("CREATE TABLE recruitment_interview_slots(id UUID,external_url_placeholder TEXT);CREATE TABLE company_subscriptions(employer_id UUID,plan TEXT,status TEXT,paid_until TIMESTAMPTZ)");
-await db.exec(readFileSync("database/049_hybrid_meetings.sql","utf8"));
+await db.exec(
+  "CREATE TABLE applicant_accounts(id UUID PRIMARY KEY,email TEXT,first_name TEXT,last_name TEXT);CREATE TABLE ats_applications(id UUID,job_id UUID,applicant_id UUID,stage TEXT,interview_room_id UUID)",
+);
+await db.exec(readFileSync("database/048_daily_meetings.sql", "utf8"));
+await db.exec(
+  "CREATE TABLE recruitment_interview_slots(id UUID,external_url_placeholder TEXT);CREATE TABLE IF NOT EXISTS company_subscriptions(employer_id UUID,plan TEXT,status TEXT,paid_until TIMESTAMPTZ)",
+);
+await db.exec(readFileSync("database/049_hybrid_meetings.sql", "utf8"));
 const tenant = randomUUID(),
   other = randomUUID();
 await c.query("INSERT INTO employer_accounts VALUES($1,$2),($3,$4)", [
@@ -196,11 +202,46 @@ await check(
     );
   },
 );
-const resolved=await resolveGroups(c,owner,[{kind:'department',value:'Engineering'}],[ids[999]]);
-assert.equal(resolved.size,999);
-await assert.rejects(()=>scheduleMeeting(c,owner,{title:'Too many attendees',startsAt:new Date(Date.now()+3600000).toISOString(),groups:[{kind:'department',value:'Engineering'}]}),/limit/);
-const m=await scheduleMeeting(c,owner,{title:'Engineering call',startsAt:new Date(Date.now()+3600000).toISOString(),employeeIds:ids.slice(0,7)});
-await check('large groups resolve without tenant leaks, but calls enforce the configured participant limit',async()=>{assert.equal(m.participants,7);assert.equal((await c.query('SELECT count(*)::int n FROM meet_participants WHERE room_id=$1',[m.id])).rows[0].n,7)});
+const resolved = await resolveGroups(
+  c,
+  owner,
+  [{ kind: "department", value: "Engineering" }],
+  [ids[999]],
+);
+assert.equal(resolved.size, 999);
+await assert.rejects(
+  () =>
+    scheduleMeeting(c, owner, {
+      mode: "external_link",
+      externalUrl: "https://meet.google.com/abc-defg-hij",
+      title: "Too many attendees",
+      startsAt: new Date(Date.now() + 3600000).toISOString(),
+      groups: [{ kind: "department", value: "Engineering" }],
+    }),
+  /limit/,
+);
+const m = await scheduleMeeting(c, owner, {
+  mode: "external_link",
+  externalUrl: "https://meet.google.com/abc-defg-hij",
+  title: "Engineering call",
+  startsAt: new Date(Date.now() + 3600000).toISOString(),
+  employeeIds: ids.slice(0, 7),
+});
+await check(
+  "large groups resolve without tenant leaks, but calls enforce the configured participant limit",
+  async () => {
+    assert.equal(m.participants, 7);
+    assert.equal(
+      (
+        await c.query(
+          "SELECT count(*)::int n FROM meet_participants WHERE room_id=$1",
+          [m.id],
+        )
+      ).rows[0].n,
+      7,
+    );
+  },
+);
 await check(
   "cross-company group references never resolve foreign employees",
   async () =>

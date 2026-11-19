@@ -18,7 +18,8 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: node --experimental-test-module-mocks --import ./tests/helpers/ts-loader.mjs tests/meeting-access.integration.mjs
-      - run: npm run build
+      - run: node --experimental-test-module-mocks --import ./tests/helpers/ts-loader.mjs tests/meeting-hybrid.integration.mjs
+      - run: node scripts/verify-meeting-client-secrets.mjs
       - run: npx tsc --noEmit
       - run: npx playwright install --with-deps chromium
       - run: node scripts/verify-meetings-ui.mjs

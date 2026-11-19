@@ -3,7 +3,7 @@ import { PGlite } from "@electric-sql/pglite";
 import { readFileSync } from "node:fs";
 import { randomUUID, createHash } from "node:crypto";
 import assert from "node:assert/strict";
-import {installDailyFixture} from "./helpers/daily-fixture.mjs";
+import { installDailyFixture } from "./helpers/daily-fixture.mjs";
 const database = new PGlite();
 const query = async (sql, params = []) => {
   const r = await database.query(sql, params);
@@ -33,15 +33,25 @@ await database.exec(
 );
 await database.exec(readFileSync("database/018_aerotech_meet.sql", "utf8"));
 await database.exec(readFileSync("database/037_collaboration.sql", "utf8"));
-await database.exec("CREATE TABLE IF NOT EXISTS workflow_alerts(employer_id UUID,alert_key TEXT,title TEXT,created_at TIMESTAMPTZ DEFAULT NOW(),read_at TIMESTAMPTZ);CREATE TABLE IF NOT EXISTS employee_notifications(employer_id UUID,employee_id UUID,title TEXT,created_at TIMESTAMPTZ DEFAULT NOW(),read_at TIMESTAMPTZ)");
-await database.exec(readFileSync("database/038_notification_lifecycle.sql","utf8"));
-await database.exec(readFileSync("database/039_guest_meetings.sql","utf8"));
-await database.exec("CREATE TABLE ats_applications(id UUID,job_id UUID,stage TEXT,interview_completed_at TIMESTAMPTZ,interview_room_id UUID,interview_at TIMESTAMPTZ,interview_revision INT DEFAULT 0)");
-await database.exec("ALTER TABLE ats_applications ADD COLUMN applicant_id UUID; CREATE TABLE applicant_accounts(id UUID PRIMARY KEY,email TEXT,first_name TEXT,last_name TEXT); CREATE TABLE applicant_sessions(token_hash TEXT,applicant_id UUID,expires_at TIMESTAMPTZ)");
-await database.exec(readFileSync("database/048_daily_meetings.sql","utf8"));
-await database.exec("CREATE TABLE recruitment_interview_slots(id UUID,external_url_placeholder TEXT);CREATE TABLE company_subscriptions(employer_id UUID,plan TEXT,status TEXT,paid_until TIMESTAMPTZ)");
-await database.exec(readFileSync("database/049_hybrid_meetings.sql","utf8"));
-const dailyFixture=installDailyFixture();
+await database.exec(
+  "CREATE TABLE IF NOT EXISTS workflow_alerts(employer_id UUID,alert_key TEXT,title TEXT,created_at TIMESTAMPTZ DEFAULT NOW(),read_at TIMESTAMPTZ);CREATE TABLE IF NOT EXISTS employee_notifications(employer_id UUID,employee_id UUID,title TEXT,created_at TIMESTAMPTZ DEFAULT NOW(),read_at TIMESTAMPTZ)",
+);
+await database.exec(
+  readFileSync("database/038_notification_lifecycle.sql", "utf8"),
+);
+await database.exec(readFileSync("database/039_guest_meetings.sql", "utf8"));
+await database.exec(
+  "CREATE TABLE ats_applications(id UUID,job_id UUID,stage TEXT,interview_completed_at TIMESTAMPTZ,interview_room_id UUID,interview_at TIMESTAMPTZ,interview_revision INT DEFAULT 0)",
+);
+await database.exec(
+  "ALTER TABLE ats_applications ADD COLUMN applicant_id UUID; CREATE TABLE applicant_accounts(id UUID PRIMARY KEY,email TEXT,first_name TEXT,last_name TEXT); CREATE TABLE applicant_sessions(token_hash TEXT,applicant_id UUID,expires_at TIMESTAMPTZ)",
+);
+await database.exec(readFileSync("database/048_daily_meetings.sql", "utf8"));
+await database.exec(
+  "CREATE TABLE recruitment_interview_slots(id UUID,external_url_placeholder TEXT);CREATE TABLE IF NOT EXISTS company_subscriptions(employer_id UUID,plan TEXT,status TEXT,paid_until TIMESTAMPTZ)",
+);
+await database.exec(readFileSync("database/049_hybrid_meetings.sql", "utf8"));
+const dailyFixture = installDailyFixture();
 const owner = randomUUID(),
   other = randomUUID(),
   employee = randomUUID(),
@@ -50,7 +60,10 @@ await query(
   "INSERT INTO employer_accounts(id,email) VALUES($1,'owner@example.test'),($2,'other@example.test')",
   [owner, other],
 );
-await query("INSERT INTO company_subscriptions VALUES($1,'business','active',NOW()+INTERVAL '1 day'),($2,'business','active',NOW()+INTERVAL '1 day')",[owner,other]);
+await query(
+  "INSERT INTO company_subscriptions VALUES($1,'business','active',NOW()+INTERVAL '1 day'),($2,'business','active',NOW()+INTERVAL '1 day')",
+  [owner, other],
+);
 for (const e of [employee, nonmember])
   await query(
     "INSERT INTO workforce_employees VALUES($1,$2,'EMP','Test','User',$3,'Engineer','Engineering','Lagos','active',NULL)",
@@ -79,7 +92,12 @@ const ctx = (...segments) => ({ params: Promise.resolve({ segments }) }),
     new Request("https://aerotech.test" + url, {
       method,
       headers:
-        body instanceof FormData ? {} : { "Content-Type": "application/json", Origin:"https://aerotech.test" },
+        body instanceof FormData
+          ? {}
+          : {
+              "Content-Type": "application/json",
+              Origin: "https://aerotech.test",
+            },
       body:
         body instanceof FormData
           ? body
@@ -347,6 +365,7 @@ jar = { aerotech_employer_session: "owner" };
 const meeting = await (
   await meet.POST(
     req("/api/meet", "POST", {
+      mode: "built_in",
       title: "Future meeting",
       startsAt: new Date(Date.now() + 3600000).toISOString(),
       groups: [{ kind: "department", value: "Engineering" }],
@@ -459,7 +478,27 @@ await check("API creates a subtask within its parent project", async () => {
   assert.equal((await r.json()).parent_id, task.id);
 });
 const details = await import("../src/app/api/meet/[id]/details/route.ts");
-await check('API no longer stores meeting notes or call-derived action content',async()=>{jar={aerotech_employer_session:'owner'};for(const action of ['notes','task'])assert.equal((await details.POST(req('/api/meet/'+meeting.id+'/details','POST',{action,notes:'No call content',title:'No call content',projectId:project.id}),{params:Promise.resolve({id:meeting.id})})).status,410)});
+await check(
+  "API no longer stores meeting notes or call-derived action content",
+  async () => {
+    jar = { aerotech_employer_session: "owner" };
+    for (const action of ["notes", "task"])
+      assert.equal(
+        (
+          await details.POST(
+            req("/api/meet/" + meeting.id + "/details", "POST", {
+              action,
+              notes: "No call content",
+              title: "No call content",
+              projectId: project.id,
+            }),
+            { params: Promise.resolve({ id: meeting.id }) },
+          )
+        ).status,
+        410,
+      );
+  },
+);
 await check(
   "Daily tokens are short lived and cancellation denies further access",
   async () => {
@@ -468,9 +507,14 @@ await check(
       [meeting.id],
     );
 
-    const opened = await join.POST(req("/api/meet/" + meeting.id + "/join", "POST", {name:"Fixture host"}), {
-      params: Promise.resolve({ id: meeting.id }),
-    });
+    const opened = await join.POST(
+      req("/api/meet/" + meeting.id + "/join", "POST", {
+        name: "Fixture host",
+      }),
+      {
+        params: Promise.resolve({ id: meeting.id }),
+      },
+    );
     assert.equal(opened.status, 200);
     const token = (await opened.json()).token,
       claims = JSON.parse(
@@ -564,19 +608,86 @@ await check(
     assert.ok(sent >= 0);
   },
 );
-await check("read and expired notices leave active inbox but remain in history",async()=>{
- jar={aerotech_employee_session:"employee"};const active=randomUUID(),expired=randomUUID(),read=randomUUID();
- await query("INSERT INTO collaboration_notifications(id,employer_id,actor,event,title,body,href,source_key,read_at,expires_at) VALUES($1,$4,$5,'comment','Active','','/employee/tasks','completion-active',NULL,NULL),($2,$4,$5,'comment','Expired','','/employee/tasks','completion-expired',NULL,NOW()-INTERVAL '1 second'),($3,$4,$5,'comment','Read','','/employee/tasks','completion-read',NOW(),NULL)",[active,expired,read,owner,"employee:"+employee]);
- let d=await(await notices.GET(req("/api/collaboration/notifications"))).json();assert.ok(d.records.some(x=>x.id===active));assert.ok(!d.records.some(x=>[expired,read].includes(x.id)));
- assert.equal((await notices.PATCH(req("/api/collaboration/notifications","PATCH",{id:active}))).status,200);
- d=await(await notices.GET(req("/api/collaboration/notifications?history=1&limit=100"))).json();for(const id of [active,expired,read])assert.ok(d.records.some(x=>x.id===id));
- jar={aerotech_employee_session:"nonmember"};d=await(await notices.GET(req("/api/collaboration/notifications?history=1"))).json();assert.ok(!d.records.some(x=>[active,expired,read].includes(x.id)));
+await check(
+  "read and expired notices leave active inbox but remain in history",
+  async () => {
+    jar = { aerotech_employee_session: "employee" };
+    const active = randomUUID(),
+      expired = randomUUID(),
+      read = randomUUID();
+    await query(
+      "INSERT INTO collaboration_notifications(id,employer_id,actor,event,title,body,href,source_key,read_at,expires_at) VALUES($1,$4,$5,'comment','Active','','/employee/tasks','completion-active',NULL,NULL),($2,$4,$5,'comment','Expired','','/employee/tasks','completion-expired',NULL,NOW()-INTERVAL '1 second'),($3,$4,$5,'comment','Read','','/employee/tasks','completion-read',NOW(),NULL)",
+      [active, expired, read, owner, "employee:" + employee],
+    );
+    let d = await (
+      await notices.GET(req("/api/collaboration/notifications"))
+    ).json();
+    assert.ok(d.records.some((x) => x.id === active));
+    assert.ok(!d.records.some((x) => [expired, read].includes(x.id)));
+    assert.equal(
+      (
+        await notices.PATCH(
+          req("/api/collaboration/notifications", "PATCH", { id: active }),
+        )
+      ).status,
+      200,
+    );
+    d = await (
+      await notices.GET(
+        req("/api/collaboration/notifications?history=1&limit=100"),
+      )
+    ).json();
+    for (const id of [active, expired, read])
+      assert.ok(d.records.some((x) => x.id === id));
+    jar = { aerotech_employee_session: "nonmember" };
+    d = await (
+      await notices.GET(req("/api/collaboration/notifications?history=1"))
+    ).json();
+    assert.ok(!d.records.some((x) => [active, expired, read].includes(x.id)));
+  },
+);
+await check("metadata updates reject foreign employee references", async () => {
+  jar = { aerotech_employer_session: "owner" };
+  let r = await docs.POST(
+    req("/api/document-library/" + uploaded.id, "POST", {
+      action: "metadata",
+      title: "Updated document",
+      category: "Contracts",
+      employeeId: employee,
+      tags: "contract, reviewed",
+    }),
+    ctx(uploaded.id),
+  );
+  assert.equal(r.status, 200);
+  r = await docs.POST(
+    req("/api/document-library/" + uploaded.id, "POST", {
+      action: "metadata",
+      title: "Wrong",
+      category: "Contracts",
+      employeeId: randomUUID(),
+    }),
+    ctx(uploaded.id),
+  );
+  assert.equal(r.status, 404);
 });
-await check("metadata updates reject foreign employee references",async()=>{
- jar={aerotech_employer_session:"owner"};let r=await docs.POST(req("/api/document-library/"+uploaded.id,"POST",{action:"metadata",title:"Updated document",category:"Contracts",employeeId:employee,tags:"contract, reviewed"}),ctx(uploaded.id));assert.equal(r.status,200);
- r=await docs.POST(req("/api/document-library/"+uploaded.id,"POST",{action:"metadata",title:"Wrong",category:"Contracts",employeeId:randomUUID()}),ctx(uploaded.id));assert.equal(r.status,404);
-});
-await check("anonymous bearer tokens never replace authenticated invitations",async()=>{jar={};const room=randomUUID();await query("INSERT INTO meet_rooms(id,employer_id,title,starts_at,duration_minutes) VALUES($1,$2,'Guest',NOW()+INTERVAL '1 hour',30)",[room,owner]);const r=await join.GET(new Request('https://aerotech.test/api/meet/'+room+'/join',{headers:{Authorization:'Bearer not-a-session'}}),{params:Promise.resolve({id:room})});assert.equal(r.status,401);});
+await check(
+  "anonymous bearer tokens never replace authenticated invitations",
+  async () => {
+    jar = {};
+    const room = randomUUID();
+    await query(
+      "INSERT INTO meet_rooms(id,employer_id,title,starts_at,duration_minutes) VALUES($1,$2,'Guest',NOW()+INTERVAL '1 hour',30)",
+      [room, owner],
+    );
+    const r = await join.GET(
+      new Request("https://aerotech.test/api/meet/" + room + "/join", {
+        headers: { Authorization: "Bearer not-a-session" },
+      }),
+      { params: Promise.resolve({ id: room }) },
+    );
+    assert.equal(r.status, 401);
+  },
+);
 
 console.log(
   count +

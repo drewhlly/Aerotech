@@ -63,7 +63,7 @@ try {
   assert.ok(ready);
   browser = await chromium.launch({ headless: true });
   const results = [];
-  let kind = "video";
+  let kind = "video", meetingMode="built_in";
   for (const [role, root, cookie] of [
     ["employer", "/dashboard/employer", "phase2-test-employer"],
     ["employee", "/employee", "phase2-test-employee"],
@@ -81,17 +81,19 @@ try {
     const page = await ctx.newPage();
     await page.route("**/api/meet**", async (r) => {
       const u = new URL(r.request().url());
+      if(u.pathname.endsWith("/usage"))return r.fulfill({json:{enabled:true,quota:500,used:0,reserved:0,warning:false,configurationMessage:null}});
       if (u.pathname.endsWith("/join"))
         return r.fulfill({
-          status: r.request().method() === "POST" ? 202 : 200,
+          status: r.request().method() === "POST" && meetingMode!=="external_link" ? 202 : 200,
           json:
             r.request().method() === "POST"
-              ? { waiting: true, message: "Waiting for the host to admit you." }
+              ? (meetingMode==="external_link"?{mode:"external_link",externalUrl:"https://meet.google.com/qa-only-qa"}:{ waiting: true, message: "Waiting for the host to admit you." })
               : {
                   state: "open",
                   id: "11111111-1111-4111-8111-111111111111",
                   title: "Synthetic team call",
                   type: kind,
+                  mode:meetingMode,
                   name: "Test Participant",
                   host: role === "employer",
                   status: "invited",
@@ -285,6 +287,7 @@ try {
       audioOnlyNoCamera: true,
       waitingLobby: role !== "employer",
     });
+    meetingMode='external_link';await page.reload();await page.getByRole('button',{name:'Confirm invitation',exact:true}).click();await page.getByRole('link',{name:'Open meeting link',exact:true}).waitFor();assert.equal(await page.locator('video').count(),0);meetingMode='built_in';
     kind = "video";
     await ctx.close();
   }

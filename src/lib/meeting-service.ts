@@ -124,11 +124,11 @@ export async function scheduleMeeting(
     throw new AccessError("Invite only your company employees", 422);
   for (const m of direct)
     if (!exclude.includes(m)) selected.set(m, !optional.has(m));
-  if (selected.size + 1 > participantLimit)
+  if (selected.size + 1 + (b.applicationId ? 1 : 0) > participantLimit)
     throw new AccessError("Invite limit exceeded", 422);
   const emails = Array.isArray(b.guestEmails) ? b.guestEmails : [];
   if (
-    emails.length + selected.size + 1 > participantLimit ||
+    emails.length + selected.size + 1 + (b.applicationId ? 1 : 0) > participantLimit ||
     emails.some(
       (e) =>
         typeof e !== "string" ||

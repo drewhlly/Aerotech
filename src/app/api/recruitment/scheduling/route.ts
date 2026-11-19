@@ -1,3 +1,4 @@
+import { AccessError } from "@/lib/collaboration";
 import { externalMeetingUrl } from "@/lib/meeting-hybrid-policy";
 import { requireBuiltIn } from "@/lib/meeting-entitlements";
 import { calendarDate } from "@/lib/leave-dates";
@@ -149,9 +150,12 @@ export async function POST(request: Request) {
           409,
         );
       }
-      const externalUrl = b.externalUrl
-        ? externalMeetingUrl(b.externalUrl)
-        : null;
+      let externalUrl: string | null = null;
+      try {
+        externalUrl = b.externalUrl ? externalMeetingUrl(b.externalUrl) : null;
+      } catch {
+        throw new AccessError("Use an allowed HTTPS meeting link.", 400);
+      }
       if (!externalUrl) await requireBuiltIn(c, employer);
       const id = randomUUID();
       await c.query(
@@ -236,11 +240,11 @@ export async function POST(request: Request) {
     return reply(
       {
         error:
-          e instanceof SchedulingError
+          e instanceof SchedulingError || e instanceof AccessError
             ? e.message
             : "Unable to save scheduling changes.",
       },
-      e instanceof SchedulingError ? e.status : 503,
+      e instanceof SchedulingError || e instanceof AccessError ? e.status : 503,
     );
   } finally {
     await c.query("ROLLBACK").catch(() => {});
