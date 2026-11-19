@@ -3,7 +3,6 @@ import Link from 'next/link';
 import {ArrowRight} from 'lucide-react';
 import LandingShowcase from '@/components/landing-showcase';
 import CareerSearch from '@/components/career-search';
-import CredibilityStats from '@/components/credibility-stats';
 import CookieNotice from '@/components/cookie-notice';
 import {Button,Card,Carousel,Container,SectionHeader} from '@/components/marketing-ui';
 import {insights} from '@/lib/insights';
@@ -27,7 +26,6 @@ export default function Home(){return <main className="bg-white text-slate-900">
    <div className={'marketing-feature-media '+(i%2?'order-2 lg:order-1':'order-2')}><Image src={f.image} alt={f.alt} width={640} height={440} className="h-full w-full object-cover" sizes="(max-width: 1023px) 100vw, 50vw"/></div>
   </div>)}
  </Container></section>
- <section className="bg-slate-50 py-20"><Container><SectionHeader eyebrow="Built on confidence" title="Progress you can verify." description="We publish company and workforce figures when they are confirmed. We do not substitute assumptions for verified results."/><CredibilityStats/></Container></section>
  <section className="py-20"><Container><div className="flex flex-wrap items-end justify-between gap-5"><SectionHeader eyebrow="Aerotech insights" title="Perspective for what comes next." description="Original, practical ideas for recruitment, people operations and better employee experiences."/><Link href="/insights" className="inline-flex min-h-11 items-center gap-2 font-semibold text-blue-800">View all insights <ArrowRight size={17} aria-hidden/></Link></div>
  <div className="marketing-insights mt-10">{insights.map((article,i)=><Card key={article.slug}><Link href={'/insights/'+article.slug} className="block overflow-hidden rounded-xl border border-slate-100"><Image src={artwork[i]} alt={'Aerotech illustration for '+article.category} width={640} height={440} className="aspect-[3/2] w-full object-cover" sizes="(max-width: 767px) 100vw, (max-width: 1023px) 50vw, 25vw"/></Link><p className="marketing-eyebrow mt-6">{article.category}</p><h3 className="mt-3 text-xl font-bold leading-snug text-slate-900">{article.title}</h3><p className="mt-3 text-sm leading-7 text-slate-600">{article.excerpt}</p><Link href={'/insights/'+article.slug} className="mt-4 inline-flex min-h-11 items-center gap-2 font-semibold text-blue-800">Read more <ArrowRight size={16} aria-hidden/></Link></Card>)}</div>
  </Container></section>
