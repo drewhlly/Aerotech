@@ -1,5 +1,5 @@
 "use client";
-import {useFeedback} from "@/components/use-feedback";
+import { useFeedback } from "@/components/use-feedback";
 import {
   useCallback,
   useContext,
@@ -15,8 +15,8 @@ import CollaborationDialog from "./collaboration-dialog";
 import { api } from "./collaboration-client";
 import ResourcePicker from "./resource-picker";
 import { formatDate } from "@/lib/i18n";
-import {useEventRefresh,useExpiryClock} from './use-event-refresh';
-import {eventVisible,meetingEnd} from '@/lib/event-display';
+import { useEventRefresh, useExpiryClock } from "./use-event-refresh";
+import { eventVisible, meetingEnd } from "@/lib/event-display";
 type Meeting = {
   id: string;
   title: string;
@@ -24,6 +24,7 @@ type Meeting = {
   starts_at: string;
   duration_minutes: number;
   timezone: string;
+  type: "video" | "audio";
   joinState: "open" | "upcoming" | "expired";
   status: string;
   notes: string;
@@ -42,7 +43,11 @@ export default function Meetings() {
     base = workspaceHomes[role] + "/meet",
     employer = role === "employer";
   const [meetings, setMeetings] = useState<Meeting[]>([]),
-    [history,setHistory]=useState(false),
+    [category, setCategory] = useState("upcoming"),
+    [timezone, setTimezone] = useState("UTC"),
+    [applications, setApplications] = useState<
+      { id: string; title: string; name: string }[]
+    >([]),
     [people, setPeople] = useState<Person[]>([]),
     [groups, setGroups] = useState<Group[]>([]),
     [chosen, setChosen] = useState<Group[]>([]),
@@ -60,16 +65,46 @@ export default function Meetings() {
     [message, setMessage] = useFeedback(),
     [busy, setBusy] = useState(false),
     [startsAt, setStartsAt] = useState("");
+  const history = category !== "upcoming";
+  useEffect(() => {
+    queueMicrotask(() =>
+      setTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone),
+    );
+    if (employer)
+      void api<{ applications: typeof applications }>("/api/meet/applications")
+        .then((d) => setApplications(d.applications))
+        .catch(() => {});
+  }, [employer]);
   const reload = useCallback(async () => {
     const d = await api<{ meetings: Meeting[] }>(
-      "/api/meet?offset=" + offset + "&limit=20&history="+(history?"1":"0"),
+      "/api/meet?offset=" +
+        offset +
+        "&limit=20&history=" +
+        (history ? "1" : "0"),
     );
     setMeetings(d.meetings);
-  }, [offset,history]);
-  const refresh=useCallback(async()=>{try{await reload()}catch(e){setMessage((e as Error).message)}},[reload,setMessage]);
+  }, [offset, history]);
+  const refresh = useCallback(async () => {
+    try {
+      await reload();
+    } catch (e) {
+      setMessage((e as Error).message);
+    }
+  }, [reload, setMessage]);
   useEventRefresh(refresh);
-  const now=useExpiryClock(meetings.map(meetingEnd));
-  const visibleMeetings=history?meetings:meetings.filter(m=>m.status==='scheduled'&&m.joinState!=='expired'&&eventVisible(meetingEnd(m),now));
+  const now = useExpiryClock(meetings.map(meetingEnd));
+  const visibleMeetings = history
+    ? meetings.filter((m) =>
+        category === "cancelled"
+          ? m.status === "cancelled"
+          : m.status !== "cancelled",
+      )
+    : meetings.filter(
+        (m) =>
+          m.status === "scheduled" &&
+          m.joinState !== "expired" &&
+          eventVisible(meetingEnd(m), now),
+      );
   useEffect(() => {
     if (!employer) return;
     const c = new AbortController(),
@@ -129,24 +164,16 @@ export default function Meetings() {
     setBusy(true);
     try {
       const f = Object.fromEntries(new FormData(e.currentTarget));
-      const local = String(f.startsAt),
-        timezone = String(f.timezone);
-      const naive = Date.parse(local + "Z");
-      const parts = new Intl.DateTimeFormat("en-GB", {
-        timeZone: timezone,
-        timeZoneName: "longOffset",
-      }).formatToParts(new Date(naive));
-      const offsetString =
-        parts.find((p) => p.type === "timeZoneName")?.value || "GMT";
-      const match = offsetString.match(/GMT([+-])(\d{2}):(\d{2})/);
-      const delta = match
-        ? (Number(match[2]) * 60 + Number(match[3])) *
-          (match[1] === "+" ? 1 : -1)
-        : 0;
-      const date = new Date(naive - delta * 60000).toISOString();
+      const instant =
+        (e.nativeEvent as SubmitEvent).submitter?.getAttribute("value") ===
+        "instant";
+      const date = instant
+        ? new Date().toISOString()
+        : new Date(String(f.startsAt)).toISOString();
       await api("/api/meet", "POST", {
         ...f,
         startsAt: date,
+        instant,
         employeeIds: people.map((p) => p.id),
         optionalIds: optional,
         groups: chosen,
@@ -173,10 +200,11 @@ export default function Meetings() {
       <section className="aero-card">
         <h1 className="text-2xl font-bold">Meetings</h1>
         <p className="mt-2 text-sm text-slate-600">
-          Private meeting schedules, invitations and action items. Times default
-          to Africa/Lagos (WAT).
+          Private video and audio calls, with host admission. Times are shown in
+          your device timezone. Recording and transcription are off.
         </p>
       </section>
+      {role==='applicant'&&<Link className="aero-button border" href="/applicant/notifications">Meeting notifications</Link>}
       {message && (
         <p role="status" className="aero-card">
           {message}
@@ -195,12 +223,30 @@ export default function Meetings() {
             />
           </label>
           <label className="block">
+            Call type
+            <select name="type" className="aero-input">
+              <option value="video">Video meeting</option>
+              <option value="audio">Audio-only meeting</option>
+            </select>
+          </label>
+          <label className="block">
+            Link an applicant interview (optional)
+            <select name="applicationId" className="aero-input">
+              <option value="">Team meeting / HR check-in</option>
+              {applications.map((a) => (
+                <option value={a.id} key={a.id}>
+                  {a.name} · {a.title}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="block">
             Agenda
             <textarea name="agenda" maxLength={10000} className="aero-input" />
           </label>
           <div className="grid gap-3 sm:grid-cols-2">
             <label>
-              Start date and time
+              Start date and time (your timezone)
               <input
                 type="datetime-local"
                 required
@@ -212,22 +258,12 @@ export default function Meetings() {
             </label>
             <label>
               Timezone
-              <select
-                name="timezone"
-                defaultValue="Africa/Lagos"
+              <input
                 className="aero-input"
-              >
-                {[
-                  "Africa/Lagos",
-                  "Africa/Accra",
-                  "Africa/Nairobi",
-                  "Europe/London",
-                  "America/New_York",
-                  "UTC",
-                ].map((t) => (
-                  <option key={t}>{t}</option>
-                ))}
-              </select>
+                name="timezone"
+                value={timezone}
+                readOnly
+              />
             </label>
             <label>
               Duration, minutes
@@ -424,9 +460,9 @@ export default function Meetings() {
             />
           </label>
           <p className="text-xs text-slate-600">
-            External guests are recorded separately. Guest video access requires
-            verified identity; external invitation delivery is not enabled by
-            this release.
+            Invited guests receive a personal email link and sign into a free
+            Aerotech applicant account. No Daily account is needed. Invitations
+            are limited by the configured meeting capacity.
           </p>
           <button
             className="aero-button bg-blue-700 text-white"
@@ -434,20 +470,48 @@ export default function Meetings() {
           >
             {busy ? "Scheduling…" : "Schedule meeting"}
           </button>
+          <button
+            type="submit"
+            name="intent"
+            value="instant"
+            formNoValidate
+            className="aero-button border"
+            disabled={busy}
+          >
+            Start now
+          </button>
         </form>
       )}
       <section className="space-y-3">
         <h2 className="text-lg font-bold">My meetings</h2>
-        <div className="flex gap-3"><button className="aero-button border" aria-pressed={!history} onClick={()=>{setHistory(false);setOffset(0)}}>Upcoming & ongoing</button><button className="aero-button border" aria-pressed={history} onClick={()=>{setHistory(true);setOffset(0)}}>Past meetings</button></div>
+        <div className="flex flex-wrap gap-3">
+          {["upcoming", "past", "cancelled"].map((tab) => (
+            <button
+              key={tab}
+              className="aero-button border"
+              aria-pressed={category === tab}
+              onClick={() => {
+                setCategory(tab);
+                setOffset(0);
+              }}
+            >
+              {tab === "upcoming"
+                ? "Upcoming & ongoing"
+                : tab === "past"
+                  ? "Past meetings"
+                  : "Cancelled meetings"}
+            </button>
+          ))}
+        </div>
         {visibleMeetings.map((m) => (
           <article key={m.id} className="aero-card">
             <h3 className="font-bold">{m.title}</h3>
             <p className="mt-2 text-sm">
               {new Date(m.starts_at).toLocaleString("en-GB", {
-                timeZone: m.timezone || "Africa/Lagos",
+                timeZone: timezone,
               })}{" "}
-              · {m.timezone || "Africa/Lagos"} · {m.duration_minutes} minutes ·{" "}
-              {m.status}
+              · {timezone} · {m.type || "video"} · {m.duration_minutes} minutes
+              · {m.status}
             </p>
             <p className="mt-2 text-sm">{m.agenda}</p>
             <div className="mt-4 flex flex-wrap gap-3">
@@ -465,6 +529,12 @@ export default function Meetings() {
                     : "Join opens 15 minutes before start"}
                 </span>
               )}
+              <a
+                className="aero-button border"
+                href={"/api/meet/" + m.id + "/calendar"}
+              >
+                Add to calendar
+              </a>
               {role !== "applicant" && (
                 <button
                   className="aero-button border"
@@ -473,7 +543,8 @@ export default function Meetings() {
                   Notes & attendees
                 </button>
               )}
-              {!history && role === "employee" &&
+              {!history &&
+                role === "employee" &&
                 ["Accept", "Decline", "Maybe"].map((r) => (
                   <button
                     key={r}
@@ -499,7 +570,9 @@ export default function Meetings() {
           </article>
         ))}
         {!visibleMeetings.length && (
-          <p className="aero-card">{history?"No past meetings.":"No upcoming or ongoing meetings."}</p>
+          <p className="aero-card">
+            {history ? "No past meetings." : "No upcoming or ongoing meetings."}
+          </p>
         )}
         <div className="flex gap-3">
           <button
@@ -689,7 +762,62 @@ function MeetingDetails({
       </button>
       {employer && (
         <>
-          <form method="post"
+          <form
+            method="post"
+            onSubmit={(e) => {
+              e.preventDefault();
+              const f = Object.fromEntries(new FormData(e.currentTarget));
+              void api("/api/meet/" + meeting.id + "/details", "POST", {
+                action: "reschedule",
+                ...f,
+                startsAt: new Date(String(f.startsAt)).toISOString(),
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+              })
+                .then(async () => {
+                  await reload();
+                  close();
+                })
+                .catch((e) => setMessage(e.message));
+            }}
+            className="mt-5 space-y-3"
+          >
+            <h3 className="font-semibold">Reschedule</h3>
+            <label className="block">
+              New start (your local timezone)
+              <input
+                required
+                type="datetime-local"
+                name="startsAt"
+                className="aero-input"
+              />
+            </label>
+            <label className="block">
+              Duration (minutes)
+              <input
+                required
+                name="durationMinutes"
+                type="number"
+                min={15}
+                max={240}
+                defaultValue={meeting.duration_minutes}
+                className="aero-input"
+              />
+            </label>
+            <label className="block">
+              Call type
+              <select
+                name="type"
+                defaultValue={meeting.type || "video"}
+                className="aero-input"
+              >
+                <option value="video">Video</option>
+                <option value="audio">Audio only</option>
+              </select>
+            </label>
+            <button className="aero-button border">Reschedule meeting</button>
+          </form>
+          <form
+            method="post"
             onSubmit={(e) => void save(e, "notes")}
             className="mt-5 space-y-3"
           >
@@ -704,7 +832,8 @@ function MeetingDetails({
             </label>
             <button className="aero-button border">Save notes</button>
           </form>
-          <form method="post"
+          <form
+            method="post"
             onSubmit={(e) => void save(e, "task")}
             className="mt-5 space-y-3"
           >
