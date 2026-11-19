@@ -1,6 +1,6 @@
 # Full Git history secret audit — 19 November 2026
 
-**History is not confirmed clean.** Gitleaks 8.30.1 completed against all 95 fetched heads/remotes/tags, including reachable history, in GitHub Actions run 44535558681. Exit 1 means findings, not a clean scan. A separate targeted full-history search completed with 44 retired-provider references. The metadata-only artifact records the exact refs and findings. No patches, key values or raw scanner matches are published.
+**History is not confirmed clean.** Gitleaks 8.30.1 completed against all 95 fetched heads/remotes/tags, including reachable history, in GitHub Actions run 44537642303. Exit 1 means findings, not a clean scan. A separate targeted full-history search completed with 44 retired-provider references. The metadata-only artifact records the exact refs and findings. No patches, key values or raw scanner matches are published.
 
 Real generated Next.js encryption/preview-signing keys were identified in historical `.next` manifests. Before any history rewrite, rotate/rebuild affected deployment credentials, stop using compromised preview cookies/Server Action keys, and retire/protect deployments that still use those old keys. The current tree does not track those manifests. A fresh build regenerates default Next keys, but this audit has not proved that every old deployment is retired or that no operator configured a fixed key elsewhere. These are build credentials, not confirmed Daily/JaaS API keys.
 
