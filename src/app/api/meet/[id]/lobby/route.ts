@@ -1,4 +1,10 @@
-import { transaction, respond, errorResponse, id } from "@/lib/collaboration";
+import {
+  transaction,
+  respond,
+  errorResponse,
+  id,
+  AccessError,
+} from "@/lib/collaboration";
 import {
   meetingActor,
   meetingBody,
@@ -36,6 +42,8 @@ export async function POST(
     const b = await meetingBody(req),
       a = await meetingActor(),
       { id: room } = await ctx.params;
+    if (typeof b.admit !== "boolean")
+      throw new AccessError("Choose admit or decline.", 400);
     return await transaction(async (c) => {
       const { meeting: m, host } = await accessibleMeeting(c, a, room);
       requireMeetingHost(host);

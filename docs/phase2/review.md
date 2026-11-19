@@ -77,8 +77,6 @@ The browser suite starts a disposable database and local app itself. `CHROME_PAT
 | `RESEND_API_KEY`, `INVITATION_FROM_EMAIL` | Email delivery credentials and verified sender. |
 | `CRON_SECRET` | Bearer authentication for scheduled collaboration jobs. |
 | `APP_BASE_URL` (existing), optional `NEXT_PUBLIC_SITE_URL` fallback | Correct public application origin for portal-specific notification links. |
-| `JAAS_APP_ID`, `JAAS_KEY_ID`, `JAAS_PRIVATE_KEY` | Managed JaaS meeting signing, if selected. |
-| `JITSI_DOMAIN`, `JITSI_APP_ID`, `JITSI_APP_SECRET`, optional `JITSI_JWT_SUB` | Alternative self-hosted Jitsi JWT configuration. Provider revocation still requires an adapter. |
 
 Do not merge/deploy this review branch as a declaration that every Phase 2 acceptance criterion is complete. Resolve the explicit release requirements, run migrations in staging, and verify the real providers first.
 
@@ -91,3 +89,5 @@ The optional `.github/workflows/collaboration-scheduler.yml` runs only when repo
 Scheduler references: [GitHub workflow schedules](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#onschedule) and [scheduled-event delays](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule), checked 27 October 2026.
 
 Preview diagnostics: [initial cron rejection](https://vercel.com/aerotech/aerotech/2A1QxGqquAii8pePzWdzkGxVCpLC), [subsequent provisioning failure](https://vercel.com/aerotech/aerotech/6n8F7NwcXVunQ48Zj1x8wj4CnrQ2). No paid-plan upgrade, production resource change or integration reset was performed.
+
+Meetings configuration superseded by [private Daily meetings](../daily-meetings.md).

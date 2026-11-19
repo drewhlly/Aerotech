@@ -87,7 +87,7 @@ test("calendar links contain no provider credentials and escape injected lines",
   const c = calendarFile(
     {
       id: user,
-      title: "Title\r\nATTENDEE:bad"+"é".repeat(90),
+      title: "Title\r\nATTENDEE:bad" + "é".repeat(90),
       starts_at: new Date(now),
       duration_minutes: 30,
       status: "scheduled",
@@ -99,7 +99,7 @@ test("calendar links contain no provider credentials and escape injected lines",
   assert.ok(!c.includes("\r\nATTENDEE:"));
   assert.match(c, /SEQUENCE:2/);
   assert.ok(!c.includes("daily.co"));
-  for(const line of c.split("\r\n"))assert.ok(Buffer.byteLength(line)<=75);
+  for (const line of c.split("\r\n")) assert.ok(Buffer.byteLength(line) <= 75);
 });
 test("mailbox invitation is opaque, generation scoped and requires the exact identity", async () => {
   process.env.DOCUMENT_ENCRYPTION_KEY = Buffer.alloc(32, 9).toString("base64");

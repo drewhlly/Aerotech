@@ -22,13 +22,6 @@ Generated from the repository environment reference audit on 18 November 2026. T
 | `DOCUMENT_SCAN_URL` | server/runtime | src/lib/collaboration-worker.ts | yes |
 | `INTERVIEW_LIGHTHOUSE` | server/runtime | scripts/automation-browser-suite.mjs | yes |
 | `INVITATION_FROM_EMAIL` | server/runtime | src/app/api/admin/readiness/route.ts, src/app/api/auth/password/route.ts, src/app/api/communications/announcements/route.ts, src/app/api/employer/verification/route.ts, src/app/api/support-console/tickets/[id]/diagnostics/route.ts, src/lib/activation-delivery.ts, src/lib/collaboration-worker.ts, src/lib/communication-worker.ts, src/lib/interview-delivery.ts, src/lib/invitation-email.ts, src/lib/registration-welcome-email.ts, tests/activation-delivery.integration.mjs, tests/collaboration-api.integration.mjs, tests/communications.integration.mjs | yes |
-| `JAAS_APP_ID` | server/runtime | src/app/api/meet/[id]/details/route.ts, src/app/api/meet/[id]/join/route.ts, src/app/api/support-console/tickets/[id]/diagnostics/route.ts, src/lib/meeting-provider.ts, tests/meeting-provider.test.mjs | yes |
-| `JAAS_KEY_ID` | server/runtime | src/app/api/meet/[id]/join/route.ts, src/app/api/support-console/tickets/[id]/diagnostics/route.ts, src/lib/meeting-provider.ts, tests/meeting-provider.test.mjs | yes |
-| `JAAS_PRIVATE_KEY` | server/runtime | src/app/api/meet/[id]/join/route.ts, src/app/api/support-console/tickets/[id]/diagnostics/route.ts, src/lib/meeting-provider.ts, tests/meeting-provider.test.mjs | yes |
-| `JITSI_APP_ID` | server/runtime | src/app/api/meet/[id]/join/route.ts, src/app/api/support-console/tickets/[id]/diagnostics/route.ts, tests/collaboration-api.integration.mjs | yes |
-| `JITSI_APP_SECRET` | server/runtime | src/app/api/meet/[id]/join/route.ts, src/app/api/support-console/tickets/[id]/diagnostics/route.ts, tests/collaboration-api.integration.mjs | yes |
-| `JITSI_DOMAIN` | build/config,server/runtime | next.config.ts, src/app/api/meet/[id]/join/route.ts, src/app/api/support-console/tickets/[id]/diagnostics/route.ts, tests/collaboration-api.integration.mjs | yes |
-| `JITSI_JWT_SUB` | server/runtime | src/app/api/meet/[id]/join/route.ts | yes |
 | `LD_LIBRARY_PATH` | server/runtime | scripts/phase2-lighthouse.mjs, scripts/verify-collaboration.mjs | MISSING |
 | `NEXT_PUBLIC_CANONICAL_URL` | public/build | scripts/verify-public-routes.mjs, src/lib/seo.ts | yes |
 | `NEXT_PUBLIC_CLIENTS_SERVED` | public/build | src/components/credibility-stats.tsx | yes |
@@ -71,3 +64,5 @@ npx tsc --noEmit
 - Configure only required environment variables for **Preview** and **Production** separately. Do not copy production data or secrets into public variables.
 - Validate the Neon integration's resource/project assignment, particularly preview provisioning, before retrying a deployment.
 - Preview provision errors without any build events must be diagnosed in Vercel's integration/resource provisioning, not blamed on code compilation without further evidence.
+
+Meetings configuration superseded by [private Daily meetings](./daily-meetings.md).

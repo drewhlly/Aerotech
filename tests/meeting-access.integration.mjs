@@ -319,12 +319,69 @@ try {
     ).status,
     429,
   );
-  const noOrigin=await join.POST(new Request('https://aerotech.test/api/meet/'+room+'/join',{method:'POST',headers:{Origin:'https://foreign.test'},body:'{}'}),ctx(room));assert.equal(noOrigin.status,403);
-  const openRoom=(await query("SELECT id FROM meet_rooms WHERE status='scheduled' AND employer_id=$1 LIMIT 1",[tenant])).rows[0].id;
-  process.env.MEETING_MONTHLY_BUDGET_MINUTES='1';assert.equal((await join.POST(req('/api/meet/'+openRoom+'/join',{name:'Host'}),ctx(openRoom))).status,429);delete process.env.MEETING_MONTHLY_BUDGET_MINUTES;
-  process.env.RESEND_API_KEY='disposable-only';process.env.INVITATION_FROM_EMAIL='noreply@example.invalid';process.env.APP_BASE_URL='https://aerotech.test';
-  const {runCollaborationJobs}=await import('../src/lib/collaboration-worker.ts');const work=await runCollaborationJobs();assert.equal(work.failed,0);const sent=fixture.calls.filter(c=>c.url==='https://api.resend.com/emails');assert.ok(sent.length>0);for(const call of sent){const mail=JSON.parse(call.options.body);assert.equal(mail.attachments[0].filename,'aerotech-meeting.ics');assert.ok(Buffer.from(mail.attachments[0].content,'base64').toString().includes('BEGIN:VCALENDAR'));assert.ok(!mail.text.includes('daily.co'));}
-  const delivered=sent.length;await runCollaborationJobs();assert.equal(fixture.calls.filter(c=>c.url==='https://api.resend.com/emails').length,delivered,'email retries are idempotent');assert.ok((await query("SELECT count(*)::int n FROM collaboration_notifications WHERE actor=$1",['employer:'+tenant])).rows[0].n>0);
+  const noOrigin = await join.POST(
+    new Request("https://aerotech.test/api/meet/" + room + "/join", {
+      method: "POST",
+      headers: { Origin: "https://foreign.test" },
+      body: "{}",
+    }),
+    ctx(room),
+  );
+  assert.equal(noOrigin.status, 403);
+  const openRoom = (
+    await query(
+      "SELECT id FROM meet_rooms WHERE status='scheduled' AND employer_id=$1 LIMIT 1",
+      [tenant],
+    )
+  ).rows[0].id;
+  process.env.MEETING_MONTHLY_BUDGET_MINUTES = "1";
+  assert.equal(
+    (
+      await join.POST(
+        req("/api/meet/" + openRoom + "/join", { name: "Host" }),
+        ctx(openRoom),
+      )
+    ).status,
+    429,
+  );
+  delete process.env.MEETING_MONTHLY_BUDGET_MINUTES;
+  process.env.RESEND_API_KEY = "disposable-only";
+  process.env.INVITATION_FROM_EMAIL = "noreply@example.invalid";
+  process.env.APP_BASE_URL = "https://aerotech.test";
+  const { runCollaborationJobs } =
+    await import("../src/lib/collaboration-worker.ts");
+  const work = await runCollaborationJobs();
+  assert.equal(work.failed, 0);
+  const sent = fixture.calls.filter(
+    (c) => c.url === "https://api.resend.com/emails",
+  );
+  assert.ok(sent.length > 0);
+  for (const call of sent) {
+    const mail = JSON.parse(call.options.body);
+    assert.equal(mail.attachments[0].filename, "aerotech-meeting.ics");
+    assert.ok(
+      Buffer.from(mail.attachments[0].content, "base64")
+        .toString()
+        .includes("BEGIN:VCALENDAR"),
+    );
+    assert.ok(!mail.text.includes("daily.co"));
+  }
+  const delivered = sent.length;
+  await runCollaborationJobs();
+  assert.equal(
+    fixture.calls.filter((c) => c.url === "https://api.resend.com/emails")
+      .length,
+    delivered,
+    "email retries are idempotent",
+  );
+  assert.ok(
+    (
+      await query(
+        "SELECT count(*)::int n FROM collaboration_notifications WHERE actor=$1",
+        ["employer:" + tenant],
+      )
+    ).rows[0].n > 0,
+  );
   console.log(
     "PASS Daily meeting roles, 1:1 invitations, mailbox proof, lobby admission, token role/TTL, calendar, reschedule revocation, cancellation, tenant isolation and creation limit.",
   );
