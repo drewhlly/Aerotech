@@ -39,6 +39,8 @@ await database.exec(readFileSync("database/039_guest_meetings.sql","utf8"));
 await database.exec("CREATE TABLE ats_applications(id UUID,job_id UUID,stage TEXT,interview_completed_at TIMESTAMPTZ,interview_room_id UUID,interview_at TIMESTAMPTZ,interview_revision INT DEFAULT 0)");
 await database.exec("ALTER TABLE ats_applications ADD COLUMN applicant_id UUID; CREATE TABLE applicant_accounts(id UUID PRIMARY KEY,email TEXT,first_name TEXT,last_name TEXT); CREATE TABLE applicant_sessions(token_hash TEXT,applicant_id UUID,expires_at TIMESTAMPTZ)");
 await database.exec(readFileSync("database/048_daily_meetings.sql","utf8"));
+await database.exec("CREATE TABLE recruitment_interview_slots(id UUID,external_url_placeholder TEXT);CREATE TABLE company_subscriptions(employer_id UUID,plan TEXT,status TEXT,paid_until TIMESTAMPTZ)");
+await database.exec(readFileSync("database/049_hybrid_meetings.sql","utf8"));
 const dailyFixture=installDailyFixture();
 const owner = randomUUID(),
   other = randomUUID(),

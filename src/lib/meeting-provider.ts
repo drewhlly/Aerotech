@@ -5,6 +5,7 @@
 // API contract: https://docs.daily.co/reference/rest-api/rooms/create-room
 // https://docs.daily.co/reference/rest-api/meeting-tokens/create-meeting-token
 // https://docs.daily.co/reference/rest-api/rooms/session/eject
+import { builtInConfiguration } from "./meeting-runtime-config";
 import { tokenExpiry, type MeetingType } from "./meeting-policy";
 export type RoomInput = {
   name: string;
@@ -39,13 +40,9 @@ export function dailyOrigin() {
   return "https://" + domain;
 }
 export function meetingProviderReady() {
-  return Boolean(
-    process.env.DAILY_API_KEY &&
-    /^[a-z0-9-]+\.daily\.co$/.test(process.env.DAILY_DOMAIN?.trim() || "") &&
-    (!process.env.MEETING_PROVIDER || process.env.MEETING_PROVIDER === "daily"),
-  );
+  return builtInConfiguration().enabled;
 }
-async function request(
+export async function dailyRequest(
   path: string,
   method = "GET",
   body?: unknown,
@@ -127,9 +124,9 @@ const daily: MeetingProvider = {
     // Idempotent retries use the persisted opaque room name; never create a public room.
     let result: Record<string, unknown>;
     try {
-      result = await request("/rooms/" + i.name);
+      result = await dailyRequest("/rooms/" + i.name);
     } catch {
-      result = await request("/rooms", "POST", {
+      result = await dailyRequest("/rooms", "POST", {
         name: i.name,
         privacy: "private",
         properties,
@@ -145,7 +142,7 @@ const daily: MeetingProvider = {
   },
   async createToken(i) {
     dailyOrigin();
-    const r = await request("/meeting-tokens", "POST", {
+    const r = await dailyRequest("/meeting-tokens", "POST", {
       properties: dailyTokenProperties(i),
     });
     if (typeof r.token !== "string" || !r.token)
@@ -155,13 +152,13 @@ const daily: MeetingProvider = {
   async endRoom(name, userIds) {
     roomName(name);
     for (let n = 0; n < userIds.length; n += 100)
-      await request(
+      await dailyRequest(
         "/rooms/" + name + "/eject",
         "POST",
         { user_ids: userIds.slice(n, n + 100), ban: true },
         true,
       );
-    await request("/rooms/" + name, "DELETE", undefined, true);
+    await dailyRequest("/rooms/" + name, "DELETE", undefined, true);
   },
 };
 export function meetingProvider(): MeetingProvider {

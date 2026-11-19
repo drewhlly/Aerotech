@@ -1,4 +1,6 @@
-import {calendarDate} from '@/lib/leave-dates';
+import { externalMeetingUrl } from "@/lib/meeting-hybrid-policy";
+import { requireBuiltIn } from "@/lib/meeting-entitlements";
+import { calendarDate } from "@/lib/leave-dates";
 import { NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import { currentEmployer, db } from "@/lib/employer-session";
@@ -82,7 +84,8 @@ export async function POST(request: Request) {
           b.interviewerId !== "" &&
           !uuid(b.interviewerId)) ||
         typeof b.startsAt !== "string" ||
-        !/(Z|[+-]\d{2}:\d{2})$/.test(b.startsAt) || !calendarDate(b.startsAt.slice(0,10)) ||
+        !/(Z|[+-]\d{2}:\d{2})$/.test(b.startsAt) ||
+        !calendarDate(b.startsAt.slice(0, 10)) ||
         ![15, 30, 45, 60, 90, 120].includes(b.duration)
       )
         return reply(
@@ -146,10 +149,18 @@ export async function POST(request: Request) {
           409,
         );
       }
+      const externalUrl = b.externalUrl
+        ? externalMeetingUrl(b.externalUrl)
+        : null;
+      if (!externalUrl) await requireBuiltIn(c, employer);
       const id = randomUUID();
       await c.query(
         "INSERT INTO recruitment_interview_slots(id,employer_id,job_id,starts_at,ends_at,interviewer_employee_id) VALUES($1,$2,$3,$4,$5,$6)",
         [id, employer, b.jobId, start, end, interviewer],
+      );
+      await c.query(
+        "UPDATE recruitment_interview_slots SET external_url=$1 WHERE id=$2",
+        [externalUrl, id],
       );
       await c.query("COMMIT");
       return reply({ id }, 201);

@@ -31,6 +31,8 @@ await db.exec(readFileSync("database/039_guest_meetings.sql","utf8"));
 await db.exec(readFileSync("database/037_collaboration.sql", "utf8"));
 await db.exec("CREATE TABLE applicant_accounts(id UUID PRIMARY KEY,email TEXT,first_name TEXT,last_name TEXT);CREATE TABLE ats_applications(id UUID,job_id UUID,applicant_id UUID,stage TEXT,interview_room_id UUID)");
 await db.exec(readFileSync("database/048_daily_meetings.sql","utf8"));
+await db.exec("CREATE TABLE recruitment_interview_slots(id UUID,external_url_placeholder TEXT);CREATE TABLE company_subscriptions(employer_id UUID,plan TEXT,status TEXT,paid_until TIMESTAMPTZ)");
+await db.exec(readFileSync("database/049_hybrid_meetings.sql","utf8"));
 const tenant = randomUUID(),
   other = randomUUID();
 await c.query("INSERT INTO employer_accounts VALUES($1,$2),($3,$4)", [

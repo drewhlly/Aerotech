@@ -8,7 +8,7 @@ export function meetingConfig(
   };
   return {
     budget: integer("MEETING_MONTHLY_BUDGET_MINUTES", 8000, 1, 10000000),
-    maxParticipants: integer("MEETING_MAX_PARTICIPANTS", 8, 2, 100),
+    maxParticipants: integer("MEETING_MAX_PARTICIPANTS", 32, 2, 100),
     tokenSeconds: integer("MEETING_TOKEN_TTL_SECONDS", 300, 60, 600),
   };
 }
@@ -36,7 +36,7 @@ export function scheduleInput(b: Record<string, unknown>, now = Date.now()) {
     throw Error(
       "Choose a valid start time and a duration from 15 to 240 minutes.",
     );
-  const type = b.type ?? "video";
+  const type = b.type ?? "audio";
   if (type !== "video" && type !== "audio")
     throw Error("Choose video or audio.");
   return { date, duration, timezone, type: type as MeetingType };

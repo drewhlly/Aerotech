@@ -1,3 +1,5 @@
+import { reconcileMeetingUsage } from "./meeting-metering";
+import { requireBuiltIn } from "./meeting-entitlements";
 import { deliverInterviewUpdate } from "./interview-delivery";
 import { deliverEmployeeActivation } from "./activation-delivery";
 import {
@@ -506,6 +508,7 @@ async function perform(c: PoolClient, job: Job) {
       )
     ).rows[0];
     if (!m) return;
+    if (m.mode === "built_in") await requireBuiltIn(c, a.tenant);
     const id = randomUUID(),
       step = m.recurrence === "daily" ? 1 : 7;
     let date = new Date(new Date(m.starts_at).getTime() + step * 86400000);
@@ -526,6 +529,10 @@ async function perform(c: PoolClient, job: Job) {
       ],
     );
     await c.query(
+      "UPDATE meet_rooms SET mode=$1,external_url=$2,type=$3 WHERE id=$4",
+      [m.mode, m.external_url, m.type, id],
+    );
+    await c.query(
       "INSERT INTO meet_participants(employer_id,room_id,employee_id,required) SELECT employer_id,$1,employee_id,required FROM meet_participants WHERE room_id=$2",
       [id, m.id],
     );
@@ -539,6 +546,12 @@ async function perform(c: PoolClient, job: Job) {
 }
 export async function runCollaborationJobs() {
   await transaction(sweep);
+  let meteringFailed = 0;
+  try {
+    await transaction(reconcileMeetingUsage);
+  } catch {
+    meteringFailed = 1;
+  }
   const p = db();
   let processed = 0,
     failed = 0;
@@ -573,7 +586,7 @@ export async function runCollaborationJobs() {
         );
       }
     }
-    return { processed, failed };
+    return { processed, failed: failed + meteringFailed };
   } finally {
     await p.end();
   }

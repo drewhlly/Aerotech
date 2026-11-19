@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useState, type FormEvent } from "react";
 import Link from "next/link";
-import {useEventRefresh,useExpiryClock} from './use-event-refresh';
+import { useEventRefresh, useExpiryClock } from "./use-event-refresh";
 type Slot = {
   id: string;
   job_id: string;
@@ -22,7 +22,7 @@ type Application = {
   interview_at: string | null;
   interview_room_id: string | null;
   interview_active: boolean;
-  interview_end_at?:string|null;
+  interview_end_at?: string | null;
 };
 type Data = {
   role: string;
@@ -47,9 +47,15 @@ export default function InterviewScheduling({
     if (!r.ok) throw Error(d.error);
     setData(d);
   }, []);
-  const refresh=useCallback(()=>load().catch(e=>setError(e.message)),[load]);
+  const refresh = useCallback(
+    () => load().catch((e) => setError(e.message)),
+    [load],
+  );
   useEventRefresh(refresh);
-  const now=useExpiryClock([...(data?.slots||[]).map(s=>s.ends_at),...(data?.applications||[]).map(a=>a.interview_end_at)]);
+  const now = useExpiryClock([
+    ...(data?.slots || []).map((s) => s.ends_at),
+    ...(data?.applications || []).map((a) => a.interview_end_at),
+  ]);
 
   async function action(body: unknown) {
     setBusy(true);
@@ -89,14 +95,15 @@ export default function InterviewScheduling({
       interviewerId: f.get("interviewerId") || null,
       startsAt: date.toISOString(),
       duration: Number(f.get("duration")),
+      externalUrl: f.get("externalUrl") || undefined,
     });
   }
   const application =
       data?.applications?.find((a) => a.id === selected) ||
       data?.applications?.[0],
-    slots = (data?.slots || []).filter(s=>Date.parse(s.ends_at)>now).filter(
-      (s) => role === "employer" || s.job_id === application?.job_id,
-    );
+    slots = (data?.slots || [])
+      .filter((s) => Date.parse(s.ends_at) > now)
+      .filter((s) => role === "employer" || s.job_id === application?.job_id);
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   return (
     <div className="space-y-6">
@@ -146,7 +153,8 @@ export default function InterviewScheduling({
             downloads use UTC and update the same event when re-imported.
           </p>
           {role === "employer" ? (
-            <form method="post"
+            <form
+              method="post"
               onSubmit={create}
               className="aero-card grid gap-4 sm:grid-cols-2"
             >
@@ -191,6 +199,17 @@ export default function InterviewScheduling({
                   ))}
                 </select>
               </div>
+              <label className="block text-sm font-semibold">
+                External meeting link (leave blank for plan-based built-in
+                video)
+                <input
+                  className="aero-input mt-2"
+                  name="externalUrl"
+                  type="url"
+                  maxLength={2048}
+                  placeholder="https://meet.google.com/…"
+                />
+              </label>
               <label className="block text-sm font-semibold">
                 Start time (your local timezone)
                 <input
@@ -257,7 +276,8 @@ export default function InterviewScheduling({
                   </select>
                   {application?.interview_at &&
                     application.interview_room_id &&
-                    application.interview_active && Date.parse(application.interview_end_at||'')>now && (
+                    application.interview_active &&
+                    Date.parse(application.interview_end_at || "") > now && (
                       <div className="mt-4 rounded-xl bg-blue-50 p-4">
                         <p className="text-sm font-semibold">
                           Booked:{" "}

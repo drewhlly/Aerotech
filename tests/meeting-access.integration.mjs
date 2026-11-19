@@ -63,6 +63,11 @@ for (const id of [tenant, foreign])
     "INSERT INTO employer_accounts(id,company_name,company_email,admin_first_name,admin_last_name,phone,country,password_hash) VALUES($1,'Synthetic',$2,'Test','Host','000','Nigeria','fixture')",
     [id, id + "@example.invalid"],
   );
+for (const id of [tenant, foreign])
+  await query(
+    "INSERT INTO company_subscriptions(employer_id,plan,status,currency,paid_until,reference) VALUES($1,'business','active','NGN',NOW()+INTERVAL '1 year',$2)",
+    [id, id],
+  );
 for (const [id, t] of [
   [employee, tenant],
   [otherEmployee, foreign],
@@ -90,7 +95,11 @@ const req = (path, body, proof = "") =>
         "Content-Type": "application/json",
         ...(proof ? { Authorization: "Bearer " + proof } : {}),
       },
-      body: body ? JSON.stringify(body) : undefined,
+      body: body
+        ? JSON.stringify(
+            path === "/api/meet" ? { mode: "built_in", ...body } : body,
+          )
+        : undefined,
     }),
   ctx = (id) => ({ params: Promise.resolve({ id }) });
 try {

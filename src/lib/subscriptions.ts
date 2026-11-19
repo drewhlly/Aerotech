@@ -1,5 +1,5 @@
 export type EmployerPlan = "basic" | "professional" | "business" | "enterprise";
-export const PRICING_VERSION = '2026-10-29';
+export const PRICING_VERSION = "2026-10-29";
 export type AccountType = "employer" | "employee";
 export type Currency = "NGN" | "USD";
 
@@ -35,10 +35,7 @@ export type Subscription = {
   expiresAt?: string;
 };
 
-export const EMPLOYER_PLANS: Record<
-  EmployerPlan,
-  SubscriptionPlan
-> = {
+export const EMPLOYER_PLANS: Record<EmployerPlan, SubscriptionPlan> = {
   basic: {
     id: "employer_basic",
     name: "Basic",
@@ -47,13 +44,13 @@ export const EMPLOYER_PLANS: Record<
     monthly: false,
     price: "₦500,000",
     period: "/ year",
-    description:
-      "Employee records and recruitment tools for small teams.",
+    description: "Employee records and recruitment tools for small teams.",
     prices: {
       NGN: 500000,
       USD: 350,
     },
     features: [
+      "External meeting links with scheduling and invitations",
       "Employee directory and staff profiles",
       "Job drafts and immediate publication",
       "Applicant pipeline and CV review",
@@ -77,6 +74,7 @@ export const EMPLOYER_PLANS: Record<
     },
     features: [
       "Everything in Basic",
+      "500 built-in participant-minutes per month, up to 8 participants",
       "Attendance and leave workflows",
       "Payroll drafts, approvals and payslips",
       "Onboarding, document review and learning",
@@ -92,14 +90,14 @@ export const EMPLOYER_PLANS: Record<
     monthly: false,
     price: "₦2,400,000",
     period: "/ year",
-    description:
-      "Workflow automation and reporting for growing organisations.",
+    description: "Workflow automation and reporting for growing organisations.",
     prices: {
       NGN: 2400000,
       USD: 1400,
     },
     features: [
       "Everything in Premium",
+      "2,000 built-in participant-minutes per month, up to 16 participants",
       "Workflow automation and document tracking",
       "Monthly workforce report generation",
       "Document expiry alerts and review queues",
@@ -114,16 +112,17 @@ export const EMPLOYER_PLANS: Record<
     monthly: false,
     price: "From ₦4,800,000",
     period: "/ year, quoted scope",
-    description: "Tailored workforce automation, implementation and support for large organisations.",
+    description:
+      "Tailored workforce automation, implementation and support for large organisations.",
     prices: { NGN: 4800000, USD: 0 },
     features: [
       "Everything in Business",
+      "5,000 built-in participant-minutes per month, up to 32 participants",
       "Organisation-specific implementation by agreement",
       "Custom integrations by written scope",
       "Dedicated account support by agreement",
     ],
   },
-
 };
 
 export const EMPLOYEE_PLAN: SubscriptionPlan = {
@@ -133,32 +132,31 @@ export const EMPLOYEE_PLAN: SubscriptionPlan = {
   monthly: false,
   price: "Free",
   period: "employer-sponsored",
-  description:
-    "Free access for employees sponsored by their employer.",
+  description: "Free access for employees sponsored by their employer.",
   prices: {
     NGN: 0,
     USD: 0,
   },
-  features: ["Employee profile and company records","Payslips and company notifications","Assigned learning and document uploads","Leave requests and employee feedback"],
+  features: [
+    "Employee profile and company records",
+    "Payslips and company notifications",
+    "Assigned learning and document uploads",
+    "Leave requests and employee feedback",
+  ],
 };
 
-export function getEmployerPlan(
-  plan: EmployerPlan
-): SubscriptionPlan {
+export function getEmployerPlan(plan: EmployerPlan): SubscriptionPlan {
   return EMPLOYER_PLANS[plan];
 }
 
 export function getPlanPrice(
   plan: SubscriptionPlan,
-  currency: Currency
+  currency: Currency,
 ): number {
   return plan.prices[currency];
 }
 
-export function formatPrice(
-  amount: number,
-  currency: Currency
-): string {
+export function formatPrice(amount: number, currency: Currency): string {
   if (currency === "NGN") {
     return `₦${amount.toLocaleString("en-NG")}`;
   }

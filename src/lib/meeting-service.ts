@@ -1,3 +1,5 @@
+import { hybridInput } from "./meeting-hybrid-policy";
+import { requireBuiltIn } from "./meeting-entitlements";
 import { limitMeetingCreation } from "./meeting-rate";
 import type { PoolClient } from "pg";
 import {
@@ -79,9 +81,10 @@ export async function scheduleMeeting(
   b: Record<string, unknown>,
 ) {
   if (a.employee) throw new AccessError("Employer access required");
-  let settings;
+  let settings, hybrid;
   try {
     settings = scheduleInput(b);
+    hybrid = hybridInput(b);
   } catch (e) {
     throw new AccessError(
       e instanceof Error ? e.message : "Invalid schedule",
@@ -90,6 +93,22 @@ export async function scheduleMeeting(
   }
   const { date, duration, timezone, type } = settings;
   await limitMeetingCreation(c, a.tenant);
+  const entitlement =
+    hybrid.mode === "built_in"
+      ? await requireBuiltIn(
+          c,
+          a.tenant,
+          date.toISOString().slice(0, 7) + "-01",
+        )
+      : null;
+  if (entitlement && entitlement.remaining <= 0)
+    throw new AccessError(
+      "Your monthly allowance is used or reserved. Use external link mode or upgrade.",
+      429,
+    );
+  const participantLimit = entitlement
+    ? Math.min(entitlement.maxParticipants, meetingConfig().maxParticipants)
+    : 100;
   const groups = Array.isArray(b.groups) ? (b.groups as GroupRef[]) : [],
     exclude = b.excludeIds ? ids(b.excludeIds) : [],
     selected = await resolveGroups(c, a, groups, exclude),
@@ -105,11 +124,11 @@ export async function scheduleMeeting(
     throw new AccessError("Invite only your company employees", 422);
   for (const m of direct)
     if (!exclude.includes(m)) selected.set(m, !optional.has(m));
-  if (selected.size + 1 > meetingConfig().maxParticipants)
+  if (selected.size + 1 > participantLimit)
     throw new AccessError("Invite limit exceeded", 422);
   const emails = Array.isArray(b.guestEmails) ? b.guestEmails : [];
   if (
-    emails.length + selected.size + 1 > meetingConfig().maxParticipants ||
+    emails.length + selected.size + 1 > participantLimit ||
     emails.some(
       (e) =>
         typeof e !== "string" ||
@@ -144,7 +163,10 @@ export async function scheduleMeeting(
       text(b.location, 300),
     ],
   );
-  await c.query("UPDATE meet_rooms SET type=$1 WHERE id=$2", [type, room]);
+  await c.query(
+    "UPDATE meet_rooms SET type=$1,mode=$3,external_url=$4 WHERE id=$2",
+    [type, room, hybrid.mode, hybrid.externalUrl],
+  );
   if (b.applicationId) {
     const candidate = (
       await c.query(

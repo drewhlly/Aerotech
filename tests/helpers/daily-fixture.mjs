@@ -1,4 +1,5 @@
 export function installDailyFixture() {
+  process.env.MEETING_BUILT_IN_ENABLED = "true";
   process.env.DAILY_API_KEY = "daily-disposable-fixture";
   process.env.DAILY_DOMAIN = "meetings-fixture.daily.co";
   const original = global.fetch,
@@ -13,6 +14,7 @@ export function installDailyFixture() {
     if (!url.startsWith("https://api.daily.co/v1/"))
       return original(url, options);
     calls.push({ url, options });
+    if (url.includes("/meetings?")) return Response.json({ data: [] });
     const body = options.body ? JSON.parse(options.body) : {};
     if (url.endsWith("/meeting-tokens"))
       return Response.json({

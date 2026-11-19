@@ -1,3 +1,4 @@
+import { requireBuiltIn } from "./meeting-entitlements";
 import { currentApplicant } from "./applicant-session";
 import { currentEmployee } from "./employee-auth";
 import { currentEmployer } from "./employer-session";
@@ -142,9 +143,17 @@ type MeetingData = {
   provider_room_name: string | null;
   provider_generation: number | null;
   type: "video" | "audio";
+  employer_id: string;
+  mode: string;
 };
 export async function provisionMeeting(c: PoolClient, m: MeetingData) {
   // metadata from a locked database row
+  if (m.mode !== "built_in")
+    throw new AccessError("External meetings do not use a built-in room.", 400);
+  await c.query("SELECT id FROM employer_accounts WHERE id=$1 FOR UPDATE", [
+    m.employer_id,
+  ]);
+  const entitlement = await requireBuiltIn(c, m.employer_id);
   const cfg = meetingConfig(),
     w = requireOpen(m as Parameters<typeof joinWindow>[0]);
   if (m.provider_room_name && m.provider_generation === m.join_generation)
@@ -160,7 +169,7 @@ export async function provisionMeeting(c: PoolClient, m: MeetingData) {
       )
     ).rows[0].n,
   );
-  if (count > cfg.maxParticipants)
+  if (count > Math.min(cfg.maxParticipants, entitlement.maxParticipants))
     throw new AccessError(
       "This meeting exceeds the configured participant limit. Ask the host to reduce invitations.",
       422,
@@ -168,6 +177,20 @@ export async function provisionMeeting(c: PoolClient, m: MeetingData) {
   const start = new Date(new Date(m.starts_at).getTime() - 15 * 60000),
     end = new Date(w.expiresAt),
     members = Math.max(2, count);
+  // A tenant reservation prevents concurrent calls from exceeding its plan. Actual
+  // usage is recorded separately, only from authenticated provider analytics.
+  for (const r of reservationMonths(start, end, members)) {
+    const e = await requireBuiltIn(c, m.employer_id, r.month);
+    if (e.used + e.reserved + r.minutes > e.quota)
+      throw new AccessError(
+        "Insufficient monthly built-in minutes for this call's maximum duration. Shorten it, upgrade, or use external link mode.",
+        429,
+      );
+    await c.query(
+      "INSERT INTO employer_meeting_reservations(employer_id,meeting_id,generation,month,participant_minutes) VALUES($1,$2,$3,$4,$5)",
+      [m.employer_id, m.id, m.join_generation, r.month, r.minutes],
+    );
+  }
   // Serialize across all tenants sharing this Daily account; reservations are never refunded.
   await c.query(
     "SELECT pg_advisory_xact_lock(hashtext('aerotech-meeting-budget'))",
@@ -208,8 +231,8 @@ export async function provisionMeeting(c: PoolClient, m: MeetingData) {
     [name, m.join_generation, m.id],
   );
   await c.query(
-    "INSERT INTO meeting_provider_rooms(meeting_id,generation,room_name) VALUES($1,$2,$3)",
-    [m.id, m.join_generation, name],
+    "INSERT INTO meeting_provider_rooms(meeting_id,generation,room_name,type) VALUES($1,$2,$3,$4)",
+    [m.id, m.join_generation, name, m.type],
   );
   return room;
 }

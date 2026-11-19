@@ -1,3 +1,5 @@
+import { hybridInput } from "@/lib/meeting-hybrid-policy";
+import { requireBuiltIn } from "@/lib/meeting-entitlements";
 import { meetingBody } from "@/lib/meeting-access";
 import {
   actor,
@@ -38,6 +40,8 @@ export async function GET(req: Request, ctx: C) {
           duration_minutes: meeting.duration_minutes,
           timezone: meeting.timezone,
           type: meeting.type,
+          mode: meeting.mode,
+          external_url: meeting.external_url,
           status: meeting.status,
           joinState: joinWindow(meeting).state,
         },
@@ -102,15 +106,26 @@ export async function POST(req: Request, ctx: C) {
           id + ":cancel",
         );
       } else if (b.action === "reschedule") {
-        let settings;
+        let settings, hybrid;
         try {
           settings = scheduleInput(b);
+          hybrid = hybridInput({
+            ...b,
+            mode: b.mode ?? meeting.mode,
+            externalUrl: b.externalUrl ?? meeting.external_url,
+          });
         } catch (e) {
           throw new AccessError(
             e instanceof Error ? e.message : "Invalid schedule",
             400,
           );
         }
+        if (hybrid.mode === "built_in")
+          await requireBuiltIn(
+            c,
+            a.tenant,
+            settings.date.toISOString().slice(0, 7) + "-01",
+          );
         generation = meeting.join_generation;
         await enqueue(
           c,
@@ -128,6 +143,10 @@ export async function POST(req: Request, ctx: C) {
             settings.type,
             id,
           ],
+        );
+        await c.query(
+          "UPDATE meet_rooms SET mode=$1,external_url=$2 WHERE id=$3",
+          [hybrid.mode, hybrid.externalUrl, id],
         );
         const linked = await c.query(
           "UPDATE ats_applications SET interview_at=$1,interview_revision=interview_revision+1 WHERE interview_room_id=$2 RETURNING id,interview_revision",

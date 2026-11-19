@@ -1,3 +1,4 @@
+import { externalMeetingUrl } from "@/lib/meeting-hybrid-policy";
 import {
   transaction,
   respond,
@@ -48,7 +49,8 @@ export async function GET(
           host ||
           (p.admitted_generation === m.join_generation &&
             ["admitted", "joined"].includes(p.status)),
-        configured: meetingProviderReady(),
+        configured: m.mode === "external_link" || meetingProviderReady(),
+        mode: m.mode,
       });
     });
   } catch (e) {
@@ -80,6 +82,12 @@ export async function POST(
         request.headers.get("authorization")?.replace(/^Bearer /, "") || "",
       );
       const w = requireOpen(m);
+      if (m.mode === "external_link")
+        return respond({
+          mode: "external_link",
+          externalUrl: externalMeetingUrl(m.external_url),
+          title: m.title,
+        });
       if (p.status === "rejected")
         throw new AccessError(
           "The host has declined this meeting request.",

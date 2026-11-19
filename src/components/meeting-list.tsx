@@ -24,6 +24,8 @@ type Meeting = {
   duration_minutes: number;
   timezone: string;
   type: "video" | "audio";
+  mode: "external_link" | "built_in";
+  external_url?: string;
   joinState: "open" | "upcoming" | "expired";
   status: string;
   notes: string;
@@ -43,6 +45,15 @@ export default function Meetings() {
     employer = role === "employer";
   const [meetings, setMeetings] = useState<Meeting[]>([]),
     [category, setCategory] = useState("upcoming"),
+    [mode, setMode] = useState("external_link"),
+    [usage, setUsage] = useState<{
+      enabled: boolean;
+      quota: number;
+      used: number;
+      reserved: number;
+      warning: boolean;
+      configurationMessage: string | null;
+    } | null>(null),
     [timezone, setTimezone] = useState("UTC"),
     [applications, setApplications] = useState<
       { id: string; title: string; name: string }[]
@@ -69,6 +80,10 @@ export default function Meetings() {
     queueMicrotask(() =>
       setTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone),
     );
+    if (employer)
+      void api<NonNullable<typeof usage>>("/api/meet/usage")
+        .then(setUsage)
+        .catch(() => {});
     if (employer)
       void api<{ applications: typeof applications }>("/api/meet/applications")
         .then((d) => setApplications(d.applications))
@@ -203,8 +218,9 @@ export default function Meetings() {
       <section className="aero-card">
         <h1 className="text-2xl font-bold">Meetings</h1>
         <p className="mt-2 text-sm text-slate-600">
-          Private video and audio calls, with host admission. Times are shown in
-          your device timezone. Recording and transcription are off.
+          Schedule external meeting links, or use your plan’s built-in audio and
+          video allowance. Times are shown in your device timezone. Recording
+          and transcription are off.
         </p>
       </section>
       {role === "applicant" && (
@@ -230,8 +246,53 @@ export default function Meetings() {
             />
           </label>
           <label className="block">
+            Meeting mode
+            <select
+              name="mode"
+              value={mode}
+              onChange={(e) => setMode(e.target.value)}
+              className="aero-input"
+            >
+              <option value="external_link">
+                External link · no Aerotech minute usage
+              </option>
+              <option value="built_in" disabled={!usage?.enabled}>
+                Built-in call · plan allowance
+              </option>
+            </select>
+          </label>
+          {mode === "external_link" && (
+            <label className="block">
+              Google Meet, Zoom or Teams link
+              <input
+                name="externalUrl"
+                type="url"
+                required
+                maxLength={2048}
+                placeholder="https://meet.google.com/…"
+                className="aero-input"
+              />
+              <span className="text-sm">
+                The host manages admission, recording and access settings at
+                that provider.
+              </span>
+            </label>
+          )}
+          {usage && (
+            <p role="status" className="text-sm">
+              {usage.configurationMessage ||
+                `${usage.used.toFixed(1)} / ${usage.quota} built-in participant-minutes used this UTC month; ${usage.reserved} reserved for scheduled calls.`}
+              {usage.warning
+                ? " You have used at least 80% of your allowance."
+                : ""}
+              {usage.used >= usage.quota
+                ? " Use external link mode or upgrade for more built-in minutes."
+                : ""}
+            </p>
+          )}
+          <label className="block">
             Call type
-            <select name="type" className="aero-input">
+            <select name="type" defaultValue="audio" className="aero-input">
               <option value="video">Video meeting</option>
               <option value="audio">Audio-only meeting</option>
             </select>
@@ -518,7 +579,8 @@ export default function Meetings() {
                 timeZone: timezone,
               })}{" "}
               · {timezone} · {m.type || "video"} · {m.duration_minutes} minutes
-              · {m.status}
+              · {m.mode === "external_link" ? "External link" : "Built-in"} ·{" "}
+              {m.status}
             </p>
             <p className="mt-2 text-sm">{m.agenda}</p>
             <div className="mt-4 flex flex-wrap gap-3">
@@ -547,7 +609,7 @@ export default function Meetings() {
                   className="aero-button border"
                   onClick={() => setDetails(m)}
                 >
-                  Notes & attendees
+                  Meeting details & attendees
                 </button>
               )}
               {!history &&
@@ -758,6 +820,8 @@ function MeetingDetails({
               const f = Object.fromEntries(new FormData(e.currentTarget));
               void api("/api/meet/" + meeting.id + "/details", "POST", {
                 action: "reschedule",
+                mode: meeting.mode,
+                externalUrl: f.externalUrl || meeting.external_url,
                 ...f,
                 startsAt: new Date(String(f.startsAt)).toISOString(),
                 timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -771,6 +835,29 @@ function MeetingDetails({
             className="mt-5 space-y-3"
           >
             <h3 className="font-semibold">Reschedule</h3>
+            <label className="block">
+              Meeting mode
+              <select
+                name="mode"
+                defaultValue={meeting.mode}
+                className="aero-input"
+              >
+                <option value="external_link">External link</option>
+                <option value="built_in">
+                  Built-in (plan allowance required)
+                </option>
+              </select>
+            </label>
+            <label className="block">
+              External meeting link (required for external mode)
+              <input
+                type="url"
+                name="externalUrl"
+                defaultValue={meeting.external_url || ""}
+                className="aero-input"
+                maxLength={2048}
+              />
+            </label>
             <label className="block">
               New start (your local timezone)
               <input

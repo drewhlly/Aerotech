@@ -96,6 +96,7 @@ export async function bookInterview(
     new Date(slot.starts_at).toISOString(),
     duration,
     slot.interviewer_employee_id,
+    slot.external_url || null,
   );
   await c.query(
     "UPDATE recruitment_interview_slots SET status='booked',application_id=$2 WHERE id=$1",

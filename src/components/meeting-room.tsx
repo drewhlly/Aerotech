@@ -14,6 +14,7 @@ type Summary = {
   id: string;
   title: string;
   type: "video" | "audio";
+  mode?: "external_link" | "built_in";
   name: string;
   host: boolean;
   status: string;
@@ -41,6 +42,7 @@ export default function JoinMeeting({
     [elapsed, setElapsed] = useState(0),
     [needsLogin, setNeedsLogin] = useState(false),
     [preview, setPreview] = useState(false),
+    [externalUrl, setExternalUrl] = useState(""),
     [queue, setQueue] = useState<{ id: string; name: string }[]>([]);
   const container = useRef<HTMLDivElement>(null),
     video = useRef<HTMLVideoElement>(null),
@@ -211,6 +213,13 @@ export default function JoinMeeting({
       });
       const d = await r.json();
       if (!r.ok) throw Error(d.error);
+      if (d.mode === "external_link") {
+        setExternalUrl(d.externalUrl);
+        setMessage(
+          "Your invitation is confirmed. Open the host’s meeting link below.",
+        );
+        return;
+      }
       if (r.status === 202) {
         setWaiting(true);
         setMessage(d.message);
@@ -310,7 +319,34 @@ export default function JoinMeeting({
           </Link>
         </section>
       )}
-      {summary && !inCall && (
+      {summary?.mode === "external_link" && (
+        <section className="aero-card space-y-4">
+          <h2>Join the host’s meeting</h2>
+          <p>
+            This call opens at the host’s provider. Their admission, device and
+            recording settings apply. Aerotech does not meter external calls.
+          </p>
+          {externalUrl ? (
+            <a
+              className="aero-button meet-primary"
+              href={externalUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Open meeting link
+            </a>
+          ) : (
+            <button
+              className="aero-button meet-primary"
+              disabled={busy}
+              onClick={() => void join()}
+            >
+              Confirm invitation
+            </button>
+          )}
+        </section>
+      )}
+      {summary && summary.mode !== "external_link" && !inCall && (
         <section className="aero-card meet-prejoin">
           <div className="meet-preview">
             {summary.type === "audio" ? (
@@ -380,7 +416,7 @@ export default function JoinMeeting({
           </div>
         </section>
       )}
-      {summary?.host && (
+      {summary?.host && summary.mode !== "external_link" && (
         <section className="aero-card">
           <h2>Host lobby</h2>
           {queue.length ? (
