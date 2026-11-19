@@ -125,3 +125,16 @@ No real invitation/reminder was sent by this branch: isolated preview Resend cre
 5. Reschedule/cancel and verify the new calendar revision/cancellation and revoked old generation. Keep real-receipt and Spam results marked unverified until observed.
 
 See [full-history audit](./hybrid-meetings-secret-audit.md) for findings, credential rotation and the unapproved history-rewrite plan. New application dependencies for this follow-up: **none**. Gitleaks is a pinned, isolated audit tool, not an application dependency.
+
+## Verification evidence
+
+- Clean locked install: passed, Node 24.
+- Unit tests: 74 passed. Full integration suites: 34 passed, including attendance/payroll/auth/recruitment and hybrid role/quota/metering/tenant cases.
+- Lint and type-check: passed. Production Next build without database/email/payment/auth production secrets: passed. Synthetic Daily key and its environment-variable name absent from 386 client artifacts.
+- OpenNext Cloudflare bundle: passed locally; provider-account/runtime connectivity is a separate gate.
+- Responsive meeting dashboard/prejoin fixture checks at 360/768/1024/1440 across all portals, audio/no-camera, preview cleanup, permission denial, waiting lobby and external-link opening: passed in run 44537642366 before its Cloudflare step. Physical devices/real media are not implied.
+- Neon validation branch: migrations + replay and SQL create/read/cancel passed; actual app connection failed DNS and remains unverified.
+- Real Resend receipt/spam/headers and real Daily analytics remain unverified; public DNS records were inspected.
+- Full-history security audit: completed, 26 candidates including generated build credentials; **not clean**. The finding job intentionally fails and has not been waived.
+
+Later narrow mode-conversion/rejected-invitation fixes have a passing dedicated hybrid integration check and are subject to the PR’s final checks. No production migration or live cutover is declared.
