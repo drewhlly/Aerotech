@@ -57,3 +57,5 @@ node scripts/scan-meetings-history.mjs /path/to/gitleaks
 gh secret list --repo drewhlly/Aerotech
 gh secret list --app codespaces --repo drewhlly/Aerotech
 ```
+
+Continuation: run 44579107292 repeated the full scan on source revision `23445573`, covering 96 fetched refs with the same 26 findings. The security job remains failed intentionally. No credential rotation, history rewrite or destructive cleanup was performed.

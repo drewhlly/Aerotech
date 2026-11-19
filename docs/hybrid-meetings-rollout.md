@@ -140,3 +140,11 @@ See [full-history audit](./hybrid-meetings-secret-audit.md) for findings, creden
 Later narrow mode-conversion/rejected-invitation fixes have a passing dedicated hybrid integration check and are subject to the PR’s final checks. No production migration or live cutover is declared.
 
 Final source revision `ebf1a9c`: private meetings CI 44540537256 passed including responsive/external flows, secret-canary build/type-check and Cloudflare bundle. Login and face-attendance checks passed; signed-in core journeys passed and the extended audit was still running at reporting time. The final local regression again passed all 34 integration suites. GitHub private secret settings also required an owner sign-in, so those inventories remain unverified.
+
+## Continuation verification
+
+Source revision `23445573` passed all functional CI checks, including the complete signed-in/extended route audit (run 44579107427), private Meetings verification, face-attendance and login UI checks. The broad audit fixture now uses the existing pgvector test image and applies optional migration 047; the employee manager attendance page reuses the unchanged server manager check before rendering. This clears the earlier missing-schema 503s and non-manager UI requests without widening API access. Local build, type-check, lint, 74 unit tests, all 34 integration suites and the Cloudflare bundle passed again.
+
+A fresh staging application attempt still failed DNS. All 51 staging migration checksums match repository files; no checksum mismatch was found. The production Neon project still has 10 branches, Daily variables remain absent in the inspected hosting scopes, and the latest Vercel preview still reports Resource provisioning failed. Production remains unchanged.
+
+The repeated full-history scan (run 44579107292) covered 96 fetched refs and retained 26 findings; history remains not confirmed clean. Real Daily media and real invitation/reminder receipt remain unverified.
