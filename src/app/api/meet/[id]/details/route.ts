@@ -112,7 +112,7 @@ export async function POST(req: Request, ctx: C) {
           hybrid = hybridInput({
             ...b,
             mode: b.mode ?? meeting.mode,
-            externalUrl: b.externalUrl ?? meeting.external_url,
+            externalUrl: (b.mode??meeting.mode)==='built_in' ? (b.externalUrl??null) : (b.externalUrl ?? meeting.external_url),
           });
         } catch (e) {
           throw new AccessError(

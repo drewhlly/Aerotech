@@ -82,17 +82,17 @@ export async function POST(
         request.headers.get("authorization")?.replace(/^Bearer /, "") || "",
       );
       const w = requireOpen(m);
+      if (p.status === "rejected")
+        throw new AccessError(
+          "The host has declined this meeting request.",
+          403,
+        );
       if (m.mode === "external_link")
         return respond({
           mode: "external_link",
           externalUrl: externalMeetingUrl(m.external_url),
           title: m.title,
         });
-      if (p.status === "rejected")
-        throw new AccessError(
-          "The host has declined this meeting request.",
-          403,
-        );
       if (
         !host &&
         !(

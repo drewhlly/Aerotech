@@ -820,9 +820,9 @@ function MeetingDetails({
               const f = Object.fromEntries(new FormData(e.currentTarget));
               void api("/api/meet/" + meeting.id + "/details", "POST", {
                 action: "reschedule",
-                mode: meeting.mode,
-                externalUrl: f.externalUrl || meeting.external_url,
                 ...f,
+                mode:f.mode||meeting.mode,
+                externalUrl:(f.mode||meeting.mode)==='external_link'?(f.externalUrl||meeting.external_url):null,
                 startsAt: new Date(String(f.startsAt)).toISOString(),
                 timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
               })

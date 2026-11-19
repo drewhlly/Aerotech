@@ -127,6 +127,11 @@ try {
       .status,
     404,
   );
+  mode='employer';
+ const details=await import('../src/app/api/meet/[id]/details/route.ts');
+ for(const [meetingMode,url] of [['built_in',null],['external_link','https://meet.google.com/abc-defg-hij']]){
+  const changed=await details.POST(req(path+'/'+external+'/details',{action:'reschedule',mode:meetingMode,externalUrl:url,startsAt:new Date(Date.now()+10000).toISOString(),type:'audio'}),ctx(external));assert.equal(changed.status,200,JSON.stringify(await changed.clone().json()));assert.equal((await query('SELECT mode FROM meetings WHERE id=$1',[external])).rows[0].mode,meetingMode);
+ }
   mode = "employer";
   assert.equal(
     (
