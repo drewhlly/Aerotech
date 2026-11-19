@@ -1,5 +1,7 @@
 # Meetings integration security audit — 19 November 2026
 
+> Hybrid update: see [hybrid rollout](./hybrid-meetings-rollout.md) and [completed full-history audit](./hybrid-meetings-secret-audit.md). This document describes the earlier Daily-only implementation.
+
 The old provider was hand-written Jitsi / 8x8 JaaS, not an AI agent SDK. Its browser loader, JWT signing branches, bearer guest implementation, CSP hosts, deployment instructions, fixture configuration and environment-template entries were removed or replaced. No old provider SDK dependency was installed. Existing API route names are intentionally retained behind authenticated Daily handlers to preserve portal and ATS links.
 
 Current tracked source scan found no private-key block. Old provider variable names were found in two historical configuration documents and their obsolete setup rows were removed. Do not treat generic application encryption/session/Resend keys as retired meeting keys.

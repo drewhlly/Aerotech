@@ -1,5 +1,7 @@
 # Aerotech embedded meetings
 
+> Hybrid update: see [hybrid rollout](./hybrid-meetings-rollout.md) and [completed full-history audit](./hybrid-meetings-secret-audit.md). This document describes the earlier Daily-only implementation.
+
 ## Discovery and replacement
 
 The application is Next.js App Router / React 19 / TypeScript, native `pg`, and checksum-ledger SQL migrations, not an ORM. Meetings previously used a hand-written Jitsi iframe loader with 8x8 JaaS RSA JWTs or self-hosted HMAC JWTs. No separate meetings AI agent/SDK was found. `meeting-provider.ts`, the join handler, client room and CSP contained the provider coupling. Existing meeting IDs, ATS interview associations, employee/group invitations, calendar delivery and worker lifecycle are preserved. Legacy meeting-note/action-content writes are retired with 410 responses; historical columns are retained without destructive deletion. Projects remains available for manually managed action items.

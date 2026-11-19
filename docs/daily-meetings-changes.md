@@ -1,5 +1,7 @@
 # Meetings file inventory
 
+> Hybrid update: see [hybrid rollout](./hybrid-meetings-rollout.md) and [completed full-history audit](./hybrid-meetings-secret-audit.md). This document describes the earlier Daily-only implementation.
+
 Based on the change from main `99f6f7d2`; validation and limitations are in daily-meetings.md and the acceptance/security notes.
 
 | File | Change | Purpose |
