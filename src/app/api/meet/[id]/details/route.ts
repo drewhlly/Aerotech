@@ -12,7 +12,6 @@ import {
 } from "@/lib/collaboration";
 import { terminateConference } from "@/lib/meeting-service";
 import { meetingAccess } from "@/lib/meeting-service";
-import { createTask } from "@/lib/project-service";
 import { scheduleInput } from "@/lib/meeting-policy";
 import { joinWindow, pageBounds } from "@/lib/collaboration-policy";
 type C = { params: Promise<{ id: string }> };
@@ -32,14 +31,17 @@ export async function GET(req: Request, ctx: C) {
         )
       ).rows;
       return respond({
-        meeting: { ...meeting, joinState: joinWindow(meeting).state },
+        meeting: {
+          id: meeting.id,
+          title: meeting.title,
+          starts_at: meeting.starts_at,
+          duration_minutes: meeting.duration_minutes,
+          timezone: meeting.timezone,
+          type: meeting.type,
+          status: meeting.status,
+          joinState: joinWindow(meeting).state,
+        },
         participants,
-        actions: (
-          await c.query(
-            "SELECT id,title,task_id FROM meeting_actions WHERE room_id=$1 LIMIT 100",
-            [id],
-          )
-        ).rows,
         limit,
         offset,
       });
@@ -139,23 +141,12 @@ export async function POST(req: Request, ctx: C) {
             "interview:" + app.id + ":" + app.interview_revision,
             { application: app.id, revision: app.interview_revision },
           );
-      } else if (b.action === "notes")
-        await c.query("UPDATE meet_rooms SET notes=$1 WHERE id=$2", [
-          text(b.notes, 20000),
-          id,
-        ]);
-      else if (b.action === "task") {
-        const task = await createTask(c, a, text(b.projectId, 36, true), {
-          title: b.title,
-          dueAt: b.dueAt,
-          assignees: b.assignees || [],
-        });
-        await c.query(
-          "INSERT INTO meeting_actions(employer_id,room_id,title,task_id) VALUES($1,$2,$3,$4)",
-          [a.tenant, id, task.title, task.id],
+      } else if (b.action === "notes" || b.action === "task")
+        throw new AccessError(
+          "Meeting content storage is retired. Use Projects for your own action items.",
+          410,
         );
-        return respond({ taskId: task.id, projectId: task.project_id }, 201);
-      } else throw new AccessError("Unknown operation", 400);
+      else throw new AccessError("Unknown operation", 400);
       if (b.action === "cancel" || b.action === "reschedule")
         await c.query(
           "INSERT INTO collaboration_jobs(employer_id,kind,dedupe_key,payload) SELECT p.employer_id,k,'meeting-'||$2::text||':'||p.id||':'||m.join_generation||':'||k,jsonb_build_object('meeting',m.id,'participant',p.id,'generation',m.join_generation,'event',$2) FROM meeting_participants p JOIN meet_rooms m ON m.id=p.meeting_id CROSS JOIN unnest(ARRAY['meeting_delivery','meeting_notice']) AS k WHERE m.id=$1 ON CONFLICT DO NOTHING",

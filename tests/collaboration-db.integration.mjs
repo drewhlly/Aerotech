@@ -29,6 +29,8 @@ await db.exec("CREATE TABLE IF NOT EXISTS workflow_alerts(employer_id UUID,alert
 await db.exec(readFileSync("database/038_notification_lifecycle.sql","utf8"));
 await db.exec(readFileSync("database/039_guest_meetings.sql","utf8"));
 await db.exec(readFileSync("database/037_collaboration.sql", "utf8"));
+await db.exec("CREATE TABLE applicant_accounts(id UUID PRIMARY KEY,email TEXT,first_name TEXT,last_name TEXT);CREATE TABLE ats_applications(id UUID,job_id UUID,applicant_id UUID,stage TEXT,interview_room_id UUID)");
+await db.exec(readFileSync("database/048_daily_meetings.sql","utf8"));
 const tenant = randomUUID(),
   other = randomUUID();
 await c.query("INSERT INTO employer_accounts VALUES($1,$2),($3,$4)", [
@@ -192,31 +194,11 @@ await check(
     );
   },
 );
-const start = performance.now();
-const m = await scheduleMeeting(c, owner, {
-  title: "Engineering all hands",
-  startsAt: new Date(Date.now() + 3600000).toISOString(),
-  groups: [{ kind: "department", value: "Engineering" }],
-  excludeIds: [ids[999]],
-});
-await check(
-  "1000 staff server-side group invite resolves 999 deduplicated people and excludes one",
-  async () => {
-    assert.equal(m.participants, 999);
-    assert.equal(
-      (
-        await c.query(
-          "SELECT count(*)::int n FROM meet_participants WHERE room_id=$1",
-          [m.id],
-        )
-      ).rows[0].n,
-      999,
-    );
-    console.log(
-      "Group scheduling milliseconds: " + Math.round(performance.now() - start),
-    );
-  },
-);
+const resolved=await resolveGroups(c,owner,[{kind:'department',value:'Engineering'}],[ids[999]]);
+assert.equal(resolved.size,999);
+await assert.rejects(()=>scheduleMeeting(c,owner,{title:'Too many attendees',startsAt:new Date(Date.now()+3600000).toISOString(),groups:[{kind:'department',value:'Engineering'}]}),/limit/);
+const m=await scheduleMeeting(c,owner,{title:'Engineering call',startsAt:new Date(Date.now()+3600000).toISOString(),employeeIds:ids.slice(0,7)});
+await check('large groups resolve without tenant leaks, but calls enforce the configured participant limit',async()=>{assert.equal(m.participants,7);assert.equal((await c.query('SELECT count(*)::int n FROM meet_participants WHERE room_id=$1',[m.id])).rows[0].n,7)});
 await check(
   "cross-company group references never resolve foreign employees",
   async () =>

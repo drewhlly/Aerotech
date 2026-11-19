@@ -13,7 +13,6 @@ import { workspaceHomes } from "@/lib/portal-policy";
 import PeoplePicker, { type Person } from "./people-picker";
 import CollaborationDialog from "./collaboration-dialog";
 import { api } from "./collaboration-client";
-import ResourcePicker from "./resource-picker";
 import { formatDate } from "@/lib/i18n";
 import { useEventRefresh, useExpiryClock } from "./use-event-refresh";
 import { eventVisible, meetingEnd } from "@/lib/event-display";
@@ -170,7 +169,7 @@ export default function Meetings() {
       const date = instant
         ? new Date().toISOString()
         : new Date(String(f.startsAt)).toISOString();
-      await api("/api/meet", "POST", {
+      const created = await api<{ id: string }>("/api/meet", "POST", {
         ...f,
         startsAt: date,
         instant,
@@ -182,8 +181,12 @@ export default function Meetings() {
           .split(/[\s,;]+/)
           .filter(Boolean),
       });
+      if (instant) {
+        window.location.assign(base + "/" + created.id);
+        return;
+      }
       setMessage(
-        "Meeting scheduled. Invited employees will see it in their portal.",
+        "Meeting scheduled. Invitations and calendar updates are queued.",
       );
       setPeople([]);
       setChosen([]);
@@ -570,7 +573,6 @@ export default function Meetings() {
                   </button>
                 ))}
             </div>
-            {m.notes && <p className="mt-3 text-sm">{m.notes}</p>}
           </article>
         ))}
         {!visibleMeetings.length && (
@@ -679,9 +681,6 @@ function MeetingDetails({
   const [people, setPeople] = useState<
       { id: string; name: string; rsvp: string; joined_at: string | null }[]
     >([]),
-    [actions, setActions] = useState<
-      { id: string; title: string; task_id: string }[]
-    >([]),
     [q, setQ] = useState(""),
     [offset, setOffset] = useState(0),
     [message, setMessage] = useFeedback();
@@ -689,7 +688,7 @@ function MeetingDetails({
     const c = new AbortController(),
       t = setTimeout(
         () =>
-          void api<{ participants: typeof people; actions: typeof actions }>(
+          void api<{ participants: typeof people }>(
             "/api/meet/" +
               meeting.id +
               "/details?" +
@@ -700,7 +699,6 @@ function MeetingDetails({
           )
             .then((d) => {
               setPeople(d.participants);
-              setActions(d.actions);
             })
             .catch((e) => {
               if (e.name !== "AbortError") setMessage(e.message);
@@ -712,19 +710,6 @@ function MeetingDetails({
       c.abort();
     };
   }, [meeting.id, q, offset, setMessage]);
-  async function save(e: FormEvent<HTMLFormElement>, action: string) {
-    e.preventDefault();
-    try {
-      await api("/api/meet/" + meeting.id + "/details", "POST", {
-        action,
-        ...Object.fromEntries(new FormData(e.currentTarget)),
-      });
-      setMessage("Saved.");
-      await reload();
-    } catch (e) {
-      setMessage((e as Error).message);
-    }
-  }
   return (
     <CollaborationDialog title={meeting.title} close={close}>
       <p className="text-sm">
@@ -820,47 +805,6 @@ function MeetingDetails({
             </label>
             <button className="aero-button border">Reschedule meeting</button>
           </form>
-          <form
-            method="post"
-            onSubmit={(e) => void save(e, "notes")}
-            className="mt-5 space-y-3"
-          >
-            <label className="block">
-              Meeting notes
-              <textarea
-                name="notes"
-                defaultValue={meeting.notes}
-                maxLength={20000}
-                className="aero-input"
-              />
-            </label>
-            <button className="aero-button border">Save notes</button>
-          </form>
-          <form
-            method="post"
-            onSubmit={(e) => void save(e, "task")}
-            className="mt-5 space-y-3"
-          >
-            <h3 className="font-semibold">Convert action item to task</h3>
-            <label className="block">
-              Action title
-              <input name="title" required className="aero-input" />
-            </label>
-            <ResourcePicker
-              label="Project"
-              endpoint="/api/projects"
-              name="projectId"
-            />
-            <label className="block">
-              Due date
-              <input
-                name="dueAt"
-                type="datetime-local"
-                className="aero-input"
-              />
-            </label>
-            <button className="aero-button border">Create project task</button>
-          </form>
           <button
             className="aero-button mt-5 bg-red-700 text-white"
             onClick={async () => {
@@ -883,16 +827,10 @@ function MeetingDetails({
           </button>
         </>
       )}
-      <h3 className="mt-5 font-semibold">Action items</h3>
-      {actions.map((a) => (
-        <p className="py-2" key={a.id}>
-          {a.title} · Task {a.task_id}
-        </p>
-      ))}
       <p className="mt-4 text-xs text-slate-600">
         {base.startsWith("/employee")
           ? "Only your invited meetings appear here."
-          : "All notes remain within this company."}
+          : "Only meeting metadata is stored by Aerotech."}
       </p>
     </CollaborationDialog>
   );

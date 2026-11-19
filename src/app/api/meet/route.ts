@@ -40,7 +40,7 @@ export async function GET(req: Request) {
     const a = await actor();
     return await transaction(async (c) => {
       const r = await c.query(
-        `SELECT m.id,m.title,m.agenda,m.starts_at,m.duration_minutes,m.timezone,m.type,m.status,m.notes,m.location,m.recurrence,p.rsvp,CASE WHEN m.revoked_at IS NULL THEN FALSE ELSE TRUE END revoked,(SELECT count(*)::int FROM meet_participants x WHERE x.room_id=m.id) attendee_count FROM meet_rooms m LEFT JOIN meet_participants p ON p.room_id=m.id AND p.employee_id=$2 WHERE m.employer_id=$1 AND ($2::uuid IS NOT NULL OR m.host_id=$1) AND ($2::uuid IS NULL OR p.employee_id IS NOT NULL) AND ($5::boolean AND NOT (${activeMeeting}) OR NOT $5::boolean AND (${activeMeeting})) ORDER BY m.starts_at DESC,m.id LIMIT $3 OFFSET $4`,
+        `SELECT m.id,m.title,m.agenda,m.starts_at,m.duration_minutes,m.timezone,m.type,m.status,m.location,m.recurrence,p.rsvp,CASE WHEN m.revoked_at IS NULL THEN FALSE ELSE TRUE END revoked,(SELECT count(*)::int FROM meet_participants x WHERE x.room_id=m.id) attendee_count FROM meet_rooms m LEFT JOIN meet_participants p ON p.room_id=m.id AND p.employee_id=$2 WHERE m.employer_id=$1 AND ($2::uuid IS NOT NULL OR m.host_id=$1) AND ($2::uuid IS NULL OR p.employee_id IS NOT NULL) AND ($5::boolean AND NOT (${activeMeeting}) OR NOT $5::boolean AND (${activeMeeting})) ORDER BY m.starts_at DESC,m.id LIMIT $3 OFFSET $4`,
         [a.tenant, a.employee, limit, offset, history],
       );
       return respond({

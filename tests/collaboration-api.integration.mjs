@@ -3,6 +3,7 @@ import { PGlite } from "@electric-sql/pglite";
 import { readFileSync } from "node:fs";
 import { randomUUID, createHash } from "node:crypto";
 import assert from "node:assert/strict";
+import {installDailyFixture} from "./helpers/daily-fixture.mjs";
 const database = new PGlite();
 const query = async (sql, params = []) => {
   const r = await database.query(sql, params);
@@ -36,6 +37,9 @@ await database.exec("CREATE TABLE IF NOT EXISTS workflow_alerts(employer_id UUID
 await database.exec(readFileSync("database/038_notification_lifecycle.sql","utf8"));
 await database.exec(readFileSync("database/039_guest_meetings.sql","utf8"));
 await database.exec("CREATE TABLE ats_applications(id UUID,job_id UUID,stage TEXT,interview_completed_at TIMESTAMPTZ,interview_room_id UUID,interview_at TIMESTAMPTZ,interview_revision INT DEFAULT 0)");
+await database.exec("ALTER TABLE ats_applications ADD COLUMN applicant_id UUID; CREATE TABLE applicant_accounts(id UUID PRIMARY KEY,email TEXT,first_name TEXT,last_name TEXT); CREATE TABLE applicant_sessions(token_hash TEXT,applicant_id UUID,expires_at TIMESTAMPTZ)");
+await database.exec(readFileSync("database/048_daily_meetings.sql","utf8"));
+const dailyFixture=installDailyFixture();
 const owner = randomUUID(),
   other = randomUUID(),
   employee = randomUUID(),
@@ -73,7 +77,7 @@ const ctx = (...segments) => ({ params: Promise.resolve({ segments }) }),
     new Request("https://aerotech.test" + url, {
       method,
       headers:
-        body instanceof FormData ? {} : { "Content-Type": "application/json" },
+        body instanceof FormData ? {} : { "Content-Type": "application/json", Origin:"https://aerotech.test" },
       body:
         body instanceof FormData
           ? body
@@ -453,37 +457,16 @@ await check("API creates a subtask within its parent project", async () => {
   assert.equal((await r.json()).parent_id, task.id);
 });
 const details = await import("../src/app/api/meet/[id]/details/route.ts");
-await check("API meeting action items create project tasks", async () => {
-  const r = await details.POST(
-    req("/api/meet/" + meeting.id + "/details", "POST", {
-      action: "task",
-      title: "Follow up",
-      projectId: project.id,
-    }),
-    { params: Promise.resolve({ id: meeting.id }) },
-  );
-  assert.equal(r.status, 201);
-  const b = await r.json();
-  assert.equal(
-    (
-      await query("SELECT project_id FROM project_tasks WHERE id=$1", [
-        b.taskId,
-      ])
-    ).rows[0].project_id,
-    project.id,
-  );
-});
+await check('API no longer stores meeting notes or call-derived action content',async()=>{jar={aerotech_employer_session:'owner'};for(const action of ['notes','task'])assert.equal((await details.POST(req('/api/meet/'+meeting.id+'/details','POST',{action,notes:'No call content',title:'No call content',projectId:project.id}),{params:Promise.resolve({id:meeting.id})})).status,410)});
 await check(
-  "API tokens last at most 60 seconds and cancellation immediately denies further access",
+  "Daily tokens are short lived and cancellation denies further access",
   async () => {
     await query(
       "UPDATE meet_rooms SET starts_at=NOW(),status='scheduled',revoked_at=NULL WHERE id=$1",
       [meeting.id],
     );
-    process.env.JITSI_DOMAIN = "video.example.test";
-    process.env.JITSI_APP_ID = "test-app";
-    process.env.JITSI_APP_SECRET = "a".repeat(64);
-    const opened = await join.GET(req("/api/meet/" + meeting.id + "/join"), {
+
+    const opened = await join.POST(req("/api/meet/" + meeting.id + "/join", "POST", {name:"Fixture host"}), {
       params: Promise.resolve({ id: meeting.id }),
     });
     assert.equal(opened.status, 200);
@@ -491,7 +474,7 @@ await check(
       claims = JSON.parse(
         Buffer.from(token.split(".")[1], "base64url").toString(),
       );
-    assert.ok(claims.exp - claims.iat <= 60);
+    assert.ok(claims.exp - claims.iat <= 300);
     assert.equal(
       (
         await details.POST(
@@ -591,12 +574,11 @@ await check("metadata updates reject foreign employee references",async()=>{
  jar={aerotech_employer_session:"owner"};let r=await docs.POST(req("/api/document-library/"+uploaded.id,"POST",{action:"metadata",title:"Updated document",category:"Contracts",employeeId:employee,tags:"contract, reviewed"}),ctx(uploaded.id));assert.equal(r.status,200);
  r=await docs.POST(req("/api/document-library/"+uploaded.id,"POST",{action:"metadata",title:"Wrong",category:"Contracts",employeeId:randomUUID()}),ctx(uploaded.id));assert.equal(r.status,404);
 });
-await check("guest bearer access is meeting scoped and expired server-side",async()=>{
- jar={};const room=randomUUID();await query("INSERT INTO meet_rooms(id,employer_id,title,starts_at,duration_minutes) VALUES($1,$2,'Guest',NOW()+INTERVAL '1 hour',30)",[room,owner]);await query("INSERT INTO meeting_guests(employer_id,room_id,email) VALUES($1,$2,'guest@example.test')",[owner,room]);
- const {guestInvitation}=await import("../src/lib/meeting-guest.ts"),token=guestInvitation(room,"guest@example.test",1),request=t=>new Request("https://aerotech.test/api/meet/"+room+"/join",{headers:{Authorization:"Bearer "+t}}),context={params:Promise.resolve({id:room})};assert.equal((await join.GET(request(token),context)).status,425);assert.equal((await join.GET(request(token+'forged'),context)).status,401);assert.equal((await projects.GET(req('/api/projects'),ctx())).status,401);await query("UPDATE meet_rooms SET starts_at=NOW()-INTERVAL '2 hours' WHERE id=$1",[room]);assert.equal((await join.GET(request(token),context)).status,410);
-});
+await check("anonymous bearer tokens never replace authenticated invitations",async()=>{jar={};const room=randomUUID();await query("INSERT INTO meet_rooms(id,employer_id,title,starts_at,duration_minutes) VALUES($1,$2,'Guest',NOW()+INTERVAL '1 hour',30)",[room,owner]);const r=await join.GET(new Request('https://aerotech.test/api/meet/'+room+'/join',{headers:{Authorization:'Bearer not-a-session'}}),{params:Promise.resolve({id:room})});assert.equal(r.status,401);});
+
 console.log(
   count +
     " actual API-handler integration checks passed using isolated PostgreSQL and mocked session/provider boundaries. No production database, emails or external service calls.",
 );
+dailyFixture.restore();
 await database.close();

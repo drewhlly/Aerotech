@@ -1,0 +1,32 @@
+name: Private meetings verification
+on:
+  pull_request:
+    paths: ['src/**','database/**','tests/**','scripts/**','package*.json','wrangler.jsonc','open-next.config.ts','.github/workflows/meetings.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  meetings:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24'
+      - run: npm ci --no-audit --no-fund
+      - run: npm run lint
+      - run: npm test
+      - run: node --experimental-test-module-mocks --import ./tests/helpers/ts-loader.mjs tests/meeting-access.integration.mjs
+      - run: npm run build
+      - run: npx tsc --noEmit
+      - run: npx playwright install --with-deps chromium
+      - run: node scripts/verify-meetings-ui.mjs
+      - run: npm run cf:build
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        if: always()
+        with:
+          name: meetings-synthetic-ui-evidence
+          path: /tmp/aerotech-meetings-ui
+          if-no-files-found: ignore
+          retention-days: 7
