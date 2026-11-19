@@ -1,3 +1,4 @@
+import {builtInConfiguration} from "@/lib/meeting-runtime-config";
 import {NextResponse} from "next/server";
 import {db} from "@/lib/employer-session";
 import {supportAgent} from "@/lib/support-session";
@@ -17,7 +18,7 @@ export async function GET(request:Request,context:{params:Promise<{id:string}>})
  if(!grant||ticket.status!=="open"){
  await audit(client,ticket.employer_id,id,"support",agent.id,"diagnostics_denied",{scope});await client.query("COMMIT");return NextResponse.json({error:"Company approval for this scope is missing, expired or revoked"},{status:403});}
  const data=(await client.query(queries[scope],[ticket.employer_id])).rows[0];
- const configured=scope==="meetings"?{conferencingConfigured:Boolean(process.env.DAILY_API_KEY&&process.env.DAILY_DOMAIN)}:scope==="workforce"?{invitationEmailConfigured:Boolean(process.env.RESEND_API_KEY&&process.env.INVITATION_FROM_EMAIL&&process.env.APP_BASE_URL)}:{};
+ const configured=scope==="meetings"?{conferencingConfigured:builtInConfiguration().enabled}:scope==="workforce"?{invitationEmailConfigured:Boolean(process.env.RESEND_API_KEY&&process.env.INVITATION_FROM_EMAIL&&process.env.APP_BASE_URL)}:{};
  await audit(client,ticket.employer_id,id,"support",agent.id,"diagnostics_viewed",{scope,grantId:grant.id});await client.query("COMMIT");return NextResponse.json({scope,data,configured,readOnly:true},{headers:{"Cache-Control":"no-store"}});
  }catch{await client.query("ROLLBACK").catch(()=>{});return NextResponse.json({error:"Diagnostics unavailable"},{status:503});}finally{client.release();await pool.end();}
 }
