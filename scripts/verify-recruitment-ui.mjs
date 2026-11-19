@@ -15,6 +15,7 @@ export async function verifyRecruitmentUI(context,jobId,applicationId){
   const result=await new AxeBuilder({page}).include('main').analyze();assert.deepEqual(result.violations.filter(v=>['critical','serious'].includes(v.impact)).map(v=>v.id),[]);
   if(viewport.width===1280){
    await dialog.getByLabel('Interview time (your local timezone)',{exact:true}).fill(new Date(Date.now()+3600000).toISOString().slice(0,16));
+   await dialog.getByLabel('External interview link',{exact:true}).fill('https://meet.google.com/qa-only-qa');
    await dialog.getByRole('button',{name:'Schedule interview',exact:true}).click();await dialog.waitFor({state:'hidden'});
    const data=await(await context.request.get('/api/ats?view=employer')).json(),candidate=data.applications.find(a=>a.id===applicationId);
    assert.equal(candidate.stage,'interview');assert.ok(candidate.interview_room_id);
