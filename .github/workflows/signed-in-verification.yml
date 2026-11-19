@@ -36,8 +36,7 @@ jobs:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
           node-version: '24'
-      - run: npm install --no-audit --no-fund
-      - run: npm install --no-save --package-lock=false lighthouse @axe-core/playwright
+      - run: npm ci --no-audit --no-fund
       - run: npx playwright install --with-deps chromium --only-shell
       - run: npm run db:migrate
       - run: npm run build
