@@ -1,3 +1,4 @@
+import { meetingBody } from "@/lib/meeting-access";
 import { activeMeeting } from "@/lib/notification-policy";
 import {
   actor,
@@ -60,7 +61,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const a = await actor(),
-      b = await req.json().catch(() => null);
+      b = await meetingBody(req);
     if (!b || typeof b !== "object" || Array.isArray(b))
       return respond({ error: "Request body must be a JSON object." }, 400);
 

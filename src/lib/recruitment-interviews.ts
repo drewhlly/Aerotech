@@ -1,3 +1,4 @@
+import {limitMeetingCreation} from "./meeting-rate";
 import type {PoolClient} from 'pg';
 import {randomUUID} from 'node:crypto';
 import {enqueue} from './collaboration';
@@ -9,7 +10,7 @@ export async function retireInterview(client:PoolClient,employer:string,room:str
  if(status==='cancelled')await client.query("UPDATE recruitment_interview_slots s SET status=CASE WHEN s.starts_at>NOW()+INTERVAL '30 minutes' THEN 'open' ELSE 'cancelled' END,application_id=NULL FROM ats_applications a WHERE a.id=s.application_id AND a.interview_room_id=$1 AND s.employer_id=$2",[room,employer]);
 }
 export async function scheduleInterview(client:PoolClient,employer:string,application:string,previous:string|null,title:string,startsAt:string,duration=60,interviewer:string|null=null){
- await client.query('SELECT id FROM employer_accounts WHERE id=$1 FOR UPDATE',[employer]);
+ await limitMeetingCreation(client,employer);
  await client.query("UPDATE recruitment_interview_slots SET status=CASE WHEN starts_at>NOW()+INTERVAL '30 minutes' THEN 'open' ELSE 'cancelled' END,application_id=NULL WHERE employer_id=$1 AND application_id=$2",[employer,application]);
  if(previous)await retireInterview(client,employer,previous,'cancelled');
  const room=randomUUID();

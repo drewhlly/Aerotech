@@ -78,10 +78,10 @@ export async function sweep(c: PoolClient) {
     "UPDATE ats_jobs SET status='expired' WHERE status='published' AND expires_at<=NOW()",
   );
   await c.query(
-    `INSERT INTO collaboration_jobs(employer_id,kind,dedupe_key,payload) SELECT p.employer_id,'meeting_delivery','meeting-invite:'||p.id||':'||m.join_generation,jsonb_build_object('meeting',m.id,'participant',p.id,'generation',m.join_generation,'event','invite') FROM meeting_participants p JOIN meet_rooms m ON m.id=p.meeting_id WHERE m.status='scheduled' AND m.revoked_at IS NULL AND m.starts_at+m.duration_minutes*INTERVAL '1 minute'>NOW() ON CONFLICT DO NOTHING`,
+    `INSERT INTO collaboration_jobs(employer_id,kind,dedupe_key,payload) SELECT p.employer_id,k,'meeting-invite:'||p.id||':'||m.join_generation||':'||k,jsonb_build_object('meeting',m.id,'participant',p.id,'generation',m.join_generation,'event','invite') FROM meeting_participants p JOIN meet_rooms m ON m.id=p.meeting_id CROSS JOIN unnest(ARRAY['meeting_delivery','meeting_notice']) AS k WHERE m.status='scheduled' AND m.revoked_at IS NULL AND m.starts_at+m.duration_minutes*INTERVAL '1 minute'>NOW() ON CONFLICT DO NOTHING`,
   );
   await c.query(
-    `INSERT INTO collaboration_jobs(employer_id,kind,dedupe_key,payload) SELECT p.employer_id,'meeting_delivery','meeting-soon:'||p.id||':'||m.join_generation,jsonb_build_object('meeting',m.id,'participant',p.id,'generation',m.join_generation,'event','reminder') FROM meeting_participants p JOIN meet_rooms m ON m.id=p.meeting_id WHERE m.status='scheduled' AND m.revoked_at IS NULL AND p.status<>'rejected' AND m.starts_at BETWEEN NOW() AND NOW()+INTERVAL '15 minutes' ON CONFLICT DO NOTHING`,
+    `INSERT INTO collaboration_jobs(employer_id,kind,dedupe_key,payload) SELECT p.employer_id,k,'meeting-soon:'||p.id||':'||m.join_generation||':'||k,jsonb_build_object('meeting',m.id,'participant',p.id,'generation',m.join_generation,'event','reminder') FROM meeting_participants p JOIN meet_rooms m ON m.id=p.meeting_id CROSS JOIN unnest(ARRAY['meeting_delivery','meeting_notice']) AS k WHERE m.status='scheduled' AND m.revoked_at IS NULL AND p.status<>'rejected' AND m.starts_at BETWEEN NOW() AND NOW()+INTERVAL '15 minutes' ON CONFLICT DO NOTHING`,
   );
 
   for (const [label, window] of [
@@ -101,9 +101,7 @@ export async function sweep(c: PoolClient) {
   await c.query(
     `INSERT INTO collaboration_jobs(employer_id,kind,dedupe_key,payload) SELECT employer_id,'meeting_recur','meeting-recur:'||id,jsonb_build_object('meeting',id) FROM meet_rooms WHERE status='ended' AND recurrence IN ('daily','weekly') ON CONFLICT DO NOTHING`,
   );
-  await c.query(
-    `INSERT INTO collaboration_jobs(employer_id,kind,dedupe_key,payload) SELECT p.employer_id,'notification','meeting-reminder:'||m.id||':'||p.employee_id,jsonb_build_object('recipient','employee:'||p.employee_id,'event','meeting','title','Meeting starts soon','body',m.title,'href','/employee/meet/'||m.id) FROM meet_rooms m JOIN meet_participants p ON p.room_id=m.id WHERE m.status='scheduled' AND p.rsvp<>'Decline' AND m.starts_at BETWEEN NOW() AND NOW()+INTERVAL '30 minutes' ON CONFLICT DO NOTHING`,
-  );
+
   await c.query(
     `INSERT INTO collaboration_jobs(employer_id,kind,dedupe_key,payload) SELECT d.employer_id,'notification','doc-expiry:'||d.id||':'||d.expiry_date||':'||CURRENT_DATE,jsonb_build_object('recipient','employer:'||d.employer_id,'event','document','title','Document expiry reminder','body',d.title||' expires '||d.expiry_date,'href','/dashboard/employer/documents') FROM library_documents d WHERE expiry_date BETWEEN CURRENT_DATE AND CURRENT_DATE+30 ON CONFLICT DO NOTHING`,
   );
@@ -135,7 +133,7 @@ async function perform(c: PoolClient, job: Job) {
     return;
   }
   if (job.kind === "guest_invite") return; // Retired anonymous invitation flow; canonical deliveries below.
-  if (job.kind === "meeting_delivery") {
+  if (job.kind === "meeting_delivery" || job.kind === "meeting_notice") {
     const row = (
       await c.query(
         "SELECT m.*,p.id AS participant_id,p.user_id,p.principal_type,p.invited_email,COALESCE(e.email,x.email,h.company_email,p.invited_email) AS recipient_email FROM meeting_participants p JOIN meet_rooms m ON m.id=p.meeting_id AND m.employer_id=p.employer_id LEFT JOIN workforce_employees e ON p.principal_type='employee' AND e.id=p.user_id AND e.employer_id=p.employer_id LEFT JOIN applicant_accounts x ON p.principal_type='applicant' AND x.id=p.user_id LEFT JOIN employer_accounts h ON p.principal_type='employer' AND h.id=p.user_id WHERE p.id=$1 AND p.meeting_id=$2 AND m.employer_id=$3",
@@ -199,6 +197,41 @@ async function perform(c: PoolClient, job: Job) {
       "\n\n" +
       link +
       "\nSign into your invited Aerotech account. No Daily account is needed. Recording and transcription are off.";
+    if (job.kind === "meeting_notice") {
+      if (row.user_id)
+        await c.query(
+          "INSERT INTO collaboration_notifications(employer_id,actor,event,title,body,href,source_key,in_app,expires_at) VALUES($1,$2,$3,$4,$5,$6,$7,TRUE,$8) ON CONFLICT DO NOTHING",
+          [
+            a.tenant,
+            row.principal_type + ":" + row.user_id,
+            b.event === "cancel" ? "status" : "meeting",
+            subject,
+            time + " · " + row.timezone,
+            href,
+            job.id,
+            b.event === "cancel"
+              ? new Date(Date.now() + 7 * 86400000)
+              : new Date(
+                  new Date(row.starts_at).getTime() +
+                    row.duration_minutes * 60000,
+                ),
+          ],
+        );
+      return;
+    }
+    // ATS already delivers interview invitations/reminders with its own calendar revision.
+    const interview = (
+      await c.query(
+        "SELECT 1 FROM ats_applications WHERE interview_room_id=$1 LIMIT 1",
+        [row.id],
+      )
+    ).rowCount;
+    if (
+      interview &&
+      b.event !== "cancel" &&
+      ["employer", "applicant"].includes(row.principal_type)
+    )
+      return;
     if (!process.env.RESEND_API_KEY || !process.env.INVITATION_FROM_EMAIL)
       throw Error("Meeting email is not configured");
     const delivery = await fetch("https://api.resend.com/emails", {
@@ -216,32 +249,15 @@ async function perform(c: PoolClient, job: Job) {
         attachments: [
           {
             filename: "aerotech-meeting.ics",
-            content: Buffer.from(calendarFile(row, origin)).toString("base64"),
+            content: Buffer.from(calendarFile(row, origin, link)).toString(
+              "base64",
+            ),
           },
         ],
       }),
       signal: AbortSignal.timeout(10000),
     });
     if (!delivery.ok) throw Error("Meeting invitation delivery failed");
-    if (row.user_id)
-      await c.query(
-        "INSERT INTO collaboration_notifications(employer_id,actor,event,title,body,href,source_key,in_app,expires_at) VALUES($1,$2,$3,$4,$5,$6,$7,TRUE,$8) ON CONFLICT DO NOTHING",
-        [
-          a.tenant,
-          row.principal_type + ":" + row.user_id,
-          b.event === "cancel" ? "status" : "meeting",
-          subject,
-          time + " · " + row.timezone,
-          href,
-          job.id,
-          b.event === "cancel"
-            ? new Date(Date.now() + 7 * 86400000)
-            : new Date(
-                new Date(row.starts_at).getTime() +
-                  row.duration_minutes * 60000,
-              ),
-        ],
-      );
     return;
   }
   if (job.kind === "meeting_terminate") {

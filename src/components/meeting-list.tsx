@@ -204,7 +204,11 @@ export default function Meetings() {
           your device timezone. Recording and transcription are off.
         </p>
       </section>
-      {role==='applicant'&&<Link className="aero-button border" href="/applicant/notifications">Meeting notifications</Link>}
+      {role === "applicant" && (
+        <Link className="aero-button border" href="/applicant/notifications">
+          Meeting notifications
+        </Link>
+      )}
       {message && (
         <p role="status" className="aero-card">
           {message}

@@ -14,9 +14,12 @@ export async function embedMeeting(
   onJoined: () => void,
   onLeft: () => void,
   onError: () => void,
+  isActive = () => true,
 ): Promise<EmbeddedCall> {
   if (session.provider !== "daily") throw Error("Unsupported call interface");
   const Daily = (await import("@daily-co/daily-js")).default;
+  if (!parent.isConnected || !isActive())
+    throw Error("Meeting connection cancelled.");
   const frame = Daily.createFrame(parent, {
     iframeStyle: {
       width: "100%",
@@ -40,20 +43,21 @@ export async function embedMeeting(
     .on("left-meeting", onLeft)
     .on("error", onError)
     .on("camera-error", onError);
-  try {
-    await frame.join({
+  // Return the destroy handle before Prebuilt's own Join is pressed. Otherwise a
+  // pending iframe prejoin could retain camera tracks when the portal Leave is used.
+  void frame
+    .join({
       url: session.url,
       token: session.token,
       userName: session.name,
       startVideoOff: session.type === "audio",
       startAudioOff: true,
+      ...(session.type === "audio" ? { videoSource: false as const } : {}),
+    })
+    .catch(async () => {
+      onError();
+      await frame.destroy().catch(() => {});
     });
-  } catch {
-    await frame.destroy();
-    throw Error(
-      "Could not connect to the meeting. Check your permissions or try again.",
-    );
-  }
   return {
     destroy: async () => {
       await frame.destroy();

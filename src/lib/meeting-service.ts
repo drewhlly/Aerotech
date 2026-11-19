@@ -1,3 +1,4 @@
+import { limitMeetingCreation } from "./meeting-rate";
 import type { PoolClient } from "pg";
 import {
   AccessError,
@@ -88,18 +89,7 @@ export async function scheduleMeeting(
     );
   }
   const { date, duration, timezone, type } = settings;
-  await c.query("SELECT id FROM employer_accounts WHERE id=$1 FOR UPDATE", [
-    a.tenant,
-  ]);
-  const recent = await c.query(
-    "SELECT count(*)::int n FROM meet_rooms WHERE employer_id=$1 AND created_at>NOW()-INTERVAL '5 minutes'",
-    [a.tenant],
-  );
-  if (recent.rows[0].n >= 5)
-    throw new AccessError(
-      "You can create up to five meetings in five minutes.",
-      429,
-    );
+  await limitMeetingCreation(c, a.tenant);
   const groups = Array.isArray(b.groups) ? (b.groups as GroupRef[]) : [],
     exclude = b.excludeIds ? ids(b.excludeIds) : [],
     selected = await resolveGroups(c, a, groups, exclude),

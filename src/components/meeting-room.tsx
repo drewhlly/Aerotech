@@ -235,6 +235,7 @@ export default function JoinMeeting({
           setMessage(
             "Check camera/microphone permissions. The call can continue with devices off.",
           ),
+        () => gen === generation.current,
       );
       if (gen !== generation.current) {
         await embedded.destroy();

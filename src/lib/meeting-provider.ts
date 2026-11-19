@@ -42,7 +42,7 @@ export function meetingProviderReady() {
   return Boolean(
     process.env.DAILY_API_KEY &&
     process.env.DAILY_DOMAIN &&
-    process.env.MEETING_PROVIDER !== "disabled",
+    (!process.env.MEETING_PROVIDER || process.env.MEETING_PROVIDER === "daily"),
   );
 }
 async function request(
@@ -82,7 +82,6 @@ export function dailyTokenProperties(i: TokenInput, now = Date.now()) {
     is_owner: i.host,
     nbf: Math.floor(now / 1000) - 5,
     exp: tokenExpiry(now, i.endsAt, i.ttl),
-    eject_at_token_exp: false,
     enable_prejoin_ui: true,
     start_video_off: i.type === "audio",
     start_audio_off: true,

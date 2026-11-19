@@ -74,6 +74,7 @@ export function calendarFile(
     join_generation: number;
   },
   origin: string,
+  invitationUrl?: string,
 ) {
   const clean = (s: string) =>
     s
@@ -100,11 +101,26 @@ export function calendarFile(
     "DTEND:" +
       stamp(new Date(m.starts_at).getTime() + m.duration_minutes * 60000),
     "SUMMARY:" + clean(m.title),
-    "URL:" + origin + "/meet/" + m.id,
+    "URL:" + (invitationUrl || origin + "/meet/" + m.id),
     "DESCRIPTION:Sign into your invited Aerotech portal to join. Recording and transcription are off.",
     "STATUS:" + (m.status === "cancelled" ? "CANCELLED" : "CONFIRMED"),
     "END:VEVENT",
     "END:VCALENDAR",
     "",
-  ].join("\r\n");
+  ]
+    .map((line) => {
+      let result = "",
+        bytes = 0;
+      for (const character of line) {
+        const n = new TextEncoder().encode(character).length;
+        if (bytes + n > 74) {
+          result += "\r\n ";
+          bytes = 1;
+        }
+        result += character;
+        bytes += n;
+      }
+      return result;
+    })
+    .join("\r\n");
 }

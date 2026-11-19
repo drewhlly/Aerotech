@@ -35,8 +35,23 @@ export async function meetingBody(request: Request) {
     throw new AccessError("Refresh the page and try again.", 403);
   if (Number(request.headers.get("content-length") || 0) > 40000)
     throw new AccessError("Request too large", 413);
-  const raw = await request.text();
-  if (raw.length > 40000) throw new AccessError("Request too large", 413);
+  const reader = request.body?.getReader();
+  let raw = "";
+  const decoder = new TextDecoder();
+  let bytes = 0;
+  if (reader) {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      bytes += value.byteLength;
+      if (bytes > 40000) {
+        await reader.cancel();
+        throw new AccessError("Request too large", 413);
+      }
+      raw += decoder.decode(value, { stream: true });
+    }
+    raw += decoder.decode();
+  }
   const b = JSON.parse(raw || "{}");
   if (!b || typeof b !== "object" || Array.isArray(b))
     throw new AccessError("Invalid request", 400);

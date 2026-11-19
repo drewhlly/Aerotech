@@ -1,3 +1,4 @@
+import { meetingBody } from "@/lib/meeting-access";
 import {
   actor,
   transaction,
@@ -51,7 +52,7 @@ export async function POST(req: Request, ctx: C) {
   try {
     const a = await actor(),
       { id } = await ctx.params,
-      b = await req.json().catch(() => null);
+      b = await meetingBody(req);
     if (!b || typeof b !== "object" || Array.isArray(b))
       return respond({ error: "Request body must be a JSON object." }, 400);
 
@@ -59,7 +60,11 @@ export async function POST(req: Request, ctx: C) {
     const result = await transaction(async (c) => {
       const meeting = await meetingAccess(c, a, id, b.action !== "rsvp");
       if (b.action === "rsvp") {
-        if (!a.employee || !["Accept", "Decline", "Maybe"].includes(b.rsvp))
+        if (
+          !a.employee ||
+          typeof b.rsvp !== "string" ||
+          !["Accept", "Decline", "Maybe"].includes(b.rsvp)
+        )
           throw new AccessError("Invalid response", 400);
         await c.query(
           "UPDATE meet_participants SET rsvp=$1 WHERE room_id=$2 AND employee_id=$3",
@@ -140,7 +145,7 @@ export async function POST(req: Request, ctx: C) {
           id,
         ]);
       else if (b.action === "task") {
-        const task = await createTask(c, a, b.projectId, {
+        const task = await createTask(c, a, text(b.projectId, 36, true), {
           title: b.title,
           dueAt: b.dueAt,
           assignees: b.assignees || [],
@@ -153,7 +158,7 @@ export async function POST(req: Request, ctx: C) {
       } else throw new AccessError("Unknown operation", 400);
       if (b.action === "cancel" || b.action === "reschedule")
         await c.query(
-          "INSERT INTO collaboration_jobs(employer_id,kind,dedupe_key,payload) SELECT p.employer_id,'meeting_delivery','meeting-'||$2::text||':'||p.id||':'||m.join_generation,jsonb_build_object('meeting',m.id,'participant',p.id,'generation',m.join_generation,'event',$2) FROM meeting_participants p JOIN meet_rooms m ON m.id=p.meeting_id WHERE m.id=$1 ON CONFLICT DO NOTHING",
+          "INSERT INTO collaboration_jobs(employer_id,kind,dedupe_key,payload) SELECT p.employer_id,k,'meeting-'||$2::text||':'||p.id||':'||m.join_generation||':'||k,jsonb_build_object('meeting',m.id,'participant',p.id,'generation',m.join_generation,'event',$2) FROM meeting_participants p JOIN meet_rooms m ON m.id=p.meeting_id CROSS JOIN unnest(ARRAY['meeting_delivery','meeting_notice']) AS k WHERE m.id=$1 ON CONFLICT DO NOTHING",
           [id, b.action === "cancel" ? "cancel" : "invite"],
         );
       await audit(c, a, "meeting." + b.action, id);

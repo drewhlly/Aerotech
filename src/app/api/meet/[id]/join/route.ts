@@ -52,6 +52,11 @@ export async function GET(
       });
     });
   } catch (e) {
+    if (e instanceof AccessError && (e.status === 410 || e.status === 425))
+      return respond(
+        { error: e.message, state: e.status === 410 ? "expired" : "upcoming" },
+        e.status,
+      );
     return errorResponse(e);
   }
 }
@@ -144,6 +149,11 @@ export async function POST(
       });
     });
   } catch (e) {
+    if (e instanceof AccessError && (e.status === 410 || e.status === 425))
+      return respond(
+        { error: e.message, state: e.status === 410 ? "expired" : "upcoming" },
+        e.status,
+      );
     return errorResponse(e);
   }
 }
