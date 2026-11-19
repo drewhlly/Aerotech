@@ -67,7 +67,7 @@ A local application attempt against that branch failed because its Neon hostname
 
 Production was not migrated. Attempts to create a new production backup were blocked by snapshot and branch limits. The only listed production snapshot was from 29 October, which is not a fresh rollback point. Resolve capacity/create a verified fresh rollback branch or snapshot first, without deleting anything by assumption.
 
-After staging app acceptance **and explicit owner production go-ahead**, the order is:
+Staging commands and the production gate:
 
 ```bash
 # Node 24; checkout the exact reviewed release commit, install locked dependencies.
@@ -77,11 +77,11 @@ npm ci --no-audit --no-fund
 npm run db:migrate
 npm run db:migrate   # checksum-ledger no-op verifies replay
 # Run actual app create/read/cancel, invitation, external and paid built-in acceptance.
-# 2. Only after backup + staging acceptance + explicit approval, set DATABASE_URL
-# to production project polished-cloud-66634472 / br-empty-base-b84a9xdp / neondb:
-npm run db:migrate   # applies 048 then 049 in one locked transaction
-# 3. Deploy reviewed application, test external mode first, enable Daily after acceptance.
+# Production commands are intentionally withheld until actual staging runtime
+# acceptance passes, as requested. This terminal's DNS attempt did not pass.
 ```
+
+After staging app acceptance passes, provide the exact production command/order for project `polished-cloud-66634472`, branch `br-empty-base-b84a9xdp`, database `neondb`, using its production connection only. Obtain the owner’s explicit production-migration go-ahead before execution. No production migration command is issued here while staging runtime acceptance remains blocked.
 
 Raw SQL 048/049 is not independently idempotent. The migration runner is tracked, checksum-validated and transaction/advisory-lock protected. Never baseline a populated production database blindly; never modify either applied migration. Roll back the application with the expanded schema/view retained, disable built-in mode, and keep external meetings working. A data rollback restores the pre-change branch/snapshot into a **new** branch, verifies it, then switches the connection after approval; do not drop tables or overwrite production automatically. Any data entered after the rollback point needs reconciliation.
 
@@ -138,3 +138,5 @@ See [full-history audit](./hybrid-meetings-secret-audit.md) for findings, creden
 - Full-history security audit: completed, 26 candidates including generated build credentials; **not clean**. The finding job intentionally fails and has not been waived.
 
 Later narrow mode-conversion/rejected-invitation fixes have a passing dedicated hybrid integration check and are subject to the PR’s final checks. No production migration or live cutover is declared.
+
+Final source revision `ebf1a9c`: private meetings CI 44540537256 passed including responsive/external flows, secret-canary build/type-check and Cloudflare bundle. Login and face-attendance checks passed; signed-in core journeys passed and the extended audit was still running at reporting time. The final local regression again passed all 34 integration suites. GitHub private secret settings also required an owner sign-in, so those inventories remain unverified.
