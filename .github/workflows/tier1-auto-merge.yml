@@ -24,7 +24,7 @@ jobs:
         run: |
           set -euo pipefail
           gh api "repos/$REPO/branches/main/protection" > /tmp/protection.json
-          jq -e '.enforce_admins.enabled == true and .allow_force_pushes.enabled == false and .required_pull_request_reviews.required_approving_review_count >= 1 and .required_status_checks.strict == true and (.required_status_checks.contexts | length >= 4)' /tmp/protection.json > /dev/null
+          jq -e '.enforce_admins.enabled == true and .allow_force_pushes.enabled == false and .required_pull_request_reviews.required_approving_review_count >= 1 and .required_status_checks.strict == true and (["verify","face-postgres","journeys","Vercel"] - .required_status_checks.contexts | length == 0)' /tmp/protection.json > /dev/null
           gh api --paginate "repos/$REPO/pulls/$PR/files" --jq '.[].filename' > /tmp/paths
           test -s /tmp/paths
           while IFS= read -r path; do
