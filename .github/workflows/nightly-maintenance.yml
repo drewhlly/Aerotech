@@ -1,0 +1,13 @@
+name: Nightly maintenance
+on:
+  schedule:
+    - cron: '0 1 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: nightly-maintenance
+  cancel-in-progress: false
+jobs:
+  verification:
+    uses: ./.github/workflows/ci.yml
