@@ -25,6 +25,8 @@ await query("INSERT INTO workforce_employees VALUES($1,$2,'Test','Staff','staff@
 await query("INSERT INTO employee_sessions VALUES($1,$2,NOW()+INTERVAL '1 day')",[hash('employee'),employee]);
 await query("INSERT INTO applicant_sessions VALUES($1,$2,NOW()+INTERVAL '1 day')",[hash('applicant'),applicant]);
 await query("INSERT INTO payroll_stage_approvers VALUES($1,$2,'ceo')",[company,employee]);
+const {employerHasPaidAccess}=await import('../src/lib/employer-payment-guard.ts');
+const request={cookies:{get:key=>jar[key]?{value:jar[key]}:undefined}};
 const {currentEmployer}=await import('../src/lib/employer-session.ts');
 const {currentEmployee}=await import('../src/lib/employee-auth.ts');
 const {currentApplicant}=await import('../src/lib/applicant-session.ts');
@@ -35,6 +37,7 @@ const attention=await import('../src/app/api/workspace/attention/route.ts');
 async function assertBlocked(label){
  jar={aerotech_employer_session:'employer'};path='/api/employees';
  assert.equal(await currentEmployer(),null,label+' employer guard');
+ assert.equal(await employerHasPaidAccess(request),false,label+' navigation guard');
  assert.equal(await currentEmployer(false),company,label+' billing/support identity');
  assert.equal((await people.GET()).status,401,label+' direct employer API');
  assert.equal((await attention.GET()).status,401,label+' employer attention API');
@@ -58,18 +61,27 @@ try{
  }
 
  // Exercise real guards and every interactive payout route with demo identities.
- for(const [reference,expiry] of [['private-demo-'+foreign,"NOW()+INTERVAL '1 day'"],
-   ['private-demo-'+company,'NOW()'],['private-demo-'+company,'NULL']]){
+ for(const [reference,expiry] of [['private-demo-'+foreign,"NOW()+INTERVAL '1 day'"],['','NULL']]){
   await query(`UPDATE company_subscriptions SET status='demo',reference=$2,paid_until=${expiry} WHERE employer_id=$1`,[company,reference]);
-  await assertBlocked('Invalid, foreign or expired demo');
+  await assertBlocked('Invalid or foreign demo');
  }
- await query("UPDATE company_subscriptions SET status='demo',reference=$2,paid_until=NOW()+INTERVAL '1 day',plan='business' WHERE employer_id=$1",[company,'private-demo-'+company]);
+ await query("UPDATE company_subscriptions SET status='demo',reference=$2,paid_until=NOW()-INTERVAL '1 day',plan='business' WHERE employer_id=$1",[company,'private-demo-'+company]);
  jar={aerotech_employer_session:'employer'};path='/api/employees';
- assert.equal(await currentEmployer(),company,'valid demo employer workspace');
+ assert.equal(await currentEmployer(),company,'demo remains accessible after former trial expiry');
+ assert.equal(await employerHasPaidAccess(request),true,'demo navigation avoids checkout after former trial expiry');
  jar={aerotech_employee_session:'employee'};path='/api/employee/workspace';
  assert.equal((await currentEmployee()).id,employee,'own employer demo sponsors employee');
  assert.equal(await employeeRequestCanApprove('employee'),true,'demo review access');
  assert.equal(await employeeRequestCanApprove('employee',true),false,'demo cannot access CEO payment page');
+ await query("UPDATE company_subscriptions SET status='expired' WHERE employer_id=$1",[company]);
+ await assertBlocked('Revoked demo');
+ await query("UPDATE company_subscriptions SET status='demo' WHERE employer_id=$1",[company]);
+ await query("UPDATE company_subscriptions SET paid_until=NULL WHERE employer_id=$1",[company]);
+ jar={aerotech_employer_session:'employer'};path='/api/employees';
+ assert.equal(await currentEmployer(),company,'demo does not require a paid term');
+ assert.equal(await employerHasPaidAccess(request),true,'demo without paid term avoids checkout');
+ jar={aerotech_employee_session:'employee'};
+ assert.equal((await currentEmployee()).id,employee,'demo without paid term sponsors employee');
  const payoutRoutes=[['','GET'],['connection','GET'],['connection','POST'],['recipients','GET'],
   ['recipients','POST'],['prepare','POST'],['release','POST'],['finalize','POST'],['reconcile','POST']];
  for(const [suffix,method] of payoutRoutes){

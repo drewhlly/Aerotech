@@ -20,8 +20,7 @@ export async function employerHasPaidAccess(request: NextRequest): Promise<boole
          ON subscription.employer_id = session.employer_id
        WHERE session.token_hash = $1
          AND session.expires_at > NOW()
-         AND subscription.paid_until > NOW()
-         AND (subscription.status = 'active' OR (subscription.status = 'demo' AND subscription.reference = 'private-demo-' || session.employer_id::text))
+         AND ((subscription.status = 'active' AND subscription.paid_until > NOW()) OR (subscription.status = 'demo' AND subscription.reference = 'private-demo-' || session.employer_id::text))
        LIMIT 1`,
       [createHash('sha256').update(token).digest('hex')],
     );

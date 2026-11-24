@@ -1,13 +1,10 @@
-/** A demo grant is only valid for its own employer, and is never paid. */
+/** Explicit internal demo access lasts until revoked by changing status or reference. Never paid. */
 export function isActiveDemoSubscription(
   subscription: {status?: string | null; reference?: string | null; paid_until?: Date | string | null},
   employerId: string,
-  now = Date.now(),
 ): boolean {
   return subscription.status === 'demo' &&
-    subscription.reference === 'private-demo-' + employerId &&
-    !!subscription.paid_until &&
-    new Date(subscription.paid_until).getTime() > now;
+    subscription.reference === 'private-demo-' + employerId;
 }
 
 /** Internal demo accounts can explore modules, but must not initiate real transfers. */

@@ -40,7 +40,6 @@ export function PublicNav() {
    <div className="hidden items-center gap-3 lg:flex"><Link href="/auth/login" className="marketing-button marketing-button--ghost">Sign in</Link><Link href="/#choose-your-path" className="marketing-button marketing-button--secondary">Get started</Link></div>
    <button type="button" onClick={()=>{setOpen(v=>!v);setSubmenu(null)}} className="aero-button border border-slate-200 lg:hidden" aria-label={open?'Close navigation':'Open navigation'} aria-expanded={open} aria-controls="public-mobile-menu">{open?<X size={22}/>:<Menu size={22}/>}</button>
   </div>
-  {path!=='/auth/login'&&<nav aria-label="Portal sign in" className="border-t border-slate-100 bg-slate-50/95"><div className="marketing-container grid grid-cols-3 gap-2 py-2">{(['employer','employee','applicant'] as const).map(role=><Link key={role} href={'/auth/login?role='+role} className="inline-flex min-h-11 items-center justify-center rounded-lg px-2 text-center text-xs font-semibold text-blue-800 hover:bg-blue-50 sm:text-sm">{role[0].toUpperCase()+role.slice(1)} sign in</Link>)}</div></nav>}
   {open&&<><div className="fixed inset-0 z-[80] bg-slate-950/40 lg:hidden" onClick={close} aria-hidden="true"/><nav id="public-mobile-menu" aria-label="Mobile navigation" className="marketing-mobile-drawer lg:hidden">
    <div className="flex items-center justify-between border-b border-slate-200 pb-4"><span className="font-bold text-slate-900">{submenu?(submenu==='about'?'About Us':'Insights'):'Explore Aerotech'}</span><button type="button" aria-label="Close mobile menu" className="aero-button border" onClick={close}><X size={20}/></button></div>
    {submenu?<div className="mt-3"><button type="button" onClick={()=>setSubmenu(null)} className="inline-flex min-h-12 items-center gap-2 text-sm font-semibold text-blue-800"><ChevronLeft size={17}/>Back to menu</button>{(submenu==='about'?company:insights).map(g=><div className="mt-5" key={g.heading}><p className="marketing-eyebrow">{g.heading}</p>{g.links.map(l=>mobileLink(l.href,l.label))}</div>)}</div>:<div className="mt-4">
@@ -49,7 +48,6 @@ export function PublicNav() {
     <button type="button" className="flex w-full min-h-12 items-center justify-between border-b border-slate-100 text-left font-semibold text-slate-800" onClick={()=>setSubmenu('insights')}>Insights<ChevronRight size={17}/></button>
     <button type="button" className="flex w-full min-h-12 items-center justify-between border-b border-slate-100 text-left font-semibold text-slate-800" onClick={()=>setSubmenu('about')}>About Us<ChevronRight size={17}/></button>
     {mobileLink('/locations','Locations')}{mobileLink('/contact','Contact Us')}{mobileLink('/auth/login','Login')}
-    <div className="mt-5 flex flex-col gap-2">{mobileLink('/auth/login?role=employee','Employee sign in')}{mobileLink('/auth/login?role=applicant','Applicant sign in')}{mobileLink('/auth/login?role=employer','Employer sign in')}</div>
    </div>}
   </nav></>}
  </header>;
