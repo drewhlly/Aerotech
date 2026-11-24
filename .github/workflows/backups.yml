@@ -18,7 +18,7 @@ jobs:
     timeout-minutes: 25
     services:
       postgres:
-        image: pgvector/pgvector:0.8.7-pg18-trixie
+        image: postgres:18
         env:
           POSTGRES_USER: restore_verify
           POSTGRES_PASSWORD: disposable_restore_only
