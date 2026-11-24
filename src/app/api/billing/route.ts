@@ -1,3 +1,4 @@
+import {isActiveDemoSubscription} from '@/lib/demo-access';
 import {sameOrigin} from '@/lib/collaboration-policy';
 import {NextResponse} from 'next/server';
 import {randomUUID} from 'node:crypto';
@@ -8,8 +9,9 @@ export const runtime='nodejs';
 export async function GET(){
  const employer=await currentEmployer(false);if(!employer)return NextResponse.json({error:'Company sign-in required'},{status:401});
  const p=db();try{
-  const account=(await p.query("SELECT a.company_name,a.company_email,a.country,a.subscription_required,s.plan,s.status,s.paid_until,s.pricing_version,s.employee_limit,s.capacity_enforced_from,(SELECT COUNT(*)::int FROM workforce_employees w WHERE w.employer_id=a.id AND w.employment_status IN ('active','probation','on_leave')) AS active_employees FROM employer_accounts a LEFT JOIN company_subscriptions s ON s.employer_id=a.id WHERE a.id=$1",[employer])).rows[0];
-  return NextResponse.json({account,providerReady:!!process.env.PAYSTACK_SECRET_KEY?.startsWith('sk_live_'),mode:process.env.PAYSTACK_SECRET_KEY?.startsWith('sk_live_')?'live':'test'},{headers:{'Cache-Control':'private, no-store'}});
+  const account=(await p.query("SELECT a.company_name,a.company_email,a.country,a.subscription_required,s.plan,s.status,s.reference,s.paid_until,s.pricing_version,s.employee_limit,s.capacity_enforced_from,(SELECT COUNT(*)::int FROM workforce_employees w WHERE w.employer_id=a.id AND w.employment_status IN ('active','probation','on_leave')) AS active_employees FROM employer_accounts a LEFT JOIN company_subscriptions s ON s.employer_id=a.id WHERE a.id=$1",[employer])).rows[0];
+  const {reference,...publicAccount}=account;
+  return NextResponse.json({account:{...publicAccount,demo_access:isActiveDemoSubscription({...account,reference},employer)},providerReady:!!process.env.PAYSTACK_SECRET_KEY?.startsWith('sk_live_'),mode:process.env.PAYSTACK_SECRET_KEY?.startsWith('sk_live_')?'live':'test'},{headers:{'Cache-Control':'private, no-store'}});
  }finally{await p.end()}
 }
 export async function POST(req:Request){
