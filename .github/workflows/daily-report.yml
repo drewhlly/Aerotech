@@ -1,0 +1,58 @@
+name: Daily report
+on:
+  schedule:
+    - cron: '0 7 * * *'
+  workflow_dispatch:
+  workflow_run:
+    workflows: [Aerotech CI, Nightly maintenance]
+    types: [completed]
+    branches: [main]
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+  issues: read
+jobs:
+  report:
+    if: github.ref == 'refs/heads/main' && (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'failure')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24'
+      - name: Identify payroll failure from trusted job metadata
+        id: classify
+        if: github.event_name == 'workflow_run'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FAILED_RUN: ${{ github.event.workflow_run.id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "repos/drewhlly/Aerotech/actions/runs/$FAILED_RUN/jobs?per_page=100" > /tmp/job-metadata.json
+          if jq -e '.jobs | any(.conclusion == "failure" and (.name | contains("payroll-worked-examples")))' /tmp/job-metadata.json > /dev/null; then
+            echo "payroll_failed=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Send owner-only report
+        if: github.event_name != 'workflow_run' || steps.classify.outputs.payroll_failed == 'true' 
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPORT_CRITICAL: ${{ steps.classify.outputs.payroll_failed }}
+          REPORTS_ENABLED: ${{ vars.REPORTS_ENABLED }}
+          REPORT_FROM_EMAIL: ${{ vars.REPORT_FROM_EMAIL }}
+          REPORT_RECIPIENT: ${{ secrets.REPORT_RECIPIENT }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: node scripts/engineering-report.mjs
+      - if: github.event_name != 'workflow_run' || steps.classify.outputs.payroll_failed == 'true'
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: engineering-report
+          path: |
+            engineering-report.txt
+            engineering-delivery.json
+          if-no-files-found: ignore
+          retention-days: 14
