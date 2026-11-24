@@ -19,7 +19,21 @@ async function context(){const c=await browser.newContext({baseURL:base});contex
 async function call(c,path,body,expected=200,method='post'){if(body&&(/\/api\/auth\/(signup|activate)\//).test(path))body={...body,acceptedPolicies:true,policyVersion:POLICY_VERSION};const r=await c.request[method](path,body===undefined?{}:{data:body,headers:{Origin:base}});let d;try{d=await r.json()}catch{d={}}assert.equal(r.status(),expected,path+' '+JSON.stringify(d));return d}
 async function get(c,path){return call(c,path,undefined,200,'get')}
 try{
- for(const viewport of [{width:390,height:844},{width:1280,height:900}]){const publicContext=await browser.newContext({baseURL:base,viewport});contexts.push(publicContext);const page=await publicContext.newPage();await page.goto('/');const navigation=page.getByRole('navigation',{name:'Portal sign in'});for(const role of ['employer','employee','applicant']){const link=navigation.getByRole('link',{name:new RegExp(role+' sign in','i')});await link.waitFor({state:'visible',timeout:15000});assert.equal(await link.getAttribute('href'),'/auth/login?role='+role)}}passed('Landing page shows all three dedicated sign-in entries on mobile and desktop');
+ for(const viewport of [{width:390,height:844},{width:1280,height:900}]){
+  const publicContext=await browser.newContext({baseURL:base,viewport});contexts.push(publicContext);
+  const page=await publicContext.newPage();await page.goto('/');
+  assert.equal(await page.getByRole('navigation',{name:'Portal sign in',exact:true}).count(),0,'Homepage has no duplicate portal sign-in strip');
+  if(viewport.width<1024)await page.getByRole('button',{name:'Open navigation'}).click();
+  const navigation=page.getByRole('navigation',{name:viewport.width<1024?'Mobile navigation':'Footer links',exact:true});
+  for(const role of ['Employer','Employee','Applicant'])assert.equal(await navigation.getByRole('link',{name:role+' sign in',exact:true}).count(),0,'No duplicate role links');
+  const login=viewport.width<1024?navigation.getByRole('link',{name:'Login',exact:true}):page.getByRole('banner').getByRole('link',{name:'Login',exact:true});
+  await login.click();await page.waitForURL('**/auth/login');
+  const portals=page.getByRole('navigation',{name:'Choose sign-in portal'});
+  for(const role of ['employer','employee','applicant']){
+   const link=portals.getByRole('link',{name:new RegExp('^'+role+'$','i')});await link.waitFor({state:'visible',timeout:15000});
+   assert.equal(await link.getAttribute('href'),'/auth/login?role='+role);
+  }
+ }passed('Homepage uses Login with portal choices on the login page, on mobile and desktop');
  const employer=await context();const account=await call(employer,'/api/auth/signup/employer',{companyName:'Disposable Verification Company',companyEmail:'owner-fixture@example.invalid',firstName:'Test',lastName:'Owner',phone:'08000000000',country:'Nigeria',password},201);const company=account.employerId;
  await call(employer,'/api/employees',undefined,401,'get');const paywall=await employer.newPage();await paywall.goto('/dashboard/employer');assert.ok(paywall.url().includes('/billing'));await paywall.close();
  // Paid-state fixture is allowed only in this script's asserted disposable localhost database. No provider charge is made.
