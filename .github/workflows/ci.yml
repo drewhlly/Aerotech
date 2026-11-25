@@ -8,9 +8,14 @@ on:
     # 03:00 Africa/Lagos (UTC+1) daily; GitHub may delay scheduled starts.
     - cron: '0 2 * * *'
   workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
 
 jobs:
   verify:
+    timeout-minutes: 40
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
@@ -31,3 +36,16 @@ jobs:
         run: npm run build
       - name: Type-check
         run: npx tsc --noEmit
+
+  payroll-worked-examples:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24'
+      - run: node --test tests/nigeria-statutory.test.mjs
+      # Existing examples only. Missing annual/joiner/leaver coverage is tracked.

@@ -4,6 +4,9 @@ const query=async(sql,args=[])=>{if(failOther&&sql==='SELECT id FROM employer_ac
 let clientBusy=false;
 const clientQuery=async(sql,args=[])=>{assert.equal(clientBusy,false,'transaction client queries must not overlap');clientBusy=true;try{return await query(sql,args)}finally{clientBusy=false}};
 mock.module(new URL('../src/lib/employer-session.ts',import.meta.url).href,{namedExports:{db:()=>({query,connect:async()=>({query:clientQuery,release(){}}),end:async()=>{}})}});
+// Match the scheduler's explicit Africa/Lagos effective-date boundary.
+// Otherwise CURRENT_DATE+1 can already be today in Lagos during 23:00-00:00 UTC.
+await database.exec("SET TIME ZONE 'Africa/Lagos'");
 for(const m of readFileSync('scripts/migrate.mjs','utf8').matchAll(/"(\d{3}_[^"]+\.sql)"/g))await database.exec(readFileSync('database/'+m[1],'utf8'));
 for(const id of [company,other])await query("INSERT INTO employer_accounts(id,company_name,company_email,admin_first_name,admin_last_name,phone,country,password_hash) VALUES($1,'Fixture',$2,'Test','Owner','000','Nigeria','test-only')",[id,id+'@example.test']);
 for(const [id,tenant,status] of [[probation,company,'probation'],[leaver,company,'active'],[outside,other,'active']])await query("INSERT INTO workforce_employees(id,employer_id,employee_number,first_name,last_name,email,job_title,department,location,employment_status,hire_date) VALUES($1,$2,$3,'Test','Employee',$4,'Engineer','Engineering','Lagos',$5,CURRENT_DATE-120)",[id,tenant,id,id+'@example.test',status]);
